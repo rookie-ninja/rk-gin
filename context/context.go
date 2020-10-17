@@ -20,7 +20,7 @@ const (
 
 // Add Key values to outgoing header
 // It should be used only for common usage
-func AddToOutgoingHeader(ctx gin.Context, key string, values string) {
+func AddToOutgoingHeader(ctx *gin.Context, key string, values string) {
 	header := ctx.Writer.Header()
 	header.Add(key, values)
 }
@@ -28,7 +28,7 @@ func AddToOutgoingHeader(ctx gin.Context, key string, values string) {
 // Add request id to outgoing metadata
 //
 // The request id would be printed on server's query log and client's query log
-func AddRequestIdToOutgoingHeader(ctx gin.Context) string {
+func AddRequestIdToOutgoingHeader(ctx *gin.Context) string {
 	requestId := GenerateRequestId()
 
 	if len(requestId) > 0 {
@@ -39,7 +39,7 @@ func AddRequestIdToOutgoingHeader(ctx gin.Context) string {
 }
 
 // Extract takes the call-scoped EventData from gin_zap middleware.
-func GetEvent(ctx gin.Context) rk_query.Event {
+func GetEvent(ctx *gin.Context) rk_query.Event {
 	event, ok := ctx.Get(rk_gin_inter_logging.RKEventKey)
 	if !ok {
 		return rk_query.NewEventFactory().CreateEventNoop()
@@ -48,7 +48,7 @@ func GetEvent(ctx gin.Context) rk_query.Event {
 	return event.(rk_query.Event)
 }
 
-func GetRequestIdsFromOutgoingHeader(ctx gin.Context) []string {
+func GetRequestIdsFromOutgoingHeader(ctx *gin.Context) []string {
 	res := make([]string, 0)
 
 	res = append(res, ctx.Writer.Header().Values(RequestIdKeyDash)...)
@@ -58,7 +58,7 @@ func GetRequestIdsFromOutgoingHeader(ctx gin.Context) []string {
 	return res
 }
 
-func GetRequestIdsFromIncomingHeader(ctx gin.Context) []string {
+func GetRequestIdsFromIncomingHeader(ctx *gin.Context) []string {
 	res := make([]string, 0)
 
 	res = append(res, ctx.Request.Header.Values(RequestIdKeyDash)...)
