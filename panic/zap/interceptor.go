@@ -2,8 +2,7 @@ package rk_gin_inter_panic
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-gin-interceptor/logging/zap"
-	"github.com/rookie-ninja/rk-query"
+	rk_gin_inter_context "github.com/rookie-ninja/rk-gin-interceptor/context"
 	"go.uber.org/zap"
 	"net"
 	"net/http"
@@ -18,15 +17,7 @@ import (
 // RkGinPanicZap returns a gin.HandlerFunc (middleware)
 func RkGinPanicZap() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		ed, exist := ctx.Get(rk_gin_inter_logging.RKEventKey)
-		if !exist {
-			if rk_gin_inter_logging.RKEventFactory == nil {
-				rk_gin_inter_logging.RKEventFactory = rk_query.NewEventFactory()
-			}
-
-			ed = rk_gin_inter_logging.RKEventFactory.CreateEventNoop()
-		}
-		event := ed.(rk_query.Event)
+		event := rk_gin_inter_context.GetEvent(ctx)
 
 		defer func() {
 			if err := recover(); err != nil {

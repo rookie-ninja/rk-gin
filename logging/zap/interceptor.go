@@ -2,33 +2,25 @@ package rk_gin_inter_logging
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-query"
 	"go.uber.org/zap"
 	"strconv"
 	"strings"
 	"time"
 )
 
-var RKEventFactory *rk_query.EventFactory
-
 // RkGinZap returns a gin.HandlerFunc (middleware) that logs requests using uber-go/zap.
-func RkGinZap(factory *rk_query.EventFactory, opts ...Option) gin.HandlerFunc {
-	// We will populate Noop Zap logger if factory is nil
-	if factory == nil {
-		factory = rk_query.NewEventFactory()
-	}
-
-	RKEventFactory = factory
-
-	opt := MergeOpt(opts)
+func RkGinZap(opts ...Option) gin.HandlerFunc {
+	mergeOpt(opts)
+	appName = defaultOptions.eventFactory.GetAppName()
 
 	return func(ctx *gin.Context) {
 		// start timer
-		event := RKEventFactory.CreateEvent()
+		event := defaultOptions.eventFactory.CreateEvent()
 		event.SetStartTime(time.Now())
 		ctx.Set(RKEventKey, event)
 
 		incomingRequestIds := GetRequestIdsFromHeader(ctx.Request.Header)
+		ctx.Set(RKLoggerKey, defaultOptions.logger.With(zap.Strings("incoming_request_ids", incomingRequestIds)))
 
 		fields := []zap.Field{
 			realm, region, az, domain, appVersion, localIP,
@@ -52,14 +44,16 @@ func RkGinZap(factory *rk_query.EventFactory, opts ...Option) gin.HandlerFunc {
 		endTime := time.Now()
 		elapsed := endTime.Sub(event.GetStartTime())
 
-		if opt.enableLogging() {
+		outgoingRequestIds := GetRequestIdsFromHeader(ctx.Writer.Header())
+		ctx.Set(RKLoggerKey, defaultOptions.logger.With(zap.Strings("outgoing_request_ids", outgoingRequestIds)))
+
+		if defaultOptions.enableLogging {
 			// handle errors
 			if len(ctx.Errors) > 0 {
 				event.AddErr(ctx.Errors.Last().Err)
 			}
 
 			event.SetResCode(strconv.Itoa(ctx.Writer.Status()))
-			outgoingRequestIds := GetRequestIdsFromHeader(ctx.Writer.Header())
 			fields = append(fields,
 				zap.Int("res_code", ctx.Writer.Status()),
 				zap.Time("end_time", endTime),
@@ -80,7 +74,7 @@ func RkGinZap(factory *rk_query.EventFactory, opts ...Option) gin.HandlerFunc {
 			event.WriteLog()
 		}
 
-		if opt.enableMetrics() {
+		if defaultOptions.enableMetrics {
 			getServerDurationMetrics(ctx).Observe(float64(elapsed.Nanoseconds() / 1e6))
 			if len(ctx.Errors) > 0 {
 				getServerErrorMetrics(ctx).Inc()

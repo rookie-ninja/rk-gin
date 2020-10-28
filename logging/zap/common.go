@@ -6,7 +6,6 @@ package rk_gin_inter_logging
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-query"
 	"go.uber.org/zap"
 	"net"
 	"net/http"
@@ -24,7 +23,6 @@ var (
 	localIP       = zap.String("local.IP", getLocalIp())
 	localHostname = zap.String("local.hostname", getLocalHostname())
 	appName       = "Unknown"
-	eventFactory  *rk_query.EventFactory
 )
 
 const (
@@ -33,6 +31,7 @@ const (
 	RequestIdKeyUnderline = "request_id"
 	RequestIdKeyDefault   = RequestIdKeyDash
 	RKEventKey            = "rk-event"
+	RKLoggerKey           = "rk-logger"
 )
 
 func getEnvValueOrDefault(key, defaultValue string) string {

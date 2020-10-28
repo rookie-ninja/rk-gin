@@ -7,6 +7,7 @@ require (
 	github.com/go-playground/validator/v10 v10.4.0 // indirect
 	github.com/google/uuid v1.1.2
 	github.com/prometheus/client_golang v1.7.1
+	github.com/rookie-ninja/rk-logger v1.0.4
 	github.com/rookie-ninja/rk-prom v1.0.1
 	github.com/rookie-ninja/rk-query v1.0.6
 	github.com/ugorji/go v1.1.11 // indirect

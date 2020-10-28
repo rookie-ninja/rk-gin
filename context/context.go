@@ -8,7 +8,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/rookie-ninja/rk-gin-interceptor/logging/zap"
+	rk_logger "github.com/rookie-ninja/rk-logger"
 	"github.com/rookie-ninja/rk-query"
+	"go.uber.org/zap"
 )
 
 const (
@@ -46,6 +48,16 @@ func GetEvent(ctx *gin.Context) rk_query.Event {
 	}
 
 	return event.(rk_query.Event)
+}
+
+// Extract takes the call-scoped zap logger from gin_zap middleware.
+func GetLogger(ctx *gin.Context) *zap.Logger {
+	logger, ok := ctx.Get(rk_gin_inter_logging.RKLoggerKey)
+	if !ok {
+		return rk_logger.NoopLogger
+	}
+
+	return logger.(*zap.Logger)
 }
 
 func GetRequestIdsFromOutgoingHeader(ctx *gin.Context) []string {

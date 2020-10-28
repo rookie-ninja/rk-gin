@@ -4,57 +4,62 @@
 // license that can be found in the LICENSE file.
 package rk_gin_inter_logging
 
+import (
+	"github.com/rookie-ninja/rk-logger"
+	"github.com/rookie-ninja/rk-query"
+	"go.uber.org/zap"
+)
+
 var (
-	DefaultOptions = &Options{
-		enableLogging: EnableLogging,
-		enableMetrics: EnableMetrics,
+	defaultOptions = &options{
+		enableLogging: true,
+		enableMetrics: true,
+		eventFactory:  rk_query.NewEventFactory(),
+		logger:        rk_logger.NoopLogger,
 	}
 )
 
-func MergeOpt(opts []Option) *Options {
-	optCopy := &Options{}
-	*optCopy = *DefaultOptions
-	for _, o := range opts {
-		o(optCopy)
-	}
-	return optCopy
-}
-
-// Default options
-func DisableLogging() bool {
-	return false
-}
-
-func EnableLogging() bool {
-	return true
-}
-
-func EnableMetrics() bool {
-	return true
-}
-
-func DisableMetrics() bool {
-	return false
-}
-
-type Options struct {
-	enableMetrics Enable
-	enableLogging Enable
-}
-
-type Option func(*Options)
-
-// Implement this if want to enable any functionality among interceptor
-type Enable func() bool
-
-func EnableLoggingOption(f Enable) Option {
-	return func(o *Options) {
-		o.enableLogging = f
+func mergeOpt(opts []Option) {
+	for i := range opts {
+		opts[i](defaultOptions)
 	}
 }
 
-func EnableMetricsOption(f Enable) Option {
-	return func(o *Options) {
-		o.enableMetrics = f
+type options struct {
+	enableMetrics bool
+	enableLogging bool
+	eventFactory  *rk_query.EventFactory
+	logger        *zap.Logger
+}
+
+type Option func(*options)
+
+func WithEventFactory(factory *rk_query.EventFactory) Option {
+	return func(opt *options) {
+		if factory == nil {
+			factory = rk_query.NewEventFactory()
+		}
+		opt.eventFactory = factory
+	}
+}
+
+func WithLogger(logger *zap.Logger) Option {
+	return func(opt *options) {
+		if logger == nil {
+			logger = rk_logger.NoopLogger
+		}
+		opt.logger = logger
+	}
+}
+
+func WithEnableLogging(enable bool) Option {
+	return func(opt *options) {
+		opt.enableLogging = enable
+	}
+}
+
+func WithEnableMetrics(enable bool) Option {
+	return func(opt *options) {
+		opt.enableMetrics = enable
 	}
 }
