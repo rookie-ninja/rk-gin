@@ -60,6 +60,12 @@ func GetLogger(ctx *gin.Context) *zap.Logger {
 	return logger.(*zap.Logger)
 }
 
+// Extract request ids from outgoing header with bellow keys
+//
+// keys:
+//   request-id
+//   request_id
+//   requestid
 func GetRequestIdsFromOutgoingHeader(ctx *gin.Context) []string {
 	res := make([]string, 0)
 
@@ -70,6 +76,12 @@ func GetRequestIdsFromOutgoingHeader(ctx *gin.Context) []string {
 	return res
 }
 
+// Extract request ids from incoming header with bellow keys
+//
+// keys:
+//   request-id
+//   request_id
+//   requestid
 func GetRequestIdsFromIncomingHeader(ctx *gin.Context) []string {
 	res := make([]string, 0)
 

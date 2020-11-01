@@ -1,3 +1,7 @@
+// Copyright (c) 2020 rookie-ninja
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
 package rk_gin_inter_logging
 
 import (
@@ -19,7 +23,7 @@ func RkGinZap(opts ...Option) gin.HandlerFunc {
 		event.SetStartTime(time.Now())
 		ctx.Set(RKEventKey, event)
 
-		incomingRequestIds := GetRequestIdsFromHeader(ctx.Request.Header)
+		incomingRequestIds := getRequestIdsFromHeader(ctx.Request.Header)
 		ctx.Set(RKLoggerKey, defaultOptions.logger.With(zap.Strings("incoming_request_ids", incomingRequestIds)))
 
 		fields := []zap.Field{
@@ -44,7 +48,7 @@ func RkGinZap(opts ...Option) gin.HandlerFunc {
 		endTime := time.Now()
 		elapsed := endTime.Sub(event.GetStartTime())
 
-		outgoingRequestIds := GetRequestIdsFromHeader(ctx.Writer.Header())
+		outgoingRequestIds := getRequestIdsFromHeader(ctx.Writer.Header())
 		ctx.Set(RKLoggerKey, defaultOptions.logger.With(zap.Strings("outgoing_request_ids", outgoingRequestIds)))
 
 		if defaultOptions.enableLogging {

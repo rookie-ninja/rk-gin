@@ -109,7 +109,13 @@ func getLocalHostname() string {
 	return hostname
 }
 
-func GetRequestIdsFromHeader(header http.Header) []string {
+// Get request ids from outgoing header with bellow keys
+//
+// keys:
+//   request-id
+//   request_id
+//   requestid
+func getRequestIdsFromHeader(header http.Header) []string {
 	dash := header.Get(RequestIdKeyDash)
 	underLine := header.Get(RequestIdKeyUnderline)
 	lower := header.Get(RequestIdKeyLowerCase)
