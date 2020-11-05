@@ -1,15 +1,47 @@
-# rk-logger
-Interceptor designed for gin framework.
+# rk-gin
+Interceptor & bootstrapper designed for gin framework.
 Currently, supports bellow interceptors
 
 - logging & metrics
 - auth
 - panic
+- bootstrapper
 
 ## Installation
 `go get -u github.com/rookie-ninja/rk-gin`
 
 ## Quick Start
+Bootstrapper can be used with YAML config
+
+### Start Gin server with YAML config
+User can access common service with localhost:8080/sw
+```yaml
+gin:
+  - name: greeter
+    port: 8080
+    sw:
+      enabled: true
+      path: "sw"
+    enableCommonService: true
+    loggingInterceptor:
+      enabled: true
+      enableLogging: true
+      enableMetrics: true
+```
+
+```go
+package main
+
+import (
+	"github.com/rookie-ninja/rk-gin/boot"
+)
+
+func main() {
+	boot := rk_gin.NewGinEntries("example/boot/boot.yaml", nil, nil)
+	boot["greeter"].Bootstrap()
+}
+```
+
 Interceptors can be used with chain.
 
 ### Logging & Metrics interceptor

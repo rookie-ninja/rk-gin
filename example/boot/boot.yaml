@@ -1,0 +1,12 @@
+---
+gin:
+  - name: greeter
+    port: 8080
+    sw:
+      enabled: true
+      path: "sw"
+    enableCommonService: true
+    loggingInterceptor:
+      enabled: true
+      enableLogging: true
+      enableMetrics: true
