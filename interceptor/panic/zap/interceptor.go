@@ -2,11 +2,11 @@
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
-package rk_gin_inter_panic
+package rk_gin_panic
 
 import (
 	"github.com/gin-gonic/gin"
-	rk_gin_inter_context "github.com/rookie-ninja/rk-gin-interceptor/context"
+	rk_gin_ctx "github.com/rookie-ninja/rk-gin/interceptor/context"
 	"go.uber.org/zap"
 	"net"
 	"net/http"
@@ -19,9 +19,9 @@ import (
 )
 
 // RkGinPanicZap returns a gin.HandlerFunc (middleware)
-func RkGinPanicZap() gin.HandlerFunc {
+func RkGinPanic() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		event := rk_gin_inter_context.GetEvent(ctx)
+		event := rk_gin_ctx.GetEvent(ctx)
 
 		defer func() {
 			if err := recover(); err != nil {

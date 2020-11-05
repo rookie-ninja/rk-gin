@@ -7,7 +7,7 @@ Currently, supports bellow interceptors
 - panic
 
 ## Installation
-`go get -u github.com/rookie-ninja/rk-gin-interceptor`
+`go get -u github.com/rookie-ninja/rk-gin`
 
 ## Quick Start
 Interceptors can be used with chain.
@@ -17,9 +17,12 @@ Logging interceptor uses [zap logger](https://github.com/uber-go/zap) and [rk-qu
 [rk-prom](https://github.com/rookie-ninja/rk-prom) also used for prometheus metrics.
 
 ```go
+package main
+
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-gin-interceptor/logging/zap"
+	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
+	"github.com/rookie-ninja/rk-gin/interceptor/panic/zap"
 	"github.com/rookie-ninja/rk-logger"
 	"github.com/rookie-ninja/rk-query"
 	"net/http"
@@ -29,16 +32,14 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.New()
-	
 	router.Use(
-		rk_gin_inter_logging.RkGinZap(
-			rk_gin_inter_logging.WithEventFactory(rk_query.NewEventFactory()),
-			rk_gin_inter_logging.WithLogger(rk_logger.StdoutLogger)))
+		rk_gin_log.RkGinLog(
+			rk_gin_log.WithEventFactory(rk_query.NewEventFactory()),
+			rk_gin_log.WithLogger(rk_logger.StdoutLogger)))
 
 	router.GET("/hello", func(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "Hello world")
 	})
-
 	router.Run(":8080")
 }
 ```
@@ -46,17 +47,16 @@ func main() {
 Output: 
 ```log
 ------------------------------------------------------------------------
-end_time=2020-11-02T02:49:26.922327+08:00
-start_time=2020-11-02T02:49:26.921547+08:00
+end_time=2020-11-06T01:31:36.372368+08:00
+start_time=2020-11-06T01:31:36.372265+08:00
 time=0
 hostname=JEREMYYIN-MB0
-event_id=0307af32-4b76-4fb5-98a5-723659c87aa9
 timing={}
 counter={}
 pair={}
 error={}
-field={"api.method":"GET","api.path":"/hello","api.protocol":"HTTP/1.1","api.query":"","app_version":"latest","az":"unknown","domain":"unknown","elapsed_ms":0,"end_time":"2020-11-02T02:49:26.922327+08:00","incoming_request_ids":[],"local.IP":"192.168.3.26","outgoing_request_id":["0307af32-4b76-4fb5-98a5-723659c87aa9"],"realm":"unknown","region":"unknown","remote.IP":"localhost","remote.port":"55403","res_code":200,"start_time":"2020-11-02T02:49:26.921547+08:00","user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36"}
-remote_addr=localhost:55403
+field={"api.method":"GET","api.path":"/hello","api.protocol":"HTTP/1.1","api.query":"","app_version":"latest","az":"unknown","domain":"unknown","elapsed_ms":0,"end_time":"2020-11-06T01:31:36.372368+08:00","incoming_request_ids":[],"local.IP":"10.8.0.2","outgoing_request_id":[],"realm":"unknown","region":"unknown","remote.IP":"localhost","remote.port":"61210","res_code":200,"start_time":"2020-11-06T01:31:36.372265+08:00","user_agent":"curl/7.49.1"}
+remote_addr=localhost:61210
 app_name=Unknown
 operation=GET-/hello
 event_status=Ended
@@ -69,11 +69,12 @@ EOE
 
 ### Panic interceptor
 ```go
+package main
+
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-gin-interceptor/logging/zap"
-	"github.com/rookie-ninja/rk-gin-interceptor/panic/zap"
+	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
+	"github.com/rookie-ninja/rk-gin/interceptor/panic/zap"
 	"github.com/rookie-ninja/rk-logger"
 	"github.com/rookie-ninja/rk-query"
 	"net/http"
@@ -83,15 +84,13 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.New()
-
 	router.Use(
-		rk_gin_inter_logging.RkGinZap(
-			rk_gin_inter_logging.WithEventFactory(rk_query.NewEventFactory()),
-			rk_gin_inter_logging.WithLogger(rk_logger.StdoutLogger)),
-		rk_gin_inter_panic.RkGinPanicZap())
+		rk_gin_log.RkGinLog(
+			rk_gin_log.WithEventFactory(rk_query.NewEventFactory()),
+			rk_gin_log.WithLogger(rk_logger.StdoutLogger)),
+		rk_gin_panic.RkGinPanic())
 
 	router.GET("/hello", func(ctx *gin.Context) {
-		panic(errors.New("panic"))
 		ctx.String(http.StatusOK, "Hello world")
 	})
 	router.Run(":8080")
@@ -122,11 +121,13 @@ EOE
 
 ### Auth interceptor
 ```go
+package main
+
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-gin-interceptor/auth"
-	"github.com/rookie-ninja/rk-gin-interceptor/logging/zap"
-	"github.com/rookie-ninja/rk-gin-interceptor/panic/zap"
+	"github.com/rookie-ninja/rk-gin/interceptor/auth"
+	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
+	"github.com/rookie-ninja/rk-gin/interceptor/panic/zap"
 	"github.com/rookie-ninja/rk-logger"
 	"github.com/rookie-ninja/rk-query"
 	"net/http"
@@ -136,13 +137,12 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.New()
-
 	router.Use(
-		rk_gin_inter_logging.RkGinZap(
-			rk_gin_inter_logging.WithEventFactory(rk_query.NewEventFactory()),
-			rk_gin_inter_logging.WithLogger(rk_logger.StdoutLogger)),
-		rk_gin_inter_auth.RkGinAuthZap(gin.Accounts{"user":"pass"}, "realm"),
-		rk_gin_inter_panic.RkGinPanicZap())
+		rk_gin_log.RkGinLog(
+			rk_gin_log.WithEventFactory(rk_query.NewEventFactory()),
+			rk_gin_log.WithLogger(rk_logger.StdoutLogger)),
+		rk_gin_auth.RkGinAuth(gin.Accounts{"user": "pass"}, "realm"),
+		rk_gin_panic.RkGinPanic())
 
 	router.GET("/hello", func(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "Hello world")
@@ -153,16 +153,16 @@ func main() {
 Output
 ```log
 ------------------------------------------------------------------------
-end_time=2020-11-02T04:23:41.354791+08:00
-start_time=2020-11-02T04:23:41.354758+08:00
+end_time=2020-11-06T01:34:05.541346+08:00
+start_time=2020-11-06T01:34:05.54126+08:00
 time=0
 hostname=JEREMYYIN-MB0
 timing={}
 counter={}
 pair={}
 error={}
-field={"api.method":"GET","api.path":"/hello","api.protocol":"HTTP/1.1","api.query":"","app_version":"latest","az":"unknown","domain":"unknown","elapsed_ms":0,"end_time":"2020-11-02T04:23:41.354791+08:00","incoming_request_ids":[],"local.IP":"192.168.3.26","outgoing_request_id":[],"realm":"unknown","region":"unknown","remote.IP":"localhost","remote.port":"56698","res_code":401,"start_time":"2020-11-02T04:23:41.354758+08:00","user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36"}
-remote_addr=localhost:56698
+field={"api.method":"GET","api.path":"/hello","api.protocol":"HTTP/1.1","api.query":"","app_version":"latest","az":"unknown","domain":"unknown","elapsed_ms":0,"end_time":"2020-11-06T01:34:05.541346+08:00","incoming_request_ids":[],"local.IP":"10.8.0.2","outgoing_request_id":[],"realm":"unknown","region":"unknown","remote.IP":"localhost","remote.port":"61231","res_code":401,"start_time":"2020-11-06T01:34:05.54126+08:00","user_agent":"curl/7.49.1"}
+remote_addr=localhost:61231
 app_name=Unknown
 operation=GET-/hello
 event_status=Ended

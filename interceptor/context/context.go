@@ -2,13 +2,13 @@
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
-package rk_gin_inter_context
+package rk_gin_ctx
 
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/rookie-ninja/rk-gin-interceptor/logging/zap"
-	rk_logger "github.com/rookie-ninja/rk-logger"
+	rk_gin_log "github.com/rookie-ninja/rk-gin/interceptor/log/zap"
+	"github.com/rookie-ninja/rk-logger"
 	"github.com/rookie-ninja/rk-query"
 	"go.uber.org/zap"
 )
@@ -42,7 +42,7 @@ func AddRequestIdToOutgoingHeader(ctx *gin.Context) string {
 
 // Extract takes the call-scoped EventData from gin_zap middleware.
 func GetEvent(ctx *gin.Context) rk_query.Event {
-	event, ok := ctx.Get(rk_gin_inter_logging.RKEventKey)
+	event, ok := ctx.Get(rk_gin_log.RKEventKey)
 	if !ok {
 		return rk_query.NewEventFactory().CreateEventNoop()
 	}
@@ -52,7 +52,7 @@ func GetEvent(ctx *gin.Context) rk_query.Event {
 
 // Extract takes the call-scoped zap logger from gin_zap middleware.
 func GetLogger(ctx *gin.Context) *zap.Logger {
-	logger, ok := ctx.Get(rk_gin_inter_logging.RKLoggerKey)
+	logger, ok := ctx.Get(rk_gin_log.RKLoggerKey)
 	if !ok {
 		return rk_logger.NoopLogger
 	}

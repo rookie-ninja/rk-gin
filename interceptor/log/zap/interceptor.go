@@ -2,7 +2,7 @@
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
-package rk_gin_inter_logging
+package rk_gin_log
 
 import (
 	"github.com/gin-gonic/gin"
@@ -13,7 +13,7 @@ import (
 )
 
 // RkGinZap returns a gin.HandlerFunc (middleware) that logs requests using uber-go/zap.
-func RkGinZap(opts ...Option) gin.HandlerFunc {
+func RkGinLog(opts ...Option) gin.HandlerFunc {
 	mergeOpt(opts)
 	appName = defaultOptions.eventFactory.GetAppName()
 

@@ -1,4 +1,4 @@
-module github.com/rookie-ninja/rk-gin-interceptor
+module github.com/rookie-ninja/rk-gin
 
 go 1.14
 
