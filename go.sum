@@ -229,6 +229,8 @@ github.com/rookie-ninja/rk-common v0.0.0-20201108163347-a62aa8686175 h1:YBTMWXAM
 github.com/rookie-ninja/rk-common v0.0.0-20201108163347-a62aa8686175/go.mod h1:GwvWajKsjyI35E8QJGpePDavmzNssm4FbkrXiGgtH6c=
 github.com/rookie-ninja/rk-common v1.0.0 h1:huMh+Ao7qMmx2T7liYlybvlN6EYyLnTM4zj+67ai89U=
 github.com/rookie-ninja/rk-common v1.0.0/go.mod h1:GwvWajKsjyI35E8QJGpePDavmzNssm4FbkrXiGgtH6c=
+github.com/rookie-ninja/rk-common v1.0.1 h1:g6lUvF1avjxjpN+bNApyIkOJ/dxhHvKVFQGB0YMpi48=
+github.com/rookie-ninja/rk-common v1.0.1/go.mod h1:xWqWs3Msva5bhJHEUm+SdUYQIHMORYMZwh8K3qODue4=
 github.com/rookie-ninja/rk-config v1.0.0 h1:zUhSOH4MCjSXoQ1mFpNBpDeY4Skovlkx5V+fonOLleQ=
 github.com/rookie-ninja/rk-config v1.0.0/go.mod h1:ybQeDwhbyRwmtin6dIADiSTMnimVUuktKfQWzwYhrsY=
 github.com/rookie-ninja/rk-logger v1.0.3 h1:sX/fWnKbX2STysWLahkaVIyoaRh5RFl3v/u/4reKUCM=
@@ -239,6 +241,7 @@ github.com/rookie-ninja/rk-prom v1.0.1 h1:otLbK1KrniSbGxOECstdtTW1NGornIwbv6iUvv
 github.com/rookie-ninja/rk-prom v1.0.1/go.mod h1:V072bldHaq9RYGfq6JPCXt0fp6yvyTLM9SBeMuHUaEc=
 github.com/rookie-ninja/rk-query v1.0.6 h1:3TsFSqQoJibGvvEVUkx65YKfo3sEVasUDXRocW1UR0k=
 github.com/rookie-ninja/rk-query v1.0.6/go.mod h1:838z4qaqSmXBB/HsJs/SN6hf7FX58VetuSMfI7OAgwc=
+github.com/rookie-ninja/rk-query v1.0.7/go.mod h1:Y9kTfDDMvQgcKrg/6gevAlDZ4fbB7XFHcMYzMq+i/8U=
 github.com/ryanuber/columnize v0.0.0-20160712163229-9b3edd62028f/go.mod h1:sm1tb6uqfes/u+d4ooFouqFdy9/2g9QGwK3SQygK0Ts=
 github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529/go.mod h1:DxrIzT+xaE7yg65j358z/aeFdxmN0P9QXhEzd20vsDc=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
