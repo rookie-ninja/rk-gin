@@ -1,3 +1,20 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [rk-gin](#rk-gin)
+  - [Installation](#installation)
+  - [Quick Start](#quick-start)
+    - [Start Gin server from YAML config](#start-gin-server-from-yaml-config)
+    - [Start Gin server from code](#start-gin-server-from-code)
+    - [Logging & Metrics interceptor](#logging--metrics-interceptor)
+    - [Panic interceptor](#panic-interceptor)
+    - [Auth interceptor](#auth-interceptor)
+    - [Development Status: Stable](#development-status-stable)
+    - [Contributing](#contributing)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # rk-gin
 Interceptor & bootstrapper designed for gin framework.
 Currently, supports bellow interceptors
@@ -13,7 +30,7 @@ Currently, supports bellow interceptors
 ## Quick Start
 Bootstrapper can be used with YAML config
 
-### Start Gin server with YAML config
+### Start Gin server from YAML config
 User can access common service with localhost:8080/sw
 ```yaml
 gin:
@@ -34,15 +51,80 @@ package main
 
 import (
 	"github.com/rookie-ninja/rk-gin/boot"
+	"github.com/rookie-ninja/rk-logger"
+	"github.com/rookie-ninja/rk-query"
 )
 
 func main() {
-	boot := rk_gin.NewGinEntries("example/boot/boot.yaml", nil, nil)
-	boot["greeter"].Bootstrap()
+	fac := rk_query.NewEventFactory()
+	entries := rk_gin.NewGinEntries("example/boot/boot.yaml", fac, rk_logger.StdoutLogger)
+	entries["greeter"].Bootstrap(fac.CreateEvent())
 }
 ```
 
+Available configuration
+User can start multiple servers at the same time
+
+| name | description | type | default value |
+| ------ | ------ | ------ | ------ |
+| gin.name | name of gin server entry| string | unknown application |
+| gin.port | port of server | integer | nil, server won't start |
+| gin.tls.enabled | enable tls or not | boolean | false | 
+| gin.tls.user.enabled | enable user provided CA file? | boolean | false |
+| gin.tls.user.certFile | cert file path | string | empty string |
+| gin.tls.user.keyFile | key file path | string | empty string | 
+| gin.tls.auth.enabled | server will generate CA files | string | false |
+| gin.tls.auth.certOutput | cert file output path | string | current working directory | 
+| gin.sw.enabled | enable swagger | boolean | false | 
+| gin.sw.path | swagger path | string | / |
+| gin.sw.jsonPath | swagger json file path | string | / |
+| gin.sw.headers | headers will send with swagger response | array | empty array |
+| gin.enabledCommonService | enable common service | boolean | false |
+| gin.loggingInterceptor.enabled | enable logging interceptor | boolean | false |
+| gin.loggingInterceptor.enableLogging | enable logging for every request | boolean | false |
+| gin.loggingInterceptor.enableMetrics | enable prometheus metrics for every request | boolean | false |
+| gin.authInterceptor.enabled | enable auth interceptor | boolean | false |
+| gin.authInterceptor.realm | realm for basic auth interceptor | string | Authorization Required |
+| gin.authInterceptor.credentials | array of credentials such as "user:pass" | string array | empty array |
+
 Interceptors can be used with chain.
+
+### Start Gin server from code
+
+```go
+package main
+
+import (
+	"github.com/rookie-ninja/rk-gin/boot"
+	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
+	"github.com/rookie-ninja/rk-logger"
+	"github.com/rookie-ninja/rk-query"
+)
+
+func main() {
+	// create event data
+	fac := rk_query.NewEventFactory()
+
+	// create options for interceptor
+	opts := []rk_gin_log.Option{
+		rk_gin_log.WithEventFactory(fac),
+		rk_gin_log.WithLogger(rk_logger.StdoutLogger),
+		rk_gin_log.WithEnableLogging(true),
+		rk_gin_log.WithEnableMetrics(true),
+	}
+
+	// create gin entry
+	entry := rk_gin.NewGinEntry(
+		rk_gin.WithEventFactory(fac),
+		rk_gin.WithLogger(rk_logger.StdoutLogger),
+		rk_gin.WithPort(8080),
+		rk_gin.WithEnableCommonService(true),
+		rk_gin.WithInterceptors(rk_gin_log.RkGinLog(opts...)))
+
+	// start server
+	entry.Bootstrap(fac.CreateEvent())
+}
+```
 
 ### Logging & Metrics interceptor
 Logging interceptor uses [zap logger](https://github.com/uber-go/zap) and [rk-query](https://github.com/rookie-ninja/rk-query) logs every requests.

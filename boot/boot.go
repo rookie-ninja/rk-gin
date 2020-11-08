@@ -6,10 +6,8 @@ package rk_gin
 
 import (
 	"context"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-gin/interceptor/auth"
-	"github.com/rookie-ninja/rk-gin/interceptor/context"
 	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
 	"github.com/rookie-ninja/rk-gin/interceptor/panic/zap"
 	"github.com/rookie-ninja/rk-logger"
@@ -70,6 +68,7 @@ type GinEntry struct {
 	interceptors []gin.HandlerFunc
 	sw           *swEntry
 	tls          *tlsEntry
+	enableCommonService bool
 }
 
 type GinEntryOption func(*GinEntry)
@@ -93,6 +92,12 @@ func WithInterceptors(inters ...gin.HandlerFunc) GinEntryOption {
 		}
 
 		entry.interceptors = append(entry.interceptors, inters...)
+	}
+}
+
+func WithEnableCommonService(enable bool) GinEntryOption {
+	return func(entry *GinEntry) {
+		entry.enableCommonService = enable
 	}
 }
 
@@ -207,11 +212,8 @@ func getGinServerEntries(config *bootConfig, factory *rk_query.EventFactory, log
 			WithPort(element.Port),
 			WithSWEntry(swEntry),
 			WithTlsEntry(tlsEntry),
-			WithInterceptors(inters...))
-
-		if element.EnableCommonService {
-			entry.GetRouter().GET("/v1/rk/healthy", healthy)
-		}
+			WithInterceptors(inters...),
+			WithEnableCommonService(element.EnableCommonService))
 
 		res[name] = entry
 	}
@@ -256,9 +258,13 @@ func NewGinEntry(opts ...GinEntryOption) *GinEntry {
 	}
 
 	entry.interceptors = append(entry.interceptors, rk_gin_panic.RkGinPanic())
+	entry.router.Use(entry.interceptors...)
 
-	if len(entry.interceptors) > 0 {
-		entry.router.Use(entry.interceptors...)
+	if entry.enableCommonService {
+		entry.GetRouter().GET("/v1/rk/healthy", healthy)
+		entry.GetRouter().GET("/v1/rk/gc", gc)
+		entry.GetRouter().GET("/v1/rk/info", info)
+		entry.GetRouter().GET("/v1/rk/config", dumpConfig)
 	}
 
 	// init server only if port is not zero
@@ -296,11 +302,7 @@ func (entry *GinEntry) GetRouter() *gin.Engine {
 	return entry.router
 }
 
-func (entry *GinEntry) Bootstrap() {
-	if entry.logger == nil {
-		entry.logger = zap.NewNop()
-	}
-
+func (entry *GinEntry) Bootstrap(event rk_query.Event) {
 	fields := []zap.Field{
 		zap.Uint64("gin_port", entry.port),
 		zap.String("name", entry.name),
@@ -310,56 +312,53 @@ func (entry *GinEntry) Bootstrap() {
 		fields = append(fields, zap.String("sw_path", entry.sw.getPath()))
 	}
 
+	if entry.tls != nil {
+		fields = append(fields, zap.Bool("tls", true))
+	}
+
+	event.AddFields(fields...)
+
 	if entry.server != nil {
 		// Start server with tls
 		if entry.tls != nil {
-			entry.logger.Info("starting gin-server-tls", fields...)
+			entry.logger.Info("starting gin-server", fields...)
 			if err := entry.server.ListenAndServeTLS(entry.tls.GetCertFilePath(), entry.tls.GetKeyFilePath()); err != nil && err != http.ErrServerClosed {
-				fields = append(fields, zap.Error(err))
-				entry.logger.Error("err while serving gin-listener-tls", fields...)
+				entry.logger.Error("error while serving gin-listener-tls", fields...)
 				shutdownWithError(err)
 			}
 		} else {
 			entry.logger.Info("starting gin-server", fields...)
-
 			if err := entry.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-				fields = append(fields, zap.Error(err))
-				entry.logger.Error("err while serving gin-listener", fields...)
+				entry.logger.Error("error while serving gin-listener", fields...)
 				shutdownWithError(err)
 			}
 		}
 	}
 }
 
-func (entry *GinEntry) Shutdown() {
-	serverType := "gin-server"
-	if entry.tls != nil {
-		serverType = "gin-server-tls"
+func (entry *GinEntry) Shutdown(event rk_query.Event) {
+	fields := []zap.Field{
+		zap.Uint64("gin_port", entry.port),
+		zap.String("name", entry.name),
 	}
+
+	if entry.tls != nil {
+		fields = append(fields, zap.Bool("tls", true))
+	}
+
+	if entry.sw != nil {
+		fields = append(fields, zap.String("sw_path", entry.sw.getPath()))
+	}
+
+	event.AddFields(fields...)
 
 	if entry.router != nil && entry.server != nil {
-		entry.logger.Info(fmt.Sprintf("stopping %s", serverType),
-			zap.Uint64("gin_port", entry.port),
-			zap.String("name", entry.name))
+		entry.logger.Info("stopping gin-server", fields...)
 		if err := entry.server.Shutdown(context.Background()); err != nil {
-			entry.logger.Warn(fmt.Sprintf("error occurs while stopping %s", serverType),
-				zap.Uint64("gin_port", entry.port),
-				zap.String("name", entry.name),
-				zap.Error(err))
+			fields = append(fields, zap.Error(err))
+			entry.logger.Warn("error occurs while stopping gin-server", fields...)
 		}
 	}
-}
-
-func healthy(ctx *gin.Context) {
-	// Add auto generated request ID
-	rk_gin_ctx.AddRequestIdToOutgoingHeader(ctx)
-	event := rk_gin_ctx.GetEvent(ctx)
-
-	event.AddPair("healthy", "true")
-
-	ctx.JSON(http.StatusOK, gin.H{
-		"message": "healthy",
-	})
 }
 
 func readFile(filePath string) []byte {
