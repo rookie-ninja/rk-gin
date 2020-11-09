@@ -8,10 +8,12 @@ import (
 	"github.com/rookie-ninja/rk-gin/boot"
 	"github.com/rookie-ninja/rk-logger"
 	"github.com/rookie-ninja/rk-query"
+	"time"
 )
 
 func main() {
 	fac := rk_query.NewEventFactory()
 	entries := rk_gin.NewGinEntries("example/boot/boot.yaml", fac, rk_logger.StdoutLogger)
 	entries["greeter"].Bootstrap(fac.CreateEvent())
+	entries["greeter"].Wait(1 * time.Second)
 }

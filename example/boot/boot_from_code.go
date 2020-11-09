@@ -9,6 +9,7 @@ import (
 	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
 	"github.com/rookie-ninja/rk-logger"
 	"github.com/rookie-ninja/rk-query"
+	"time"
 )
 
 func main() {
@@ -25,6 +26,7 @@ func main() {
 
 	// create gin entry
 	entry := rk_gin.NewGinEntry(
+		rk_gin.WithName("greeter"),
 		rk_gin.WithEventFactory(fac),
 		rk_gin.WithLogger(rk_logger.StdoutLogger),
 		rk_gin.WithPort(8080),
@@ -33,5 +35,5 @@ func main() {
 
 	// start server
 	entry.Bootstrap(fac.CreateEvent())
+	entry.Wait(1 * time.Second)
 }
-

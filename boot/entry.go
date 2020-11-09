@@ -6,7 +6,9 @@ package rk_gin
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"github.com/rookie-ninja/rk-common/context"
 	"github.com/rookie-ninja/rk-gin/interceptor/auth"
 	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
 	"github.com/rookie-ninja/rk-gin/interceptor/panic/zap"
@@ -20,12 +22,13 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type bootConfig struct {
 	Gin []struct {
 		Name string `yaml:"name"`
-		Port uint64    `yaml:"port"`
+		Port uint64 `yaml:"port"`
 		TLS  struct {
 			Enabled bool `yaml:"enabled"`
 			User    struct {
@@ -59,16 +62,17 @@ type bootConfig struct {
 }
 
 type GinEntry struct {
-	logger       *zap.Logger
-	eventFactory *rk_query.EventFactory
-	router       *gin.Engine
-	server       *http.Server
-	name         string
-	port         uint64
-	interceptors []gin.HandlerFunc
-	sw           *swEntry
-	tls          *tlsEntry
+	logger              *zap.Logger
+	eventFactory        *rk_query.EventFactory
+	router              *gin.Engine
+	server              *http.Server
+	name                string
+	port                uint64
+	interceptors        []gin.HandlerFunc
+	sw                  *swEntry
+	tls                 *tlsEntry
 	enableCommonService bool
+	entryType           string
 }
 
 type GinEntryOption func(*GinEntry)
@@ -223,8 +227,9 @@ func getGinServerEntries(config *bootConfig, factory *rk_query.EventFactory, log
 
 func NewGinEntry(opts ...GinEntryOption) *GinEntry {
 	entry := &GinEntry{
-		logger: rk_logger.StdoutLogger,
+		logger:       rk_logger.StdoutLogger,
 		eventFactory: rk_query.NewEventFactory(),
+		entryType:    "gin",
 	}
 
 	for i := range opts {
@@ -282,6 +287,29 @@ func (entry *GinEntry) GetName() string {
 	return entry.name
 }
 
+func (entry *GinEntry) GetType() string {
+	return entry.entryType
+}
+
+func (entry *GinEntry) String() string {
+	m := map[string]string{
+		"name":         entry.GetName(),
+		"type":         entry.GetType(),
+		"port":         strconv.FormatUint(entry.GetPort(), 10),
+		"interceptors": strconv.Itoa(len(entry.interceptors)),
+		"tls":          strconv.FormatBool(entry.IsTlsEnabled()),
+		"sw":           strconv.FormatBool(entry.IsSWEnabled()),
+	}
+
+	if entry.IsSWEnabled() {
+		m["sw_path"] = entry.sw.getPath()
+	}
+
+	bytes, _ := json.Marshal(m)
+
+	return string(bytes)
+}
+
 func (entry *GinEntry) GetPort() uint64 {
 	return entry.port
 }
@@ -290,8 +318,16 @@ func (entry *GinEntry) GetSWEntry() *swEntry {
 	return entry.sw
 }
 
+func (entry *GinEntry) IsSWEnabled() bool {
+	return entry.sw != nil
+}
+
 func (entry *GinEntry) GetTlsEntry() *tlsEntry {
 	return entry.tls
+}
+
+func (entry *GinEntry) IsTlsEnabled() bool {
+	return entry.tls != nil
 }
 
 func (entry *GinEntry) GetServer() *http.Server {
@@ -305,33 +341,41 @@ func (entry *GinEntry) GetRouter() *gin.Engine {
 func (entry *GinEntry) Bootstrap(event rk_query.Event) {
 	fields := []zap.Field{
 		zap.Uint64("gin_port", entry.port),
-		zap.String("name", entry.name),
+		zap.String("gin_name", entry.name),
 	}
 
 	if entry.sw != nil {
-		fields = append(fields, zap.String("sw_path", entry.sw.getPath()))
+		fields = append(fields, zap.String("gin_sw_path", entry.sw.getPath()))
 	}
 
 	if entry.tls != nil {
-		fields = append(fields, zap.Bool("tls", true))
+		fields = append(fields, zap.Bool("gin_tls", true))
 	}
 
 	event.AddFields(fields...)
+
+	go func() {
+
+	}()
 
 	if entry.server != nil {
 		// Start server with tls
 		if entry.tls != nil {
 			entry.logger.Info("starting gin-server", fields...)
-			if err := entry.server.ListenAndServeTLS(entry.tls.GetCertFilePath(), entry.tls.GetKeyFilePath()); err != nil && err != http.ErrServerClosed {
-				entry.logger.Error("error while serving gin-listener-tls", fields...)
-				shutdownWithError(err)
-			}
+			go func(*GinEntry) {
+				if err := entry.server.ListenAndServeTLS(entry.tls.GetCertFilePath(), entry.tls.GetKeyFilePath()); err != nil && err != http.ErrServerClosed {
+					entry.logger.Error("error while serving gin-listener-tls", fields...)
+					shutdownWithError(err)
+				}
+			}(entry)
 		} else {
 			entry.logger.Info("starting gin-server", fields...)
-			if err := entry.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-				entry.logger.Error("error while serving gin-listener", fields...)
-				shutdownWithError(err)
-			}
+			go func(*GinEntry) {
+				if err := entry.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+					entry.logger.Error("error while serving gin-listener", fields...)
+					shutdownWithError(err)
+				}
+			}(entry)
 		}
 	}
 }
@@ -339,15 +383,15 @@ func (entry *GinEntry) Bootstrap(event rk_query.Event) {
 func (entry *GinEntry) Shutdown(event rk_query.Event) {
 	fields := []zap.Field{
 		zap.Uint64("gin_port", entry.port),
-		zap.String("name", entry.name),
+		zap.String("gin_name", entry.name),
 	}
 
 	if entry.tls != nil {
-		fields = append(fields, zap.Bool("tls", true))
+		fields = append(fields, zap.Bool("gin_tls", true))
 	}
 
 	if entry.sw != nil {
-		fields = append(fields, zap.String("sw_path", entry.sw.getPath()))
+		fields = append(fields, zap.String("gin_sw_path", entry.sw.getPath()))
 	}
 
 	event.AddFields(fields...)
@@ -359,6 +403,26 @@ func (entry *GinEntry) Shutdown(event rk_query.Event) {
 			entry.logger.Warn("error occurs while stopping gin-server", fields...)
 		}
 	}
+}
+
+func (entry *GinEntry) Wait(draining time.Duration) {
+	sig := <-rk_ctx.GlobalAppCtx.GetShutdownSig()
+
+	helper := rk_query.NewEventHelper(rk_ctx.GlobalAppCtx.GetEventFactory())
+	event := helper.Start("rk_app_stop")
+
+	rk_ctx.GlobalAppCtx.GetDefaultLogger().Info("draining", zap.Duration("draining_duration", draining))
+	time.Sleep(draining)
+
+	event.AddFields(
+		zap.Duration("app_lifetime_nano", time.Since(rk_ctx.GlobalAppCtx.GetStartTime())),
+		zap.Time("app_start_time", rk_ctx.GlobalAppCtx.GetStartTime()))
+
+	event.AddPair("signal", sig.String())
+
+	entry.Shutdown(event)
+
+	helper.Finish(event)
 }
 
 func readFile(filePath string) []byte {

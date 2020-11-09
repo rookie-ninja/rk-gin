@@ -55,7 +55,7 @@ func gc(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"mem_stat_before_gc": before,
-		"mem_stat_after_gc": after,
+		"mem_stat_after_gc":  after,
 	})
 }
 
@@ -77,6 +77,6 @@ func dumpConfig(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"viper": rk_info.ViperConfigToJSON(),
-		"rk": rk_info.RkConfigToJSON(),
+		"rk":    rk_info.RkConfigToJSON(),
 	})
 }

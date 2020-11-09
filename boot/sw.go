@@ -396,11 +396,11 @@ type swURL struct {
 }
 
 type swEntry struct {
-	logger              *zap.Logger
-	port                uint64
-	jsonPath            string
-	path                string
-	headers             map[string]string
+	logger   *zap.Logger
+	port     uint64
+	jsonPath string
+	path     string
+	headers  map[string]string
 }
 
 type swOption func(*swEntry)
@@ -597,4 +597,3 @@ func (entry *swEntry) swIndexHandler(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
-
