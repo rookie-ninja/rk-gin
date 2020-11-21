@@ -31,6 +31,7 @@ func main() {
 		rk_gin.WithLogger(rk_logger.StdoutLogger),
 		rk_gin.WithPort(8080),
 		rk_gin.WithEnableCommonService(true),
+		rk_gin.WithEnableTV(true),
 		rk_gin.WithInterceptors(rk_gin_log.RkGinLog(opts...)))
 
 	// start server

@@ -6,6 +6,7 @@ gin:
       enabled: true
       path: "sw"
     enableCommonService: true
+    enableTV: true
     loggingInterceptor:
       enabled: true
       enableLogging: true

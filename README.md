@@ -10,6 +10,7 @@
     - [Logging & Metrics interceptor](#logging--metrics-interceptor)
     - [Panic interceptor](#panic-interceptor)
     - [Auth interceptor](#auth-interceptor)
+    - [Common Services](#common-services)
     - [Development Status: Stable](#development-status-stable)
     - [Contributing](#contributing)
 
@@ -40,6 +41,7 @@ gin:
       enabled: true
       path: "sw"
     enableCommonService: true
+    enableTV: true
     loggingInterceptor:
       enabled: true
       enableLogging: true
@@ -79,7 +81,8 @@ User can start multiple servers at the same time
 | gin.sw.path | swagger path | string | / |
 | gin.sw.jsonPath | swagger json file path | string | / |
 | gin.sw.headers | headers will send with swagger response | array | empty array |
-| gin.enabledCommonService | enable common service | boolean | false |
+| gin.enableCommonService | enable common service | boolean | false |
+| gin.enableTB | enable RK TV whose path is /v1/rk/tv | boolean | false |
 | gin.loggingInterceptor.enabled | enable logging interceptor | boolean | false |
 | gin.loggingInterceptor.enableLogging | enable logging for every request | boolean | false |
 | gin.loggingInterceptor.enableMetrics | enable prometheus metrics for every request | boolean | false |
@@ -119,6 +122,7 @@ func main() {
 		rk_gin.WithLogger(rk_logger.StdoutLogger),
 		rk_gin.WithPort(8080),
 		rk_gin.WithEnableCommonService(true),
+		rk_gin.WithEnableTV(true),
 		rk_gin.WithInterceptors(rk_gin_log.RkGinLog(opts...)))
 
 	// start server
@@ -286,6 +290,28 @@ os=darwin
 arch=amd64
 EOE
 ```
+
+
+		entry.GetRouter().GET("/v1/rk/healthy", healthy)
+		entry.GetRouter().GET("/v1/rk/gc", gc)
+		entry.GetRouter().GET("/v1/rk/info", info)
+		entry.GetRouter().GET("/v1/rk/config", dumpConfig)
+		entry.GetRouter().GET("/v1/rk/apis", listApis)
+		entry.GetRouter().GET("/v1/rk/sys", sysStats)
+		entry.GetRouter().GET("/v1/rk/req", reqStats)
+
+### Common Services
+User can start multiple servers at the same time
+
+| path | description |
+| ------ | ------ |
+| /v1/rk/healthy | always return true if service is available |
+| /v1/rk/gc | trigger gc and return memory stats |
+| /v1/rk/info | return basic info |
+| /v1/rk/config | return configs in memory |
+| /v1/rk/apis | list all apis |
+| /v1/rk/sys | return system information including cpu and memory usage |
+| /v1/rk/req | return requests stats recorded by prometheus client |
 
 ### Development Status: Stable
 

@@ -84,304 +84,191 @@ var (
   </body>
 </html>
 `
-	commonServiceJson = `
-{
-  "swagger": "2.0",
-  "info": {
-    "description": "This is rk common services",
-    "title": "RK Common",
-    "termsOfService": "http://swagger.io/terms/",
-    "contact": {
-      "name": "API Support",
-      "url": "http://www.swagger.io/support",
-      "email": "support@swagger.io"
-    },
-    "license": {
-      "name": "Apache 2.0",
-      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-    },
-    "version": "1.0"
-  },
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
-  "paths": {
-    "/v1/rk/config": {
-      "get": {
-        "summary": "DumpConfig Stub",
-        "operationId": "RkCommonService_DumpConfig",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/DumpConfigResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
+	commonServiceJson = `{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a common service with rk-gin.",
+        "title": "RK Swagger Example",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "http://www.swagger.io/support",
+            "email": "support@swagger.io"
         },
-        "tags": [
-          "RkCommonService"
-        ]
-      }
-    },
-    "/v1/rk/gc": {
-      "get": {
-        "summary": "GC Stub",
-        "operationId": "RkCommonService_GC",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/GCResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
         },
-        "tags": [
-          "RkCommonService"
-        ]
-      }
+        "version": "1.0"
     },
-    "/v1/rk/healthy": {
-      "get": {
-        "summary": "Healthy Stub",
-        "operationId": "RkCommonService_Healthy",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/HealthyResponse"
+    "paths": {
+        "/v1/rk/apis": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "API"
+                ],
+                "summary": "API",
+                "operationId": "5",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
             }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
         },
-        "tags": [
-          "RkCommonService"
-        ]
-      }
+        "/v1/rk/config": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Config"
+                ],
+                "summary": "Config",
+                "operationId": "4",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/rk/gc": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GC"
+                ],
+                "summary": "GC",
+                "operationId": "2",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/rk/healthy": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Healthy"
+                ],
+                "summary": "Healthy",
+                "operationId": "1",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/rk/info": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Info"
+                ],
+                "summary": "Info",
+                "operationId": "3",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/rk/req": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Request"
+                ],
+                "summary": "Request Stat",
+                "operationId": "7",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/rk/sys": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System"
+                ],
+                "summary": "System Stat",
+                "operationId": "6",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/rk/tv": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TV"
+                ],
+                "summary": "TV",
+                "operationId": "8",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
     },
-    "/v1/rk/info": {
-      "get": {
-        "summary": "Info Stub",
-        "operationId": "RkCommonService_Info",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/InfoResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "RkCommonService"
-        ]
-      }
+    "securityDefinitions": {
+        "BasicAuth": {
+            "type": "basic"
+        }
     }
-  },
-  "definitions": {
-    "DumpConfigResponse": {
-      "type": "object",
-      "properties": {
-        "viper": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Viper"
-          }
-        },
-        "rk": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/RK"
-          }
-        }
-      }
-    },
-    "GCResponse": {
-      "type": "object",
-      "properties": {
-        "mem_stats_before_gc": {
-          "$ref": "#/definitions/MemStats"
-        },
-        "mem_stats_after_gc": {
-          "$ref": "#/definitions/MemStats"
-        }
-      },
-      "title": "GC response, memory stats would be returned"
-    },
-    "HealthyResponse": {
-      "type": "object",
-      "properties": {
-        "healthy": {
-          "type": "boolean"
-        }
-      }
-    },
-    "Info": {
-      "type": "object",
-      "properties": {
-        "uid": {
-          "type": "string"
-        },
-        "gid": {
-          "type": "string"
-        },
-        "username": {
-          "type": "string"
-        },
-        "start_time": {
-          "type": "string"
-        },
-        "up_time_sec": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "up_time_str": {
-          "type": "string"
-        },
-        "application": {
-          "type": "string"
-        },
-        "realm": {
-          "type": "string"
-        },
-        "region": {
-          "type": "string"
-        },
-        "az": {
-          "type": "string"
-        },
-        "domain": {
-          "type": "string"
-        }
-      }
-    },
-    "InfoResponse": {
-      "type": "object",
-      "properties": {
-        "info": {
-          "$ref": "#/definitions/Info"
-        }
-      }
-    },
-    "MemStats": {
-      "type": "object",
-      "properties": {
-        "mem_alloc_byte": {
-          "type": "integer",
-          "format": "int64",
-          "description": "Alloc is bytes of allocated heap objects."
-        },
-        "sys_alloc_byte": {
-          "type": "integer",
-          "format": "int64",
-          "description": "Sys is the total bytes of memory obtained from the OS."
-        },
-        "mem_usage_percentage": {
-          "type": "number",
-          "format": "float",
-          "title": "memory usage"
-        },
-        "last_gc_timestamp": {
-          "type": "string",
-          "title": "LastGC is the time the last garbage collection finished.\nRepresent as RFC3339 time format"
-        },
-        "gc_count_total": {
-          "type": "integer",
-          "format": "int64",
-          "description": "The number of completed GC cycles."
-        },
-        "force_gc_count": {
-          "type": "integer",
-          "format": "int64",
-          "description": "/ The number of GC cycles that were forced by\nthe application calling the GC function."
-        }
-      },
-      "title": "Memory stats"
-    },
-    "RK": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "raw": {
-          "type": "string"
-        }
-      }
-    },
-    "Viper": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "raw": {
-          "type": "string"
-        }
-      }
-    },
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "type_url": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "rpcStatus": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        },
-        "details": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/protobufAny"
-          }
-        }
-      }
-    }
-  },
-  "securityDefinitions": {
-    "BasicAuth": {
-      "type": "basic"
-    }
-  }
-}
-`
+}`
 	swaggerConfigJson = ``
 	swaggerJsonFiles  = make(map[string]string, 0)
 )
@@ -404,6 +291,12 @@ type swEntry struct {
 }
 
 type swOption func(*swEntry)
+
+func withPort(port uint64) swOption {
+	return func(entry *swEntry) {
+		entry.port = port
+	}
+}
 
 func withPath(path string) swOption {
 	return func(entry *swEntry) {

@@ -11,6 +11,19 @@ import (
 	"time"
 )
 
+// @title RK Swagger Example
+// @version 1.0
+// @description This is a sample demo server with rk-gin.
+// @termsOfService http://swagger.io/terms/
+
+// @securityDefinitions.basic BasicAuth
+
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 func main() {
 	fac := rk_query.NewEventFactory()
 	entries := rk_gin.NewGinEntries("example/boot/boot.yaml", fac, rk_logger.StdoutLogger)

@@ -18,20 +18,20 @@ var (
 )
 
 const (
-	elapsedMS           = "elapsed_ms"
-	errors              = "errors"
-	bytesTransferredIn  = "bytes_transferred_in"
-	bytesTransferredOut = "bytes_transferred_out"
-	resCode             = "res_code"
+	ElapsedNano         = "elapsed_nano"
+	Errors              = "errors"
+	BytesTransferredIn  = "bytes_transferred_in"
+	BytesTransferredOut = "bytes_transferred_out"
+	ResCode             = "res_code"
 )
 
 func initMetrics(subSystem string) *rk_prom.MetricsSet {
 	metricsSet := rk_prom.NewMetricsSet("rk", subSystem)
-	metricsSet.RegisterSummary(elapsedMS, rk_prom.SummaryObjectives, defaultLabelKeys...)
-	metricsSet.RegisterCounter(errors, defaultLabelKeys...)
-	metricsSet.RegisterCounter(bytesTransferredIn, defaultLabelKeys...)
-	metricsSet.RegisterCounter(bytesTransferredOut, defaultLabelKeys...)
-	metricsSet.RegisterCounter(resCode, defaultLabelKeys...)
+	metricsSet.RegisterSummary(ElapsedNano, rk_prom.SummaryObjectives, defaultLabelKeys...)
+	metricsSet.RegisterCounter(Errors, defaultLabelKeys...)
+	metricsSet.RegisterCounter(BytesTransferredIn, defaultLabelKeys...)
+	metricsSet.RegisterCounter(BytesTransferredOut, defaultLabelKeys...)
+	metricsSet.RegisterCounter(ResCode, defaultLabelKeys...)
 
 	return metricsSet
 }
@@ -39,15 +39,23 @@ func initMetrics(subSystem string) *rk_prom.MetricsSet {
 // Server related
 func getServerDurationMetrics(ctx *gin.Context) prometheus.Observer {
 	values := []string{realm.String, region.String, az.String, domain.String, appVersion.String, appName, ctx.Request.Method, ctx.Request.URL.Path, ctx.Request.Proto, ctx.Request.UserAgent(), strconv.Itoa(ctx.Writer.Status())}
-	return serverMetrics.GetSummaryWithValues(elapsedMS, values...)
+	return serverMetrics.GetSummaryWithValues(ElapsedNano, values...)
 }
 
 func getServerErrorMetrics(ctx *gin.Context) prometheus.Counter {
 	values := []string{realm.String, region.String, az.String, domain.String, appVersion.String, appName, ctx.Request.Method, ctx.Request.URL.Path, ctx.Request.Proto, ctx.Request.UserAgent(), strconv.Itoa(ctx.Writer.Status())}
-	return serverMetrics.GetCounterWithValues(errors, values...)
+	return serverMetrics.GetCounterWithValues(Errors, values...)
 }
 
 func getServerResCodeMetrics(ctx *gin.Context) prometheus.Counter {
 	values := []string{realm.String, region.String, az.String, domain.String, appVersion.String, appName, ctx.Request.Method, ctx.Request.URL.Path, ctx.Request.Proto, ctx.Request.UserAgent(), strconv.Itoa(ctx.Writer.Status())}
-	return serverMetrics.GetCounterWithValues(resCode, values...)
+	return serverMetrics.GetCounterWithValues(ResCode, values...)
+}
+
+func GetServerMetricsSet() *rk_prom.MetricsSet {
+	return serverMetrics
+}
+
+func GetClientMetricsSet() *rk_prom.MetricsSet {
+	return clientMetrics
 }

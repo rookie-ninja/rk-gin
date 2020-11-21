@@ -48,6 +48,7 @@ type bootConfig struct {
 			Headers  []string `yaml:"headers"`
 		} `yaml:"sw"`
 		EnableCommonService bool `yaml:"enableCommonService"`
+		EnableTV            bool `yaml:"enableTB"`
 		LoggingInterceptor  struct {
 			Enabled       bool `yaml:"enabled"`
 			EnableLogging bool `yaml:"enableLogging"`
@@ -72,6 +73,7 @@ type GinEntry struct {
 	sw                  *swEntry
 	tls                 *tlsEntry
 	enableCommonService bool
+	enableTV            bool
 	entryType           string
 }
 
@@ -102,6 +104,12 @@ func WithInterceptors(inters ...gin.HandlerFunc) GinEntryOption {
 func WithEnableCommonService(enable bool) GinEntryOption {
 	return func(entry *GinEntry) {
 		entry.enableCommonService = enable
+	}
+}
+
+func WithEnableTV(enable bool) GinEntryOption {
+	return func(entry *GinEntry) {
+		entry.enableTV = enable
 	}
 }
 
@@ -166,6 +174,7 @@ func getGinServerEntries(config *bootConfig, factory *rk_query.EventFactory, log
 			}
 
 			swEntry = newSWEntry(
+				withPort(element.Port),
 				withPath(element.SW.Path),
 				withJsonPath(element.SW.JSONPath),
 				withHeaders(headers))
@@ -217,7 +226,8 @@ func getGinServerEntries(config *bootConfig, factory *rk_query.EventFactory, log
 			WithSWEntry(swEntry),
 			WithTlsEntry(tlsEntry),
 			WithInterceptors(inters...),
-			WithEnableCommonService(element.EnableCommonService))
+			WithEnableCommonService(element.EnableCommonService),
+			WithEnableTV(element.EnableTV))
 
 		res[name] = entry
 	}
@@ -270,6 +280,13 @@ func NewGinEntry(opts ...GinEntryOption) *GinEntry {
 		entry.GetRouter().GET("/v1/rk/gc", gc)
 		entry.GetRouter().GET("/v1/rk/info", info)
 		entry.GetRouter().GET("/v1/rk/config", dumpConfig)
+		entry.GetRouter().GET("/v1/rk/apis", listApis)
+		entry.GetRouter().GET("/v1/rk/sys", sysStats)
+		entry.GetRouter().GET("/v1/rk/req", reqStats)
+	}
+
+	if entry.enableTV {
+		entry.GetRouter().GET("/v1/rk/tv/*item", tv)
 	}
 
 	// init server only if port is not zero
@@ -279,6 +296,8 @@ func NewGinEntry(opts ...GinEntryOption) *GinEntry {
 			Handler: entry.router,
 		}
 	}
+
+	rk_ctx.GlobalAppCtx.AddEntry(entry.GetName(), entry)
 
 	return entry
 }

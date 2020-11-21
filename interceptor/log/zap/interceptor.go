@@ -61,7 +61,7 @@ func RkGinLog(opts ...Option) gin.HandlerFunc {
 			fields = append(fields,
 				zap.Int("res_code", ctx.Writer.Status()),
 				zap.Time("end_time", endTime),
-				zap.Int64("elapsed_ms", elapsed.Milliseconds()),
+				zap.Int64("elapsed_nano", elapsed.Nanoseconds()),
 				zap.Strings("outgoing_request_id", outgoingRequestIds),
 			)
 
@@ -79,7 +79,7 @@ func RkGinLog(opts ...Option) gin.HandlerFunc {
 		}
 
 		if defaultOptions.enableMetrics {
-			getServerDurationMetrics(ctx).Observe(float64(elapsed.Nanoseconds() / 1e6))
+			getServerDurationMetrics(ctx).Observe(float64(elapsed.Nanoseconds()))
 			if len(ctx.Errors) > 0 {
 				getServerErrorMetrics(ctx).Inc()
 			}

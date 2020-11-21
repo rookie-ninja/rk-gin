@@ -25,6 +25,8 @@ func RkGinPanic() gin.HandlerFunc {
 
 		defer func() {
 			if err := recover(); err != nil {
+				rk_gin_ctx.GetLogger(ctx).Info(string(debug.Stack()))
+
 				// Check for a broken connection, as it is not really a
 				// condition that warrants a panic stack trace.
 				var brokenPipe bool
@@ -42,7 +44,7 @@ func RkGinPanic() gin.HandlerFunc {
 					event.AddFields(
 						zap.String("request", string(httpRequest)),
 						zap.String("stack", string(debug.Stack())))
-
+					rk_gin_ctx.GetLogger(ctx).Info(string(debug.Stack()))
 					event.SetEndTime(time.Now())
 					event.SetResCode(strconv.Itoa(http.StatusInternalServerError))
 					// If the connection is dead, we can't write a status to it.
