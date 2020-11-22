@@ -82,7 +82,7 @@ User can start multiple servers at the same time
 | gin.sw.jsonPath | swagger json file path | string | / |
 | gin.sw.headers | headers will send with swagger response | array | empty array |
 | gin.enableCommonService | enable common service | boolean | false |
-| gin.enableTB | enable RK TV whose path is /v1/rk/tv | boolean | false |
+| gin.enableTV | enable RK TV whose path is /v1/rk/tv | boolean | false |
 | gin.loggingInterceptor.enabled | enable logging interceptor | boolean | false |
 | gin.loggingInterceptor.enableLogging | enable logging for every request | boolean | false |
 | gin.loggingInterceptor.enableMetrics | enable prometheus metrics for every request | boolean | false |
@@ -291,15 +291,6 @@ arch=amd64
 EOE
 ```
 
-
-		entry.GetRouter().GET("/v1/rk/healthy", healthy)
-		entry.GetRouter().GET("/v1/rk/gc", gc)
-		entry.GetRouter().GET("/v1/rk/info", info)
-		entry.GetRouter().GET("/v1/rk/config", dumpConfig)
-		entry.GetRouter().GET("/v1/rk/apis", listApis)
-		entry.GetRouter().GET("/v1/rk/sys", sysStats)
-		entry.GetRouter().GET("/v1/rk/req", reqStats)
-
 ### Common Services
 User can start multiple servers at the same time
 
@@ -312,6 +303,7 @@ User can start multiple servers at the same time
 | /v1/rk/apis | list all apis |
 | /v1/rk/sys | return system information including cpu and memory usage |
 | /v1/rk/req | return requests stats recorded by prometheus client |
+| /v1/rk/tv | web ui for metrics |
 
 ### Development Status: Stable
 
