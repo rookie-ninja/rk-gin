@@ -1,6 +1,6 @@
 package rk_gin
 
-var apiHTML = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <title>RK TV</title>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <link rel=\"icon\" type=\"image/png\" href=\"https://www.flaticon.com/svg/static/icons/svg/2944/2944070.svg\"/>\n    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/bootswatch/4.5.3/cerulean/bootstrap.min.css\">\n    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js\"></script>\n    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js\"></script>\n    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.3/js/bootstrap.min.js\"></script>\n</head>\n<body>\n<nav class=\"navbar navbar-expand-sm bg-dark navbar-dark\">\n    <a class=\"navbar-brand\" href=\".\">RK TV</a>\n    <button class=\"navbar-toggler\" type=\"button\" data-toggle=\"collapse\" data-target=\"#collapsibleNavbar\">\n        <span class=\"navbar-toggler-icon\"></span>\n    </button>\n    <div class=\"collapse navbar-collapse\" id=\"collapsibleNavbar\">\n        <ul class=\"navbar-nav\">\n            <li class=\"nav-item\">\n                <a class=\"nav-link\" href=\".\">Dashboard</a>\n            </li>\n            <li class=\"nav-item\">\n                <a class=\"nav-link\" href=\"/v1/rk/tv/api\">API</a>\n            </li>\n            <li class=\"nav-item\">\n                <a class=\"nav-link\" href=\"/v1/rk/tv/info\">Info</a>\n            </li>\n        </ul>\n    </div>\n</nav>\n\n<div class=\"container\" style=\"margin-top:30px\">\n    <table class=\"table\">\n        <thead class=\"thead-light\">\n        <tr>\n            <th scope=\"col\">Name</th>\n            <th scope=\"col\">Method</th>\n            <th scope=\"col\">Path</th>\n            <th scope=\"col\">Port</th>\n            <th scope=\"col\">Swagger URL</th>\n        </tr>\n        </thead>\n        <tbody id=\"apis\">\n        </tbody>\n    </table>\n\n    <script type=\"text/javascript\">\n        $(document).ready( function () {\n            $.ajax({\n                url : 'http://localhost:8080/v1/rk/apis',\n                type : 'GET',\n                dataType : 'json',\n                success : function(obj) {\n                    let table = document.getElementById(\"apis\")\n                    for (let i = 0; i < obj.length; i++) {\n                        let row = `<tr>\n                                        <td>${obj[i].name}</td>\n                                        <td>${obj[i].method}</td>\n                                        <td>${obj[i].path}</td>\n                                        <td>${obj[i].port}</td>\n                                        <td>${obj[i].sw_url}</td>\n                                   </tr>`\n                        table.innerHTML += row\n                    }\n\n                }\n            });\n        });\n    </script>\n</div>\n\n</body>\n</html>\n"
+var apiHTML = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <title>RK TV</title>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <link rel=\"icon\" type=\"image/png\" href=\"https://www.flaticon.com/svg/static/icons/svg/2944/2944070.svg\"/>\n    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/bootswatch/4.5.3/cerulean/bootstrap.min.css\">\n    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js\"></script>\n    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js\"></script>\n    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.3/js/bootstrap.min.js\"></script>\n</head>\n<body>\n<nav class=\"navbar navbar-expand-sm bg-dark navbar-dark\">\n    <a class=\"navbar-brand\" href=\".\">RK TV</a>\n    <button class=\"navbar-toggler\" type=\"button\" data-toggle=\"collapse\" data-target=\"#collapsibleNavbar\">\n        <span class=\"navbar-toggler-icon\"></span>\n    </button>\n    <div class=\"collapse navbar-collapse\" id=\"collapsibleNavbar\">\n        <ul class=\"navbar-nav\">\n            <li class=\"nav-item\">\n                <a class=\"nav-link\" href=\"/v1/rk/tv/dashboard\">Dashboard</a>\n            </li>\n            <li class=\"nav-item\">\n                <a class=\"nav-link\" href=\"/v1/rk/tv/api\">API</a>\n            </li>\n            <li class=\"nav-item\">\n                <a class=\"nav-link\" href=\"/v1/rk/tv/info\">Info</a>\n            </li>\n        </ul>\n    </div>\n</nav>\n\n<div class=\"container\" style=\"margin-top:30px\">\n    <table class=\"table\">\n        <thead class=\"thead-light\">\n        <tr>\n            <th scope=\"col\">Name</th>\n            <th scope=\"col\">Method</th>\n            <th scope=\"col\">Path</th>\n            <th scope=\"col\">Port</th>\n            <th scope=\"col\">Swagger URL</th>\n        </tr>\n        </thead>\n        <tbody id=\"apis\">\n        </tbody>\n    </table>\n\n    <script type=\"text/javascript\">\n        $(document).ready( function () {\n            $.ajax({\n                url : 'http://localhost:8080/v1/rk/apis',\n                type : 'GET',\n                dataType : 'json',\n                success : function(obj) {\n                    let table = document.getElementById(\"apis\")\n                    for (let i = 0; i < obj.length; i++) {\n                        let row = `<tr>\n                                        <td>${obj[i].name}</td>\n                                        <td>${obj[i].method}</td>\n                                        <td>${obj[i].path}</td>\n                                        <td>${obj[i].port}</td>\n                                        <td>${obj[i].sw_url}</td>\n                                   </tr>`\n                        table.innerHTML += row\n                    }\n\n                }\n            });\n        });\n    </script>\n</div>\n\n</body>\n</html>\n"
 var infoHTML = `
 <!DOCTYPE html>
 <html lang="en">
@@ -23,7 +23,7 @@ var infoHTML = `
     <div class="collapse navbar-collapse" id="collapsibleNavbar">
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a class="nav-link" href=".">Dashboard</a>
+                <a class="nav-link" href="/v1/rk/tv/dashboard">Dashboard</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="/v1/rk/tv/api">API</a>
@@ -137,7 +137,7 @@ var dashboardHTML = `<!DOCTYPE html>
     <div class="collapse navbar-collapse" id="collapsibleNavbar">
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a class="nav-link" href=".">Dashboard</a>
+                <a class="nav-link" href="/v1/rk/tv/dashboard">Dashboard</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="/v1/rk/tv/api">API</a>
@@ -920,14 +920,14 @@ var notFoundHTML = `<!DOCTYPE html>
 </head>
 <body>
 <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
-    <a class="navbar-brand" href="#">RK TV</a>
+    <a class="navbar-brand" href=".">RK TV</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="collapsibleNavbar">
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a class="nav-link" href=".">Dashboard</a>
+                <a class="nav-link" href="/v1/rk/tv/dashboard">Dashboard</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="/v1/rk/tv/api">API</a>

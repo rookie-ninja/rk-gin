@@ -111,7 +111,7 @@ func info(ctx *gin.Context) {
 // @produce application/json
 // @Success 200 string string
 // @Router /v1/rk/config [get]
-func dumpConfig(ctx *gin.Context) {
+func config(ctx *gin.Context) {
 	// Add auto generated request ID
 	rk_gin_ctx.AddRequestIdToOutgoingHeader(ctx)
 
@@ -128,7 +128,7 @@ func dumpConfig(ctx *gin.Context) {
 // @produce application/json
 // @Success 200 string string
 // @Router /v1/rk/apis [get]
-func listApis(ctx *gin.Context) {
+func apis(ctx *gin.Context) {
 	type Api struct {
 		Name   string `json:"name"`
 		Port   uint64 `json:"port"`
@@ -170,7 +170,7 @@ func listApis(ctx *gin.Context) {
 // @produce application/json
 // @Success 200 string string
 // @Router /v1/rk/sys [get]
-func sysStats(ctx *gin.Context) {
+func sys(ctx *gin.Context) {
 	var cpuPercentage, memPercentage float64
 	cpuStat, _ := cpu.Percent(0, false)
 	memStat := rk_info.MemStatsToStruct()
@@ -195,7 +195,7 @@ func sysStats(ctx *gin.Context) {
 // @produce application/json
 // @Success 200 string string
 // @Router /v1/rk/req [get]
-func reqStats(ctx *gin.Context) {
+func req(ctx *gin.Context) {
 	vector := rk_gin_log.GetServerMetricsSet().GetSummaryVec(rk_gin_log.ElapsedNano)
 	metrics := rk_metrics.GetRequestMetrics(vector)
 

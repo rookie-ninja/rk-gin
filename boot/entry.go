@@ -48,7 +48,7 @@ type bootConfig struct {
 			Headers  []string `yaml:"headers"`
 		} `yaml:"sw"`
 		EnableCommonService bool `yaml:"enableCommonService"`
-		EnableTV            bool `yaml:"enableTB"`
+		EnableTV            bool `yaml:"enableTV"`
 		LoggingInterceptor  struct {
 			Enabled       bool `yaml:"enabled"`
 			EnableLogging bool `yaml:"enableLogging"`
@@ -279,10 +279,10 @@ func NewGinEntry(opts ...GinEntryOption) *GinEntry {
 		entry.GetRouter().GET("/v1/rk/healthy", healthy)
 		entry.GetRouter().GET("/v1/rk/gc", gc)
 		entry.GetRouter().GET("/v1/rk/info", info)
-		entry.GetRouter().GET("/v1/rk/config", dumpConfig)
-		entry.GetRouter().GET("/v1/rk/apis", listApis)
-		entry.GetRouter().GET("/v1/rk/sys", sysStats)
-		entry.GetRouter().GET("/v1/rk/req", reqStats)
+		entry.GetRouter().GET("/v1/rk/config", config)
+		entry.GetRouter().GET("/v1/rk/apis", apis)
+		entry.GetRouter().GET("/v1/rk/sys", sys)
+		entry.GetRouter().GET("/v1/rk/req", req)
 	}
 
 	if entry.enableTV {
