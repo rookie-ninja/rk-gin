@@ -8,9 +8,9 @@ require (
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/google/uuid v1.1.2
 	github.com/prometheus/client_golang v1.8.0
-	github.com/rookie-ninja/rk-common v1.0.4
+	github.com/rookie-ninja/rk-common v1.0.5
 	github.com/rookie-ninja/rk-logger v1.0.5
-	github.com/rookie-ninja/rk-prom v1.0.4
+	github.com/rookie-ninja/rk-prom v1.0.5
 	github.com/rookie-ninja/rk-query v1.0.7
 	github.com/shirou/gopsutil/v3 v3.20.10
 	github.com/ugorji/go v1.1.11 // indirect

@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-common/context"
+	rk_entry "github.com/rookie-ninja/rk-common/entry"
 	"github.com/rookie-ninja/rk-gin/interceptor/auth"
 	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
 	"github.com/rookie-ninja/rk-gin/interceptor/panic/zap"
@@ -24,6 +25,10 @@ import (
 	"strings"
 	"time"
 )
+
+func init() {
+	rk_ctx.RegisterEntryInitializer(NewGinEntries)
+}
 
 type bootConfig struct {
 	Gin []struct {
@@ -143,7 +148,7 @@ func WithName(name string) GinEntryOption {
 	}
 }
 
-func NewGinEntries(path string, factory *rk_query.EventFactory, logger *zap.Logger) map[string]*GinEntry {
+func NewGinEntries(path string, factory *rk_query.EventFactory, logger *zap.Logger) map[string]rk_entry.Entry {
 	bytes := readFile(path)
 	config := &bootConfig{}
 	if err := yaml.Unmarshal(bytes, config); err != nil {
@@ -153,8 +158,8 @@ func NewGinEntries(path string, factory *rk_query.EventFactory, logger *zap.Logg
 	return getGinServerEntries(config, factory, logger)
 }
 
-func getGinServerEntries(config *bootConfig, factory *rk_query.EventFactory, logger *zap.Logger) map[string]*GinEntry {
-	res := make(map[string]*GinEntry)
+func getGinServerEntries(config *bootConfig, factory *rk_query.EventFactory, logger *zap.Logger) map[string]rk_entry.Entry {
+	res := make(map[string]rk_entry.Entry)
 
 	for i := range config.Gin {
 		element := config.Gin[i]
