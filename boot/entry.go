@@ -378,10 +378,6 @@ func (entry *GinEntry) Bootstrap(event rk_query.Event) {
 
 	event.AddFields(fields...)
 
-	go func() {
-
-	}()
-
 	if entry.server != nil {
 		// Start server with tls
 		if entry.tls != nil {
