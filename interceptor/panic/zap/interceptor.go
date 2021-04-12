@@ -2,15 +2,13 @@
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
-package rk_gin_panic
+package rkginpanic
 
 import (
 	"github.com/gin-gonic/gin"
-	rk_gin_ctx "github.com/rookie-ninja/rk-gin/interceptor/context"
-	"go.uber.org/zap"
+	"github.com/rookie-ninja/rk-gin/interceptor/context"
 	"net"
 	"net/http"
-	"net/http/httputil"
 	"os"
 	"runtime/debug"
 	"strconv"
@@ -18,44 +16,42 @@ import (
 	"time"
 )
 
-// RkGinPanicZap returns a gin.HandlerFunc (middleware)
-func RkGinPanic() gin.HandlerFunc {
+// PanicInterceptor returns a gin.HandlerFunc (middleware)
+func PanicInterceptor() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		event := rk_gin_ctx.GetEvent(ctx)
+		if ctx == nil {
+			return
+		}
+
+		event := rkginctx.GetEvent(ctx)
 
 		defer func() {
 			if err := recover(); err != nil {
-				rk_gin_ctx.GetLogger(ctx).Info(string(debug.Stack()))
-
+				rkginctx.GetLogger(ctx).Error("panic occurs\n" + string(debug.Stack()))
 				// Check for a broken connection, as it is not really a
 				// condition that warrants a panic stack trace.
 				var brokenPipe bool
 				if ne, ok := err.(*net.OpError); ok {
 					if se, ok := ne.Err.(*os.SyscallError); ok {
-						if strings.Contains(strings.ToLower(se.Error()), "broken pipe") || strings.Contains(strings.ToLower(se.Error()), "connection reset by peer") {
+						if strings.Contains(
+							strings.ToLower(se.Error()),
+							"broken pipe") || strings.Contains(strings.ToLower(se.Error()),
+							"connection reset by peer") {
 							brokenPipe = true
 							event.AddErr(se)
 						}
 					}
 				}
 
-				httpRequest, _ := httputil.DumpRequest(ctx.Request, false)
 				if brokenPipe {
-					event.AddFields(
-						zap.String("request", string(httpRequest)),
-						zap.String("stack", string(debug.Stack())))
-					rk_gin_ctx.GetLogger(ctx).Info(string(debug.Stack()))
+					rkginctx.GetLogger(ctx).Error(string(debug.Stack()))
 					event.SetEndTime(time.Now())
 					event.SetResCode(strconv.Itoa(http.StatusInternalServerError))
 					// If the connection is dead, we can't write a status to it.
-					ctx.Error(err.(error)) // nolint: errcheck
+					ctx.Error(err.(error)) // nolint: err check
 					ctx.Abort()
 					return
 				}
-
-				event.AddFields(
-					zap.String("request", string(httpRequest)),
-					zap.String("stack", string(debug.Stack())))
 
 				event.SetEndTime(time.Now())
 				event.SetResCode(strconv.Itoa(http.StatusInternalServerError))

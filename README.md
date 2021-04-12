@@ -1,21 +1,3 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
-
-- [rk-gin](#rk-gin)
-  - [Installation](#installation)
-  - [Quick Start](#quick-start)
-    - [Start Gin server from YAML config](#start-gin-server-from-yaml-config)
-    - [Start Gin server from code](#start-gin-server-from-code)
-    - [Logging & Metrics interceptor](#logging--metrics-interceptor)
-    - [Panic interceptor](#panic-interceptor)
-    - [Auth interceptor](#auth-interceptor)
-    - [Common Services](#common-services)
-    - [Development Status: Stable](#development-status-stable)
-    - [Contributing](#contributing)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 # rk-gin
 Interceptor & bootstrapper designed for gin framework.
 Currently, supports bellow interceptors
@@ -24,6 +6,23 @@ Currently, supports bellow interceptors
 - auth
 - panic
 - bootstrapper
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+  - [Start Gin server from YAML config](#start-gin-server-from-yaml-config)
+  - [Start Gin server from code](#start-gin-server-from-code)
+  - [Logging & Metrics interceptor](#logging--metrics-interceptor)
+  - [Panic interceptor](#panic-interceptor)
+  - [Auth interceptor](#auth-interceptor)
+  - [Common Services](#common-services)
+  - [Development Status: Stable](#development-status-stable)
+  - [Contributing](#contributing)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Installation
 `go get -u github.com/rookie-ninja/rk-gin`
@@ -34,33 +33,67 @@ Bootstrapper can be used with YAML config
 ### Start Gin server from YAML config
 User can access common service with localhost:8080/sw
 ```yaml
+---
 gin:
-  - name: greeter
-    port: 8080
+  - name: greeter                                    # Required
+    port: 8080                                       # Required
+    cert:
+      ref: "local-test"                              # Optional, default: "", reference of cert entry declared above
     sw:
-      enabled: true
-      path: "sw"
-    enableCommonService: true
-    enableTV: true
-    loggingInterceptor:
-      enabled: true
-      enableLogging: true
-      enableMetrics: true
+      enabled: true                                  # Optional, default: false
+      path: "sw"                                     # Optional, default: "sw"
+      headers: ["sw:rk"]                             # Optional, default: []
+    commonService:
+      enabled: true                                  # Optional, default: false
+      pathPrefix: "/v1/rk/"                          # Optional, default: "/v1/rk/"
+    tv:
+      enabled:  true                                 # Optional, default: false
+      pathPrefix: "/v1/rk/"                          # Optional, default: "/v1/rk/"
+    prom:
+      enabled: true                                  # Optional, default: false
+      path: "metrics"                                # Optional, default: ""
+      cert:
+        ref: "local-test"                            # Optional, default: "", reference of cert entry declared above
+      pusher:
+        enabled: false                               # Optional, default: false
+        jobName: "greeter-pusher"                    # Required
+        remoteAddress: "localhost:9091"              # Required
+        basicAuth: "user:pass"                       # Optional, default: ""
+        intervalMS: 1000                             # Optional, default: 1000
+        cert:
+          ref: "local-test"                          # Optional, default: "", reference of cert entry declared above
+    logger:
+      zapLogger:
+        ref: zap-logger                              # Optional, default: logger of STDOUT, reference of logger entry declared above
+      eventLogger:
+        ref: event-logger                            # Optional, default: logger of STDOUT, reference of logger entry declared above
+    interceptors:
+      loggingZap:
+        enabled: true                                # Optional, default: false
+      metricsProm:
+        enabled: true                                # Optional, default: false
+      basicAuth:
+        enabled: true                                # Optional, default: false
+        credentials:
+          - "user:pass"                              # Optional, default: ""
 ```
 
 ```go
-package main
+func bootFromConfig() {
+	// Bootstrap basic entries from boot config.
+	rkentry.RegisterBasicEntriesFromConfig("example/boot/boot.yaml")
 
-import (
-	"github.com/rookie-ninja/rk-gin/boot"
-	"github.com/rookie-ninja/rk-logger"
-	"github.com/rookie-ninja/rk-query"
-)
+	// Bootstrap gin entry from boot config
+	res := rkgin.RegisterGinEntriesWithConfig("example/boot/boot.yaml")
 
-func main() {
-	fac := rk_query.NewEventFactory()
-	entries := rk_gin.NewGinEntries("example/boot/boot.yaml", fac, rk_logger.StdoutLogger)
-	entries["greeter"].Bootstrap(fac.CreateEvent())
+	// Bootstrap gin entry
+	go res["greeter"].Bootstrap(context.Background())
+
+	// Wait for shutdown signal
+	rkentry.GlobalAppCtx.WaitForShutdownSig()
+
+	// Interrupt gin entry
+	res["greeter"].Interrupt(context.Background())
 }
 ```
 
@@ -69,64 +102,67 @@ User can start multiple servers at the same time
 
 | name | description | type | default value |
 | ------ | ------ | ------ | ------ |
-| gin.name | name of gin server entry| string | unknown application |
-| gin.port | port of server | integer | nil, server won't start |
-| gin.tls.enabled | enable tls or not | boolean | false | 
-| gin.tls.user.enabled | enable user provided CA file? | boolean | false |
-| gin.tls.user.certFile | cert file path | string | empty string |
-| gin.tls.user.keyFile | key file path | string | empty string | 
-| gin.tls.auth.enabled | server will generate CA files | string | false |
-| gin.tls.auth.certOutput | cert file output path | string | current working directory | 
-| gin.sw.enabled | enable swagger | boolean | false | 
-| gin.sw.path | swagger path | string | / |
-| gin.sw.jsonPath | swagger json file path | string | / |
-| gin.sw.headers | headers will send with swagger response | array | empty array |
-| gin.enableCommonService | enable common service | boolean | false |
-| gin.enableTV | enable RK TV whose path is /v1/rk/tv | boolean | false |
-| gin.loggingInterceptor.enabled | enable logging interceptor | boolean | false |
-| gin.loggingInterceptor.enableLogging | enable logging for every request | boolean | false |
-| gin.loggingInterceptor.enableMetrics | enable prometheus metrics for every request | boolean | false |
-| gin.authInterceptor.enabled | enable auth interceptor | boolean | false |
-| gin.authInterceptor.realm | realm for basic auth interceptor | string | Authorization Required |
-| gin.authInterceptor.credentials | array of credentials such as "user:pass" | string array | empty array |
+| gin.name | Name of gin server entry | string | N/A |
+| gin.port | Port of server | integer | nil, server won't start |
+| gin.cert.ref | Reference of cert entry declared in cert section | string | "" |
+| gin.sw.enabled | Enable swagger | boolean | false | 
+| gin.sw.path | Swagger path | string | / |
+| gin.sw.jsonPath | Swagger json file path | string | / |
+| gin.sw.headers | Headers will send with swagger response | array | [] |
+| gin.commonService.enable | Enable common service | boolean | false |
+| gin.commonService.pathPrefix | Path prefix of common service | string | /v1/rk |
+| gin.tv.enable | Enable RK TV whose path is /v1/rk/tv | boolean | false |
+| gin.tv.pathPrefix | Path prefix of common service | string | /v1/rk |
+| gin.prom.enable | Enable prometheus | boolean | false |
+| gin.prom.path | Path of prometheus | string | metrics |
+| gin.prom.cert.ref |  Reference of cert entry declared in cert section | string | "" |
+| gin.prom.path | Path of prometheus | string | metrics |
+| gin.prom.pusher.enabled | Enable prometheus pusher | bool | false |
+| gin.prom.pusher.jobName | Job name would be attached as label while pushing to remote pushgateway | string | "" |
+| gin.prom.pusher.remoteAddress | Pushgateway address, could be form of http://x.x.x.x or x.x.x.x | string | "" |
+| gin.prom.pusher.basicAuth | Basic auth used to interact with remote pushgateway, form of \<user:pass\> | string | "" |
+| gin.prom.pusher.cert.ref | Reference of rkentry.CertEntry | string | "" |
+| gin.prom.cert.ref | Reference of rkentry.CertEntry | string | "" |
+| gin.logger.zapLogger.ref | Reference of logger entry declared above | string | "" |
+| gin.logger.eventLogger.ref | Reference of logger entry declared above | string | "" |
+| gin.interceptors.loggingZap.enabled | Enable logging interceptor | boolean | false |
+| gin.interceptors.metricsProm.enabled | Enable prometheus metrics for every request | boolean | false |
+| gin.interceptors.basicAuth.enabled | Enable auth interceptor | boolean | false |
+| gin.interceptors.basicAuth.credentials | Provide basic auth credentials, form of \<user:pass\> | string | false |
 
 Interceptors can be used with chain.
 
 ### Start Gin server from code
 
 ```go
-package main
+func bootFromCode() {
+	// Create event data
+	fac := rkquery.NewEventFactory()
 
-import (
-	"github.com/rookie-ninja/rk-gin/boot"
-	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
-	"github.com/rookie-ninja/rk-logger"
-	"github.com/rookie-ninja/rk-query"
-)
-
-func main() {
-	// create event data
-	fac := rk_query.NewEventFactory()
-
-	// create options for interceptor
-	opts := []rk_gin_log.Option{
-		rk_gin_log.WithEventFactory(fac),
-		rk_gin_log.WithLogger(rk_logger.StdoutLogger),
-		rk_gin_log.WithEnableLogging(true),
-		rk_gin_log.WithEnableMetrics(true),
+	// Create options for interceptor
+	opts := []rkginlog.Option{
+		rkginlog.WithEventFactory(fac),
+		rkginlog.WithLogger(rklogger.StdoutLogger),
 	}
 
-	// create gin entry
-	entry := rk_gin.NewGinEntry(
-		rk_gin.WithEventFactory(fac),
-		rk_gin.WithLogger(rk_logger.StdoutLogger),
-		rk_gin.WithPort(8080),
-		rk_gin.WithEnableCommonService(true),
-		rk_gin.WithEnableTV(true),
-		rk_gin.WithInterceptors(rk_gin_log.RkGinLog(opts...)))
+	// Create gin entry
+	entry := rkgin.RegisterGinEntry(
+		rkgin.WithNameGin("greeter"),
+		rkgin.WithZapLoggerEntryGin(rkentry.NoopZapLoggerEntry()),
+		rkgin.WithEventLoggerEntryGin(rkentry.NoopEventLoggerEntry()),
+		rkgin.WithPortGin(8080),
+		rkgin.WithCommonServiceEntryGin(rkgin.NewCommonServiceEntry()),
+		rkgin.WithTVEntryGin(rkgin.NewTVEntry()),
+		rkgin.WithInterceptorsGin(rkginlog.LoggingZapInterceptor(opts...)))
 
-	// start server
-	entry.Bootstrap(fac.CreateEvent())
+	// Start server
+	go entry.Bootstrap(context.Background())
+
+	// Wait for shutdown sig
+	rkentry.GlobalAppCtx.WaitForShutdownSig()
+
+	// Interrupt server
+	entry.Interrupt(context.Background())
 }
 ```
 
@@ -135,31 +171,24 @@ Logging interceptor uses [zap logger](https://github.com/uber-go/zap) and [rk-qu
 [rk-prom](https://github.com/rookie-ninja/rk-prom) also used for prometheus metrics.
 
 ```go
-package main
-
-import (
-	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
-	"github.com/rookie-ninja/rk-gin/interceptor/panic/zap"
-	"github.com/rookie-ninja/rk-logger"
-	"github.com/rookie-ninja/rk-query"
-	"net/http"
-)
-
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.New()
 	router.Use(
-		rk_gin_log.RkGinLog(
-			rk_gin_log.WithEventFactory(rk_query.NewEventFactory()),
-			rk_gin_log.WithLogger(rk_logger.StdoutLogger)))
+		rkginlog.LoggingZapInterceptor(
+			rkginlog.WithEventFactory(rkquery.NewEventFactory()),
+			rkginlog.WithLogger(rklogger.StdoutLogger)),
+		rkginauth.BasicAuthInterceptor(gin.Accounts{"user": "pass"}, "realm"),
+		rkginpanic.PanicInterceptor())
 
 	router.GET("/hello", func(ctx *gin.Context) {
-		ctx.String(http.StatusOK, "Hello world")
+		//ctx.String(http.StatusOK, "Hello world")
+		panic(errors.New(""))
 	})
 	router.Run(":8080")
 }
+
 ```
 
 Output: 
@@ -187,29 +216,20 @@ EOE
 
 ### Panic interceptor
 ```go
-package main
-
-import (
-	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
-	"github.com/rookie-ninja/rk-gin/interceptor/panic/zap"
-	"github.com/rookie-ninja/rk-logger"
-	"github.com/rookie-ninja/rk-query"
-	"net/http"
-)
-
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.New()
 	router.Use(
-		rk_gin_log.RkGinLog(
-			rk_gin_log.WithEventFactory(rk_query.NewEventFactory()),
-			rk_gin_log.WithLogger(rk_logger.StdoutLogger)),
-		rk_gin_panic.RkGinPanic())
+		rkginlog.LoggingZapInterceptor(
+			rkginlog.WithEventFactory(rkquery.NewEventFactory()),
+			rkginlog.WithLogger(rklogger.StdoutLogger)),
+		rkginauth.BasicAuthInterceptor(gin.Accounts{"user": "pass"}, "realm"),
+		rkginpanic.PanicInterceptor())
 
 	router.GET("/hello", func(ctx *gin.Context) {
-		ctx.String(http.StatusOK, "Hello world")
+		//ctx.String(http.StatusOK, "Hello world")
+		panic(errors.New(""))
 	})
 	router.Run(":8080")
 }
@@ -239,31 +259,20 @@ EOE
 
 ### Auth interceptor
 ```go
-package main
-
-import (
-	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-gin/interceptor/auth"
-	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
-	"github.com/rookie-ninja/rk-gin/interceptor/panic/zap"
-	"github.com/rookie-ninja/rk-logger"
-	"github.com/rookie-ninja/rk-query"
-	"net/http"
-)
-
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.New()
 	router.Use(
-		rk_gin_log.RkGinLog(
-			rk_gin_log.WithEventFactory(rk_query.NewEventFactory()),
-			rk_gin_log.WithLogger(rk_logger.StdoutLogger)),
-		rk_gin_auth.RkGinAuth(gin.Accounts{"user": "pass"}, "realm"),
-		rk_gin_panic.RkGinPanic())
+		rkginlog.LoggingZapInterceptor(
+			rkginlog.WithEventFactory(rkquery.NewEventFactory()),
+			rkginlog.WithLogger(rklogger.StdoutLogger)),
+		rkginauth.BasicAuthInterceptor(gin.Accounts{"user": "pass"}, "realm"),
+		rkginpanic.PanicInterceptor())
 
 	router.GET("/hello", func(ctx *gin.Context) {
-		ctx.String(http.StatusOK, "Hello world")
+		//ctx.String(http.StatusOK, "Hello world")
+		panic(errors.New(""))
 	})
 	router.Run(":8080")
 }
@@ -296,14 +305,14 @@ User can start multiple servers at the same time
 
 | path | description |
 | ------ | ------ |
-| /v1/rk/healthy | always return true if service is available |
-| /v1/rk/gc | trigger gc and return memory stats |
-| /v1/rk/info | return basic info |
-| /v1/rk/config | return configs in memory |
-| /v1/rk/apis | list all apis |
-| /v1/rk/sys | return system information including cpu and memory usage |
-| /v1/rk/req | return requests stats recorded by prometheus client |
-| /v1/rk/tv | web ui for metrics |
+| /v1/rk/healthy | Always return true if service is available |
+| /v1/rk/gc | Trigger gc and return memory stats |
+| /v1/rk/info | Return basic info |
+| /v1/rk/config | Return configs in memory |
+| /v1/rk/apis | List all apis |
+| /v1/rk/sys | Return system information including cpu and memory usage |
+| /v1/rk/req | Return requests stats recorded by prometheus client |
+| /v1/rk/tv | Web ui for metrics |
 
 ### Development Status: Stable
 
@@ -315,8 +324,6 @@ issues and pull requests, but you can also report any negative conduct to
 dongxuny@gmail.com. That email list is a private, safe space; even the zap
 maintainers don't have access, so don't hesitate to hold us to a high
 standard.
-
-<hr>
 
 Released under the [MIT License](LICENSE).
 

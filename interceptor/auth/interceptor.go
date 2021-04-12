@@ -2,15 +2,15 @@
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
-package rk_gin_auth
+package rkginauth
 
 import (
 	"github.com/gin-gonic/gin"
 )
 
-// RkGinAuthZap returns a gin.HandlerFunc (middleware)
+// BasicAuthInterceptor returns a gin.HandlerFunc (middleware)
 //
 // Use BasicAuthForRealm from gin by default
-func RkGinAuth(accounts gin.Accounts, realm string) gin.HandlerFunc {
+func BasicAuthInterceptor(accounts gin.Accounts, realm string) gin.HandlerFunc {
 	return gin.BasicAuthForRealm(accounts, realm)
 }

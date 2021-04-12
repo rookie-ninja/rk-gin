@@ -2,15 +2,25 @@
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
-package rk_gin_ctx
+package rkginctx
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	rk_gin_log "github.com/rookie-ninja/rk-gin/interceptor/log/zap"
+	"github.com/rookie-ninja/rk-common/common"
 	"github.com/rookie-ninja/rk-logger"
 	"github.com/rookie-ninja/rk-query"
 	"go.uber.org/zap"
+	"net"
+)
+
+var (
+	Realm         = zap.String("realm", rkcommon.GetEnvValueOrDefault("REALM", "unknown"))
+	Region        = zap.String("region", rkcommon.GetEnvValueOrDefault("REGION", "unknown"))
+	AZ            = zap.String("az", rkcommon.GetEnvValueOrDefault("AZ", "unknown"))
+	Domain        = zap.String("domain", rkcommon.GetEnvValueOrDefault("DOMAIN", "unknown"))
+	AppVersion    = zap.String("app_version", rkcommon.GetEnvValueOrDefault("APP_VERSION", "unknown"))
+	LocalIP       = zap.String("local_IP", rkcommon.GetLocalIP())
+	LocalHostname = zap.String("local_hostname", rkcommon.GetLocalHostname())
 )
 
 const (
@@ -18,11 +28,18 @@ const (
 	RequestIdKeyDash      = "request-id"
 	RequestIdKeyUnderline = "request_id"
 	RequestIdKeyDefault   = RequestIdKeyDash
+	RKEventKey            = "rk-event"
+	RKLoggerKey           = "rk-logger"
+	RKEntryNameKey        = "rk-gin-entry-name"
+	RKEntryDefaultName    = "entry"
 )
 
 // Add Key values to outgoing header
 // It should be used only for common usage
 func AddToOutgoingHeader(ctx *gin.Context, key string, values string) {
+	if ctx == nil || ctx.Writer == nil {
+		return
+	}
 	header := ctx.Writer.Header()
 	header.Add(key, values)
 }
@@ -31,7 +48,11 @@ func AddToOutgoingHeader(ctx *gin.Context, key string, values string) {
 //
 // The request id would be printed on server's query log and client's query log
 func AddRequestIdToOutgoingHeader(ctx *gin.Context) string {
-	requestId := GenerateRequestId()
+	if ctx == nil || ctx.Writer == nil {
+		return ""
+	}
+
+	requestId := rkcommon.GenerateRequestId()
 
 	if len(requestId) > 0 {
 		AddToOutgoingHeader(ctx, RequestIdKeyDefault, requestId)
@@ -41,20 +62,30 @@ func AddRequestIdToOutgoingHeader(ctx *gin.Context) string {
 }
 
 // Extract takes the call-scoped EventData from gin_zap middleware.
-func GetEvent(ctx *gin.Context) rk_query.Event {
-	event, ok := ctx.Get(rk_gin_log.RKEventKey)
-	if !ok {
-		return rk_query.NewEventFactory().CreateEventNoop()
+func GetEvent(ctx *gin.Context) rkquery.Event {
+	if ctx == nil {
+		return rkquery.NewEventFactory().CreateEventNoop()
 	}
 
-	return event.(rk_query.Event)
+	event, ok := ctx.Get(RKEventKey)
+
+	if !ok {
+		return rkquery.NewEventFactory().CreateEventNoop()
+	}
+
+	return event.(rkquery.Event)
 }
 
 // Extract takes the call-scoped zap logger from gin_zap middleware.
 func GetLogger(ctx *gin.Context) *zap.Logger {
-	logger, ok := ctx.Get(rk_gin_log.RKLoggerKey)
+	if ctx == nil {
+		return rklogger.NoopLogger
+	}
+
+	logger, ok := ctx.Get(RKLoggerKey)
+
 	if !ok {
-		return rk_logger.NoopLogger
+		return rklogger.NoopLogger
 	}
 
 	return logger.(*zap.Logger)
@@ -68,6 +99,10 @@ func GetLogger(ctx *gin.Context) *zap.Logger {
 //   requestid
 func GetRequestIdsFromOutgoingHeader(ctx *gin.Context) []string {
 	res := make([]string, 0)
+
+	if ctx == nil || ctx.Writer == nil {
+		return res
+	}
 
 	res = append(res, ctx.Writer.Header().Values(RequestIdKeyDash)...)
 	res = append(res, ctx.Writer.Header().Values(RequestIdKeyUnderline)...)
@@ -85,6 +120,10 @@ func GetRequestIdsFromOutgoingHeader(ctx *gin.Context) []string {
 func GetRequestIdsFromIncomingHeader(ctx *gin.Context) []string {
 	res := make([]string, 0)
 
+	if ctx == nil || ctx.Request == nil || ctx.Request.Header == nil {
+		return res
+	}
+
 	res = append(res, ctx.Request.Header.Values(RequestIdKeyDash)...)
 	res = append(res, ctx.Request.Header.Values(RequestIdKeyUnderline)...)
 	res = append(res, ctx.Request.Header.Values(RequestIdKeyLowerCase)...)
@@ -92,34 +131,45 @@ func GetRequestIdsFromIncomingHeader(ctx *gin.Context) []string {
 	return res
 }
 
-// Generate request id based on google/uuid
-// UUIDs are based on RFC 4122 and DCE 1.1: Authentication and Security Services.
-//
-// A UUID is a 16 byte (128 bit) array. UUIDs may be used as keys to maps or compared directly.
-func GenerateRequestId() string {
-	// Do not use uuid.New() since it would panic if any error occurs
-	requestId, err := uuid.NewRandom()
+// Get remote endpoint information set including IP, Port, NetworkType
+// We will do as best as we can to determine it
+// If fails, then just return default ones
+func GetRemoteAddressSet(ctx *gin.Context) []zap.Field {
+	remoteIP := "0.0.0.0"
+	remotePort := "0"
 
-	// Currently, we will return empty string if error occurs
-	if err != nil {
-		return ""
+	if ctx == nil || ctx.Request == nil {
+		return []zap.Field{
+			zap.String("remote_IP", remoteIP),
+			zap.String("remote_port", remotePort),
+		}
 	}
 
-	return requestId.String()
-}
-
-// Generate request id based on google/uuid
-// UUIDs are based on RFC 4122 and DCE 1.1: Authentication and Security Services.
-//
-// A UUID is a 16 byte (128 bit) array. UUIDs may be used as keys to maps or compared directly.
-func GenerateRequestIdWithPrefix(prefix string) string {
-	// Do not use uuid.New() since it would panic if any error occurs
-	requestId, err := uuid.NewRandom()
-
-	// Currently, we will return empty string if error occurs
-	if err != nil {
-		return ""
+	var err error
+	if remoteIP, remotePort, err = net.SplitHostPort(ctx.Request.RemoteAddr); err != nil {
+		return []zap.Field{
+			zap.String("remote_IP", "0.0.0.0"),
+			zap.String("remote_port", "0"),
+		}
 	}
 
-	return prefix + "-" + requestId.String()
+	forwardedRemoteIP := ctx.GetHeader("x-forwarded-for")
+
+	// Deal with forwarded remote ip
+	if len(forwardedRemoteIP) > 0 {
+		if forwardedRemoteIP == "::1" {
+			forwardedRemoteIP = "localhost"
+		}
+
+		remoteIP = forwardedRemoteIP
+	}
+
+	if remoteIP == "::1" {
+		remoteIP = "localhost"
+	}
+
+	return []zap.Field{
+		zap.String("remote_IP", remoteIP),
+		zap.String("remote_port", remotePort),
+	}
 }

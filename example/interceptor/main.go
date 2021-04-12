@@ -5,13 +5,13 @@
 package main
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-gin/interceptor/auth"
 	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
 	"github.com/rookie-ninja/rk-gin/interceptor/panic/zap"
 	"github.com/rookie-ninja/rk-logger"
 	"github.com/rookie-ninja/rk-query"
-	"net/http"
 )
 
 func main() {
@@ -19,14 +19,15 @@ func main() {
 
 	router := gin.New()
 	router.Use(
-		rk_gin_log.RkGinLog(
-			rk_gin_log.WithEventFactory(rk_query.NewEventFactory()),
-			rk_gin_log.WithLogger(rk_logger.StdoutLogger)),
-		rk_gin_auth.RkGinAuth(gin.Accounts{"user": "pass"}, "realm"),
-		rk_gin_panic.RkGinPanic())
+		rkginlog.LoggingZapInterceptor(
+			rkginlog.WithEventFactory(rkquery.NewEventFactory()),
+			rkginlog.WithLogger(rklogger.StdoutLogger)),
+		rkginauth.BasicAuthInterceptor(gin.Accounts{"user": "pass"}, "realm"),
+		rkginpanic.PanicInterceptor())
 
 	router.GET("/hello", func(ctx *gin.Context) {
-		ctx.String(http.StatusOK, "Hello world")
+		//ctx.String(http.StatusOK, "Hello world")
+		panic(errors.New(""))
 	})
 	router.Run(":8080")
 }

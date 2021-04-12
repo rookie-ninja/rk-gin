@@ -1,0 +1,109 @@
+package rkgin
+
+import (
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/rookie-ninja/rk-entry/entry"
+	"github.com/rookie-ninja/rk-prom"
+	"github.com/stretchr/testify/assert"
+	"testing"
+)
+
+func TestWithPortProm_HappyCase(t *testing.T) {
+	entry := NewPromEntry(WithPortProm(1949))
+
+	assert.Equal(t, uint64(1949), entry.Port)
+}
+
+func TestWithPathProm_HappyCase(t *testing.T) {
+	entry := NewPromEntry(WithPathProm("ut"))
+
+	assert.Equal(t, "/ut", entry.Path)
+}
+
+func TestWithZapLoggerEntryProm_HappyCase(t *testing.T) {
+	loggerEntry := rkentry.NoopZapLoggerEntry()
+
+	entry := NewPromEntry(WithZapLoggerEntryProm(loggerEntry))
+
+	assert.Equal(t, loggerEntry, entry.ZapLoggerEntry)
+}
+
+func TestWithEventLoggerEntryProm_HappyCase(t *testing.T) {
+	loggerEntry := rkentry.NoopEventLoggerEntry()
+
+	entry := NewPromEntry(WithEventLoggerEntryProm(loggerEntry))
+
+	assert.Equal(t, loggerEntry, entry.EventLoggerEntry)
+}
+
+func TestWithPusherProm_HappyCase(t *testing.T) {
+	pusher, _ := rkprom.NewPushGatewayPusher()
+
+	entry := NewPromEntry(WithPusherProm(pusher))
+
+	assert.Equal(t, pusher, entry.Pusher)
+}
+
+func TestWithCertStoreProm_HappyCase(t *testing.T) {
+	store := &rkentry.CertStore{}
+
+	entry := NewPromEntry(WithCertStoreProm(store))
+
+	assert.Equal(t, store, entry.CertStore)
+}
+
+func TestWithPromRegistryProm_HappyCase(t *testing.T) {
+	registry := prometheus.NewRegistry()
+
+	entry := NewPromEntry(WithPromRegistryProm(registry))
+
+	assert.Equal(t, registry, entry.Registry)
+}
+
+func TestNewPromEntry_HappyCase(t *testing.T) {
+	port := uint64(1949)
+	path := "/ut"
+	zapLoggerEntry := rkentry.NoopZapLoggerEntry()
+	eventLoggerEntry := rkentry.NoopEventLoggerEntry()
+	pusher, _ := rkprom.NewPushGatewayPusher()
+	store := &rkentry.CertStore{}
+	registry := prometheus.NewRegistry()
+
+	entry := NewPromEntry(
+		WithPortProm(port),
+		WithPathProm(path),
+		WithZapLoggerEntryProm(zapLoggerEntry),
+		WithEventLoggerEntryProm(eventLoggerEntry),
+		WithPusherProm(pusher),
+		WithCertStoreProm(store),
+		WithPromRegistryProm(registry))
+
+	assert.Equal(t, port, entry.Port)
+	assert.Equal(t, path, entry.Path)
+	assert.Equal(t, zapLoggerEntry, entry.ZapLoggerEntry)
+	assert.Equal(t, eventLoggerEntry, entry.EventLoggerEntry)
+	assert.Equal(t, pusher, entry.Pusher)
+	assert.Equal(t, store, entry.CertStore)
+	assert.Equal(t, registry, entry.Registry)
+}
+
+func TestPromEntry_GetName_HappyCase(t *testing.T) {
+	entry := NewPromEntry()
+	assert.Equal(t, "gin-prom", entry.GetName())
+}
+
+func TestPromEntry_GetType_HappyCase(t *testing.T) {
+	entry := NewPromEntry()
+	assert.Equal(t, "gin-prom", entry.GetType())
+}
+
+func TestPromEntry_String_HappyCase(t *testing.T) {
+	entry := NewPromEntry()
+
+	str := entry.String()
+
+	assert.Contains(t, str, "entry_name")
+	assert.Contains(t, str, "entry_type")
+	assert.Contains(t, str, "prom_path")
+	assert.Contains(t, str, "prom_port")
+}
