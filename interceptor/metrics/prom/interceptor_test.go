@@ -37,52 +37,62 @@ func TestMetricsInterceptor_HappyCase(t *testing.T) {
 }
 
 func TestDefaultMetricsVariables_HappyCase(t *testing.T) {
+	ctx := &gin.Context{
+		Keys: map[string]interface{}{
+			rkginctx.RKEntryNameKey: rkginctx.RKEntryNameValue,
+		},
+	}
+
 	MetricsPromInterceptor()
 
-	assert.NotNil(t, GetServerMetricsSet(rkginctx.RKEntryDefaultName))
-	assert.NotEmpty(t, GetServerMetricsSet(rkginctx.RKEntryDefaultName))
+	assert.NotNil(t, GetServerMetricsSet(ctx))
+	assert.NotEmpty(t, GetServerMetricsSet(ctx))
 
 	// server metrics
-	assert.Equal(t, "rkapp", GetServerMetricsSet(rkginctx.RKEntryDefaultName).GetNamespace())
-	assert.Equal(t, "entry", GetServerMetricsSet(rkginctx.RKEntryDefaultName).GetSubSystem())
+	assert.Equal(t, rkentry.AppNameDefault, GetServerMetricsSet(ctx).GetNamespace())
+	assert.Equal(t, rkginctx.RKEntryNameValue, GetServerMetricsSet(ctx).GetSubSystem())
 
 	// default labels
+	assert.Contains(t, DefaultLabelKeys, "entryName")
+	assert.Contains(t, DefaultLabelKeys, "entryType")
 	assert.Contains(t, DefaultLabelKeys, "realm")
 	assert.Contains(t, DefaultLabelKeys, "region")
 	assert.Contains(t, DefaultLabelKeys, "az")
 	assert.Contains(t, DefaultLabelKeys, "domain")
-	assert.Contains(t, DefaultLabelKeys, "app_version")
-	assert.Contains(t, DefaultLabelKeys, "app_name")
+	assert.Contains(t, DefaultLabelKeys, "appVersion")
+	assert.Contains(t, DefaultLabelKeys, "appName")
 	assert.Contains(t, DefaultLabelKeys, "method")
 	assert.Contains(t, DefaultLabelKeys, "path")
-	assert.Contains(t, DefaultLabelKeys, "res_code")
+	assert.Contains(t, DefaultLabelKeys, "type")
+	assert.Contains(t, DefaultLabelKeys, "resCode")
 
 	// unregister metrics
 	clearAllMetrics()
 }
 
 func TestInitMetrics_HappyCase(t *testing.T) {
-	defaultOptions := &options{
-		entryName: rkginctx.RKEntryDefaultName,
-		metricsSet: rkprom.NewMetricsSet(
+	set := &optionSet{
+		EntryName: rkginctx.RKEntryNameValue,
+		EntryType: "gin",
+		MetricsSet: rkprom.NewMetricsSet(
 			rkentry.GlobalAppCtx.GetAppInfoEntry().AppName,
-			rkginctx.RKEntryDefaultName,
+			rkginctx.RKEntryNameValue,
 			prometheus.DefaultRegisterer),
 	}
 
-	initMetrics(defaultOptions)
+	initMetrics(set)
 
 	// metrics
-	assert.Equal(t, rkentry.GlobalAppCtx.GetAppInfoEntry().AppName, defaultOptions.metricsSet.GetNamespace())
-	assert.Equal(t, defaultOptions.entryName, defaultOptions.metricsSet.GetSubSystem())
-	assert.NotNil(t, defaultOptions.metricsSet.GetCounter(Errors))
-	assert.NotNil(t, defaultOptions.metricsSet.GetCounter(ResCode))
-	assert.NotNil(t, defaultOptions.metricsSet.GetSummary(ElapsedNano))
+	assert.Equal(t, rkentry.GlobalAppCtx.GetAppInfoEntry().AppName, set.MetricsSet.GetNamespace())
+	assert.Equal(t, set.EntryName, set.MetricsSet.GetSubSystem())
+	assert.NotNil(t, set.MetricsSet.GetCounter(Errors))
+	assert.NotNil(t, set.MetricsSet.GetCounter(ResCode))
+	assert.NotNil(t, set.MetricsSet.GetSummary(ElapsedNano))
 
 	// unregister metrics
-	defaultOptions.metricsSet.UnRegisterCounter(Errors)
-	defaultOptions.metricsSet.UnRegisterCounter(ResCode)
-	defaultOptions.metricsSet.UnRegisterSummary(ElapsedNano)
+	set.MetricsSet.UnRegisterCounter(Errors)
+	set.MetricsSet.UnRegisterCounter(ResCode)
+	set.MetricsSet.UnRegisterSummary(ElapsedNano)
 }
 
 func TestGetServerDurationMetrics_WithNilContext(t *testing.T) {
@@ -96,7 +106,7 @@ func TestGetServerDurationMetrics_WithNilURL(t *testing.T) {
 	ctx := &gin.Context{
 		Request: &http.Request{},
 		Keys: map[string]interface{}{
-			rkginctx.RKEntryNameKey: rkginctx.RKEntryDefaultName,
+			rkginctx.RKEntryNameKey: rkginctx.RKEntryNameValue,
 		},
 	}
 
@@ -114,7 +124,7 @@ func TestGetServerDurationMetrics_WithNilWriter(t *testing.T) {
 		Request: &http.Request{},
 		Writer:  nil,
 		Keys: map[string]interface{}{
-			rkginctx.RKEntryNameKey: rkginctx.RKEntryDefaultName,
+			rkginctx.RKEntryNameKey: rkginctx.RKEntryNameValue,
 		},
 	}
 
@@ -133,7 +143,7 @@ func TestGetServerDurationMetrics_HappyCase(t *testing.T) {
 		URL: &url.URL{},
 	}
 
-	ctx.Set(rkginctx.RKEntryNameKey, rkginctx.RKEntryDefaultName)
+	ctx.Set(rkginctx.RKEntryNameKey, rkginctx.RKEntryNameValue)
 
 	// init prom interceptor
 	MetricsPromInterceptor()
@@ -151,7 +161,7 @@ func TestGetServerErrorMetrics_WithNilContext(t *testing.T) {
 func TestGetServerErrorMetrics_WithNilRequest(t *testing.T) {
 	ctx := &gin.Context{
 		Keys: map[string]interface{}{
-			rkginctx.RKEntryNameKey: rkginctx.RKEntryDefaultName,
+			rkginctx.RKEntryNameKey: rkginctx.RKEntryNameValue,
 		},
 	}
 
@@ -168,7 +178,7 @@ func TestGetServerErrorMetrics_WithNilURL(t *testing.T) {
 	ctx := &gin.Context{
 		Request: &http.Request{},
 		Keys: map[string]interface{}{
-			rkginctx.RKEntryNameKey: rkginctx.RKEntryDefaultName,
+			rkginctx.RKEntryNameKey: rkginctx.RKEntryNameValue,
 		},
 	}
 
@@ -186,7 +196,7 @@ func TestGetServerErrorMetrics_WithNilWriter(t *testing.T) {
 		Request: &http.Request{},
 		Writer:  nil,
 		Keys: map[string]interface{}{
-			rkginctx.RKEntryNameKey: rkginctx.RKEntryDefaultName,
+			rkginctx.RKEntryNameKey: rkginctx.RKEntryNameValue,
 		},
 	}
 
@@ -205,7 +215,7 @@ func TestGetServerErrorMetrics_HappyCase(t *testing.T) {
 		URL: &url.URL{},
 	}
 
-	ctx.Set(rkginctx.RKEntryNameKey, rkginctx.RKEntryDefaultName)
+	ctx.Set(rkginctx.RKEntryNameKey, rkginctx.RKEntryNameValue)
 
 	// init prom interceptor
 	MetricsPromInterceptor()
@@ -223,7 +233,7 @@ func TestGetServerResCodeMetrics_WithNilContext(t *testing.T) {
 func TestGetServerResCodeMetrics_WithNilRequest(t *testing.T) {
 	ctx := &gin.Context{
 		Keys: map[string]interface{}{
-			rkginctx.RKEntryNameKey: rkginctx.RKEntryDefaultName,
+			rkginctx.RKEntryNameKey: rkginctx.RKEntryNameValue,
 		},
 	}
 
@@ -240,7 +250,7 @@ func TestGetServerResCodeMetrics_WithNilURL(t *testing.T) {
 	ctx := &gin.Context{
 		Request: &http.Request{},
 		Keys: map[string]interface{}{
-			rkginctx.RKEntryNameKey: rkginctx.RKEntryDefaultName,
+			rkginctx.RKEntryNameKey: rkginctx.RKEntryNameValue,
 		},
 	}
 
@@ -258,7 +268,7 @@ func TestGetServerResCodeMetrics_WithNilWriter(t *testing.T) {
 		Request: &http.Request{},
 		Writer:  nil,
 		Keys: map[string]interface{}{
-			rkginctx.RKEntryNameKey: rkginctx.RKEntryDefaultName,
+			rkginctx.RKEntryNameKey: rkginctx.RKEntryNameValue,
 		},
 	}
 
@@ -277,7 +287,7 @@ func TestGetServerResCodeMetrics_HappyCase(t *testing.T) {
 		URL: &url.URL{},
 	}
 
-	ctx.Set(rkginctx.RKEntryNameKey, rkginctx.RKEntryDefaultName)
+	ctx.Set(rkginctx.RKEntryNameKey, rkginctx.RKEntryNameValue)
 
 	// init prom interceptor
 	MetricsPromInterceptor()
@@ -289,30 +299,28 @@ func TestGetServerResCodeMetrics_HappyCase(t *testing.T) {
 }
 
 func TestGetValuesFromContext_WithNilContext(t *testing.T) {
-	values := getValuesFromContext(nil)
+	values := getValues(nil)
 	assert.Len(t, values, len(DefaultLabelKeys))
 	assert.Contains(t, values, rkginctx.Realm.String)
 	assert.Contains(t, values, rkginctx.Region.String)
 	assert.Contains(t, values, rkginctx.AZ.String)
 	assert.Contains(t, values, rkginctx.Domain.String)
-	assert.Contains(t, values, rkginctx.AppVersion.String)
+	assert.Contains(t, values, rkentry.GlobalAppCtx.GetAppInfoEntry().Version)
 	assert.Contains(t, values, rkentry.GlobalAppCtx.GetAppInfoEntry().AppName)
-	assert.Contains(t, values, null)
-	assert.Contains(t, values, null)
+	assert.Contains(t, values, unknown)
 }
 
 func TestGetValuesFromContext_WithNilRequest(t *testing.T) {
 	ctx := &gin.Context{}
-	values := getValuesFromContext(ctx)
+	values := getValues(ctx)
 	assert.Len(t, values, len(DefaultLabelKeys))
 	assert.Contains(t, values, rkginctx.Realm.String)
 	assert.Contains(t, values, rkginctx.Region.String)
 	assert.Contains(t, values, rkginctx.AZ.String)
 	assert.Contains(t, values, rkginctx.Domain.String)
-	assert.Contains(t, values, rkginctx.AppVersion.String)
+	assert.Contains(t, values, rkentry.GlobalAppCtx.GetAppInfoEntry().Version)
 	assert.Contains(t, values, rkentry.GlobalAppCtx.GetAppInfoEntry().AppName)
-	assert.Contains(t, values, null)
-	assert.Contains(t, values, null)
+	assert.Contains(t, values, unknown)
 }
 
 func TestGetValuesFromContext_WithNilURL(t *testing.T) {
@@ -321,17 +329,16 @@ func TestGetValuesFromContext_WithNilURL(t *testing.T) {
 			Method: "unit-test-method",
 		},
 	}
-	values := getValuesFromContext(ctx)
+	values := getValues(ctx)
 	assert.Len(t, values, len(DefaultLabelKeys))
 	assert.Contains(t, values, rkginctx.Realm.String)
 	assert.Contains(t, values, rkginctx.Region.String)
 	assert.Contains(t, values, rkginctx.AZ.String)
 	assert.Contains(t, values, rkginctx.Domain.String)
-	assert.Contains(t, values, rkginctx.AppVersion.String)
+	assert.Contains(t, values, rkentry.GlobalAppCtx.GetAppInfoEntry().Version)
 	assert.Contains(t, values, rkentry.GlobalAppCtx.GetAppInfoEntry().AppName)
 	assert.Contains(t, values, "unit-test-method")
-	assert.Contains(t, values, null)
-	assert.Contains(t, values, null)
+	assert.Contains(t, values, unknown)
 }
 
 func TestGetValuesFromContext_WithNilWriter(t *testing.T) {
@@ -343,17 +350,17 @@ func TestGetValuesFromContext_WithNilWriter(t *testing.T) {
 			},
 		},
 	}
-	values := getValuesFromContext(ctx)
+	values := getValues(ctx)
 	assert.Len(t, values, len(DefaultLabelKeys))
 	assert.Contains(t, values, rkginctx.Realm.String)
 	assert.Contains(t, values, rkginctx.Region.String)
 	assert.Contains(t, values, rkginctx.AZ.String)
 	assert.Contains(t, values, rkginctx.Domain.String)
-	assert.Contains(t, values, rkginctx.AppVersion.String)
+	assert.Contains(t, values, rkentry.GlobalAppCtx.GetAppInfoEntry().Version)
 	assert.Contains(t, values, rkentry.GlobalAppCtx.GetAppInfoEntry().AppName)
 	assert.Contains(t, values, "unit-test-method")
 	assert.Contains(t, values, "unit-test-path")
-	assert.Contains(t, values, null)
+	assert.Contains(t, values, unknown)
 }
 
 func TestGetValuesFromContext_HappyCase(t *testing.T) {
@@ -365,13 +372,13 @@ func TestGetValuesFromContext_HappyCase(t *testing.T) {
 		},
 	}
 
-	values := getValuesFromContext(ctx)
+	values := getValues(ctx)
 	assert.Len(t, values, len(DefaultLabelKeys))
 	assert.Contains(t, values, rkginctx.Realm.String)
 	assert.Contains(t, values, rkginctx.Region.String)
 	assert.Contains(t, values, rkginctx.AZ.String)
 	assert.Contains(t, values, rkginctx.Domain.String)
-	assert.Contains(t, values, rkginctx.AppVersion.String)
+	assert.Contains(t, values, rkentry.GlobalAppCtx.GetAppInfoEntry().Version)
 	assert.Contains(t, values, rkentry.GlobalAppCtx.GetAppInfoEntry().AppName)
 	assert.Contains(t, values, "unit-test-method")
 	assert.Contains(t, values, "unit-test-path")

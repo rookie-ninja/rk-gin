@@ -1,5 +1,5 @@
 .PHONY: all
-all: test lint readme fmt
+all: test lint readme fmt swag pkger
 
 .PHONY: lint
 lint:
@@ -20,3 +20,17 @@ fmt:
 readme:
 	@echo "running doctoc..."
 	@doctoc . 2>&1
+
+.PHONY: swag
+readme:
+	@echo "running swag..."
+	@swag init --generalInfo boot/common_service_entry.go --output boot/assets/sw/config --parseDependency 2 --propertyStrategy camelcase
+
+.PHONY: pkger
+readme:
+	@echo "running pkger..."
+	@pkger -o boot/assets
+
+
+
+

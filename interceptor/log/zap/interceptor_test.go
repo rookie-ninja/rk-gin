@@ -3,7 +3,6 @@ package rkginlog
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-common/common"
-	rkentry "github.com/rookie-ninja/rk-entry/entry"
 	"github.com/rookie-ninja/rk-gin/interceptor/context"
 	"github.com/rookie-ninja/rk-logger"
 	"github.com/rookie-ninja/rk-query"
@@ -16,8 +15,15 @@ import (
 	"testing"
 )
 
+func init() {
+	gin.SetMode(gin.ReleaseMode)
+}
+
 func TestLoggingInterceptor_HappyCase(t *testing.T) {
-	handler := LoggingZapInterceptor()
+	handler := LoggingZapInterceptor(
+		WithEventFactory(
+			rkquery.NewEventFactory(
+				rkquery.WithLogger(rklogger.NoopLogger))))
 
 	ctx, _ := gin.CreateTestContext(&httptest.TestResponseWriter{})
 	ctx.Request = &http.Request{
@@ -56,9 +62,7 @@ func TestDefaultVariables_HappyCase(t *testing.T) {
 	assert.Equal(t, unknown, rkginctx.Region.String)
 	assert.Equal(t, unknown, rkginctx.AZ.String)
 	assert.Equal(t, unknown, rkginctx.Domain.String)
-	assert.Equal(t, unknown, rkginctx.AppVersion.String)
-	assert.Equal(t, rkentry.GlobalAppCtx.GetAppInfoEntry().AppName, rkentry.AppNameDefault)
-	assert.NotEmpty(t, rkginctx.LocalIP.String)
+	assert.NotEmpty(t, rkginctx.LocalIp.String)
 	assert.NotEmpty(t, rkginctx.LocalHostname.String)
 }
 
@@ -145,46 +149,46 @@ func TestGetRemoteAddressSet_WithForwardedSpecialIP(t *testing.T) {
 
 func TestWithEventFactory_WithNilFactory(t *testing.T) {
 	Opt := WithEventFactory(nil)
-	defaultOptions := &options{
-		eventFactory: rkquery.NewEventFactory(),
-		logger:       rklogger.StdoutLogger,
+	set := &optionSet{
+		EventFactory: rkquery.NewEventFactory(),
+		Logger:       rklogger.StdoutLogger,
 	}
-	Opt(defaultOptions)
+	Opt(set)
 
-	assert.NotNil(t, defaultOptions.eventFactory)
+	assert.NotNil(t, set.EventFactory)
 }
 
 func TestWithEventFactory_HappyCase(t *testing.T) {
 	factory := rkquery.NewEventFactory()
 	Opt := WithEventFactory(factory)
-	defaultOptions := &options{
-		eventFactory: rkquery.NewEventFactory(),
-		logger:       rklogger.StdoutLogger,
+	set := &optionSet{
+		EventFactory: rkquery.NewEventFactory(),
+		Logger:       rklogger.StdoutLogger,
 	}
-	Opt(defaultOptions)
+	Opt(set)
 
-	assert.Equal(t, factory, defaultOptions.eventFactory)
+	assert.Equal(t, factory, set.EventFactory)
 }
 
 func TestWithLogger_WithNilFactory(t *testing.T) {
 	Opt := WithLogger(nil)
-	defaultOptions := &options{
-		eventFactory: rkquery.NewEventFactory(),
-		logger:       rklogger.StdoutLogger,
+	set := &optionSet{
+		EventFactory: rkquery.NewEventFactory(),
+		Logger:       rklogger.StdoutLogger,
 	}
-	Opt(defaultOptions)
+	Opt(set)
 
-	assert.NotNil(t, defaultOptions.logger)
+	assert.NotNil(t, set.Logger)
 }
 
 func TestWithLogger_HappyCase(t *testing.T) {
 	logger := rklogger.NoopLogger
 	Opt := WithLogger(logger)
-	defaultOptions := &options{
-		eventFactory: rkquery.NewEventFactory(),
-		logger:       rklogger.StdoutLogger,
+	set := &optionSet{
+		EventFactory: rkquery.NewEventFactory(),
+		Logger:       rklogger.StdoutLogger,
 	}
-	Opt(defaultOptions)
+	Opt(set)
 
-	assert.Equal(t, logger, defaultOptions.logger)
+	assert.Equal(t, logger, set.Logger)
 }

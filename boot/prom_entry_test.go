@@ -89,12 +89,12 @@ func TestNewPromEntry_HappyCase(t *testing.T) {
 
 func TestPromEntry_GetName_HappyCase(t *testing.T) {
 	entry := NewPromEntry()
-	assert.Equal(t, "gin-prom", entry.GetName())
+	assert.Equal(t, "GinPromDefault", entry.GetName())
 }
 
 func TestPromEntry_GetType_HappyCase(t *testing.T) {
 	entry := NewPromEntry()
-	assert.Equal(t, "gin-prom", entry.GetType())
+	assert.Equal(t, "GinPromEntry", entry.GetType())
 }
 
 func TestPromEntry_String_HappyCase(t *testing.T) {
@@ -102,8 +102,9 @@ func TestPromEntry_String_HappyCase(t *testing.T) {
 
 	str := entry.String()
 
-	assert.Contains(t, str, "entry_name")
-	assert.Contains(t, str, "entry_type")
-	assert.Contains(t, str, "prom_path")
-	assert.Contains(t, str, "prom_port")
+	assert.Contains(t, str, "entryName")
+	assert.Contains(t, str, "entryType")
+	assert.Contains(t, str, "entryDescription")
+	assert.Contains(t, str, "path")
+	assert.Contains(t, str, "port")
 }

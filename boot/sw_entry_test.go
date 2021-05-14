@@ -6,7 +6,7 @@ import (
 )
 
 func TestWithPath_HappyCase(t *testing.T) {
-	entry := NewSWEntry(WithPathSW("ut-path"))
+	entry := NewSwEntry(WithPathSw("ut-path"))
 	assert.Equal(t, "/ut-path/", entry.Path)
 }
 
@@ -14,6 +14,6 @@ func TestWithHeaders_HappyCase(t *testing.T) {
 	headers := map[string]string{
 		"key": "value",
 	}
-	entry := NewSWEntry(WithHeadersSW(headers))
+	entry := NewSwEntry(WithHeadersSw(headers))
 	assert.Len(t, entry.Headers, 1)
 }

@@ -137,7 +137,7 @@ func TestWithInterceptorsGin_HappyCase(t *testing.T) {
 	assert.NotNil(t, entry.Interceptors)
 	// should contains logging, metrics and panic interceptor
 	// where panic interceptor is inject by default
-	assert.Len(t, entry.Interceptors, 3)
+	assert.Len(t, entry.Interceptors, 4)
 }
 
 func TestWithCommonServiceEntryGin_WithEntry(t *testing.T) {
@@ -158,36 +158,36 @@ func TestWithCommonServiceEntryGin_WithoutEntry(t *testing.T) {
 func TestWithTVEntryGin_WithEntry(t *testing.T) {
 	entry := RegisterGinEntry()
 
-	option := WithTVEntryGin(NewTVEntry())
+	option := WithTVEntryGin(NewTvEntry())
 	option(entry)
 
-	assert.NotNil(t, entry.TVEntry)
+	assert.NotNil(t, entry.TvEntry)
 }
 
 func TestWithTVEntry_WithoutEntry(t *testing.T) {
 	entry := RegisterGinEntry()
 
-	assert.Nil(t, entry.TVEntry)
+	assert.Nil(t, entry.TvEntry)
 }
 
-func TestWithCertStoreGin_HappyCase(t *testing.T) {
+func TestWithCertEntryGin_HappyCase(t *testing.T) {
 	entry := RegisterGinEntry()
-	certStore := &rkentry.CertStore{}
+	certEntry := &rkentry.CertEntry{}
 
-	option := WithCertStoreGin(certStore)
+	option := WithCertEntryGin(certEntry)
 	option(entry)
 
-	assert.Equal(t, entry.CertStore, certStore)
+	assert.Equal(t, entry.CertEntry, certEntry)
 }
 
 func TestWithSWEntryGin_HappyCase(t *testing.T) {
 	entry := RegisterGinEntry()
-	sw := NewSWEntry()
+	sw := NewSwEntry()
 
-	option := WithSWEntryGin(sw)
+	option := WithSwEntryGin(sw)
 	option(entry)
 
-	assert.Equal(t, entry.SWEntry, sw)
+	assert.Equal(t, entry.SwEntry, sw)
 }
 
 func TestWithPortGin_HappyCase(t *testing.T) {
@@ -207,7 +207,7 @@ func TestWithNameGin_HappyCase(t *testing.T) {
 	option := WithNameGin(name)
 	option(entry)
 
-	assert.Equal(t, entry.entryName, name)
+	assert.Equal(t, entry.EntryName, name)
 }
 
 func TestRegisterGinEntriesWithConfig_WithInvalidConfigFilePath(t *testing.T) {
@@ -265,20 +265,20 @@ func TestRegisterGinEntriesWithConfig_HappyCase(t *testing.T) {
 	greeter := entries["greeter"].(*GinEntry)
 	assert.NotNil(t, greeter)
 	assert.Equal(t, uint64(1949), greeter.Port)
-	assert.NotNil(t, greeter.SWEntry)
+	assert.NotNil(t, greeter.SwEntry)
 	assert.NotNil(t, greeter.CommonServiceEntry)
-	assert.NotNil(t, greeter.TVEntry)
+	assert.NotNil(t, greeter.TvEntry)
 	// logging, metrics, auth and panic interceptor should be included
-	assert.Len(t, greeter.Interceptors, 4)
+	assert.Len(t, greeter.Interceptors, 5)
 
 	greeter2 := entries["greeter2"].(*GinEntry)
 	assert.NotNil(t, greeter2)
 	assert.Equal(t, uint64(2008), greeter2.Port)
-	assert.NotNil(t, greeter2.SWEntry)
+	assert.NotNil(t, greeter2.SwEntry)
 	assert.NotNil(t, greeter2.CommonServiceEntry)
-	assert.NotNil(t, greeter2.TVEntry)
+	assert.NotNil(t, greeter2.TvEntry)
 	// logging, metrics, auth and panic interceptor should be included
-	assert.Len(t, greeter2.Interceptors, 4)
+	assert.Len(t, greeter2.Interceptors, 5)
 }
 
 func TestRegisterGinEntry_WithZapLoggerEntry(t *testing.T) {
@@ -297,7 +297,7 @@ func TestRegisterGinEntry_WithEventLoggerEntry(t *testing.T) {
 func TestNewGinEntry_WithInterceptors(t *testing.T) {
 	loggingInterceptor := rkginlog.LoggingZapInterceptor()
 	entry := RegisterGinEntry(WithInterceptorsGin(loggingInterceptor))
-	assert.Len(t, entry.Interceptors, 2)
+	assert.Len(t, entry.Interceptors, 3)
 }
 
 func TestNewGinEntry_WithCommonServiceEntry(t *testing.T) {
@@ -306,22 +306,21 @@ func TestNewGinEntry_WithCommonServiceEntry(t *testing.T) {
 }
 
 func TestNewGinEntry_WithTVEntry(t *testing.T) {
-	entry := RegisterGinEntry(WithTVEntryGin(NewTVEntry()))
-	assert.NotNil(t, entry.TVEntry)
+	entry := RegisterGinEntry(WithTVEntryGin(NewTvEntry()))
+	assert.NotNil(t, entry.TvEntry)
 }
 
 func TestNewGinEntry_WithCertStore(t *testing.T) {
-	//tls := NewTLSEntry()
-	certStore := &rkentry.CertStore{}
+	certEntry := &rkentry.CertEntry{}
 
-	entry := RegisterGinEntry(WithCertStoreGin(certStore))
-	assert.Equal(t, certStore, entry.CertStore)
+	entry := RegisterGinEntry(WithCertEntryGin(certEntry))
+	assert.Equal(t, certEntry, entry.CertEntry)
 }
 
 func TestNewGinEntry_WithSWEntry(t *testing.T) {
-	sw := NewSWEntry()
-	entry := RegisterGinEntry(WithSWEntryGin(sw))
-	assert.Equal(t, sw, entry.SWEntry)
+	sw := NewSwEntry()
+	entry := RegisterGinEntry(WithSwEntryGin(sw))
+	assert.Equal(t, sw, entry.SwEntry)
 }
 
 func TestNewGinEntry_WithPort(t *testing.T) {
@@ -336,18 +335,18 @@ func TestNewGinEntry_WithName(t *testing.T) {
 
 func TestNewGinEntry_WithDefaultValue(t *testing.T) {
 	entry := RegisterGinEntry()
-	assert.True(t, strings.HasPrefix(entry.GetName(), "gin-server-"))
+	assert.True(t, strings.HasPrefix(entry.GetName(), "GinServer-"))
 	assert.NotNil(t, entry.ZapLoggerEntry)
 	assert.NotNil(t, entry.EventLoggerEntry)
-	assert.Len(t, entry.Interceptors, 1)
+	assert.Len(t, entry.Interceptors, 2)
 	assert.NotNil(t, entry.Router)
-	assert.Nil(t, entry.SWEntry)
-	assert.Nil(t, entry.CertStore)
-	assert.False(t, entry.IsSWEnabled())
-	assert.False(t, entry.IsTLSEnabled())
+	assert.Nil(t, entry.SwEntry)
+	assert.Nil(t, entry.CertEntry)
+	assert.False(t, entry.IsSwEnabled())
+	assert.False(t, entry.IsTlsEnabled())
 	assert.Nil(t, entry.CommonServiceEntry)
-	assert.Nil(t, entry.TVEntry)
-	assert.Equal(t, "gin", entry.GetType())
+	assert.Nil(t, entry.TvEntry)
+	assert.Equal(t, "GinEntry", entry.GetType())
 }
 
 func TestGinEntry_GetName_HappyCase(t *testing.T) {
@@ -356,7 +355,7 @@ func TestGinEntry_GetName_HappyCase(t *testing.T) {
 }
 
 func TestGinEntry_GetType_HappyCase(t *testing.T) {
-	assert.Equal(t, "gin", RegisterGinEntry().GetType())
+	assert.Equal(t, "GinEntry", RegisterGinEntry().GetType())
 }
 
 func TestGinEntry_String_HappyCase(t *testing.T) {
@@ -364,26 +363,28 @@ func TestGinEntry_String_HappyCase(t *testing.T) {
 }
 
 func TestGinEntry_IsSWEnabled_ExpectTrue(t *testing.T) {
-	sw := NewSWEntry()
-	entry := RegisterGinEntry(WithSWEntryGin(sw))
-	assert.True(t, entry.IsSWEnabled())
+	sw := NewSwEntry()
+	entry := RegisterGinEntry(WithSwEntryGin(sw))
+	assert.True(t, entry.IsSwEnabled())
 }
 
 func TestGinEntry_IsSWEnabled_ExpectFalse(t *testing.T) {
 	entry := RegisterGinEntry()
-	assert.False(t, entry.IsSWEnabled())
+	assert.False(t, entry.IsSwEnabled())
 }
 
 func TestGinEntry_IsTLSEnabled_ExpectTrue(t *testing.T) {
-	certStore := &rkentry.CertStore{}
+	certEntry := &rkentry.CertEntry{
+		Store: &rkentry.CertStore{},
+	}
 
-	entry := RegisterGinEntry(WithCertStoreGin(certStore))
-	assert.True(t, entry.IsTLSEnabled())
+	entry := RegisterGinEntry(WithCertEntryGin(certEntry))
+	assert.True(t, entry.IsTlsEnabled())
 }
 
 func TestGinEntry_IsTLSEnabled_ExpectFalse(t *testing.T) {
 	entry := RegisterGinEntry()
-	assert.False(t, entry.IsTLSEnabled())
+	assert.False(t, entry.IsTlsEnabled())
 }
 
 func TestGinEntry_GetServer_HappyCase(t *testing.T) {
@@ -422,17 +423,20 @@ func TestGinEntry_RegisterInterceptor_HappyCase(t *testing.T) {
 	entry := RegisterGinEntry()
 	loggingInterceptor := rkginlog.LoggingZapInterceptor()
 	entry.RegisterInterceptor(loggingInterceptor)
-	assert.Len(t, entry.Interceptors, 2)
+	assert.Len(t, entry.Interceptors, 3)
 }
 
 func TestGinEntry_Bootstrap_WithSwagger(t *testing.T) {
-	sw := NewSWEntry(WithPathSW("sw"))
+	sw := NewSwEntry(
+		WithPathSw("sw"),
+		WithZapLoggerEntrySw(rkentry.NoopZapLoggerEntry()),
+		WithEventLoggerEntrySw(rkentry.NoopEventLoggerEntry()))
 	entry := RegisterGinEntry(
 		WithNameGin("unit-test-entry"),
 		WithPortGin(8080),
 		WithZapLoggerEntryGin(rkentry.NoopZapLoggerEntry()),
 		WithEventLoggerEntryGin(rkentry.NoopEventLoggerEntry()),
-		WithSWEntryGin(sw))
+		WithSwEntryGin(sw))
 
 	go entry.Bootstrap(context.Background())
 	time.Sleep(time.Second)
@@ -458,26 +462,6 @@ func TestGinEntry_Bootstrap_WithoutSwagger(t *testing.T) {
 
 	entry.Interrupt(context.Background())
 	time.Sleep(time.Second)
-}
-
-func TestGinEntry_Bootstrap_WithCertStore(t *testing.T) {
-	certStore := &rkentry.CertStore{
-		ServerCert: []byte(serverCert),
-		ServerKey:  []byte(serverKey),
-	}
-
-	entry := RegisterGinEntry(
-		WithNameGin("unit-test-entry"),
-		WithPortGin(8080),
-		WithZapLoggerEntryGin(rkentry.NoopZapLoggerEntry()),
-		WithEventLoggerEntryGin(rkentry.NoopEventLoggerEntry()),
-		WithCertStoreGin(certStore))
-
-	go entry.Bootstrap(context.Background())
-	time.Sleep(time.Second)
-	// endpoint should be accessible with 8080 port
-	validateServerIsUp(t, entry.Port)
-	entry.Interrupt(context.Background())
 }
 
 func TestGinEntry_Bootstrap_WithoutTLS(t *testing.T) {

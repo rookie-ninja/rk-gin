@@ -18,9 +18,8 @@ var (
 	Region        = zap.String("region", rkcommon.GetEnvValueOrDefault("REGION", "unknown"))
 	AZ            = zap.String("az", rkcommon.GetEnvValueOrDefault("AZ", "unknown"))
 	Domain        = zap.String("domain", rkcommon.GetEnvValueOrDefault("DOMAIN", "unknown"))
-	AppVersion    = zap.String("app_version", rkcommon.GetEnvValueOrDefault("APP_VERSION", "unknown"))
-	LocalIP       = zap.String("local_IP", rkcommon.GetLocalIP())
-	LocalHostname = zap.String("local_hostname", rkcommon.GetLocalHostname())
+	LocalIp       = zap.String("localIp", rkcommon.GetLocalIP())
+	LocalHostname = zap.String("localHostname", rkcommon.GetLocalHostname())
 )
 
 const (
@@ -28,10 +27,10 @@ const (
 	RequestIdKeyDash      = "request-id"
 	RequestIdKeyUnderline = "request_id"
 	RequestIdKeyDefault   = RequestIdKeyDash
-	RKEventKey            = "rk-event"
-	RKLoggerKey           = "rk-logger"
-	RKEntryNameKey        = "rk-gin-entry-name"
-	RKEntryDefaultName    = "entry"
+	RKEventKey            = "rkevent"
+	RKLoggerKey           = "rklogger"
+	RKEntryNameKey        = "rkentry"
+	RKEntryNameValue      = "rkentry"
 )
 
 // Add Key values to outgoing header
@@ -140,16 +139,16 @@ func GetRemoteAddressSet(ctx *gin.Context) []zap.Field {
 
 	if ctx == nil || ctx.Request == nil {
 		return []zap.Field{
-			zap.String("remote_IP", remoteIP),
-			zap.String("remote_port", remotePort),
+			zap.String("remoteIp", remoteIP),
+			zap.String("remotePort", remotePort),
 		}
 	}
 
 	var err error
 	if remoteIP, remotePort, err = net.SplitHostPort(ctx.Request.RemoteAddr); err != nil {
 		return []zap.Field{
-			zap.String("remote_IP", "0.0.0.0"),
-			zap.String("remote_port", "0"),
+			zap.String("remoteIp", "0.0.0.0"),
+			zap.String("remotePort", "0"),
 		}
 	}
 
@@ -169,7 +168,7 @@ func GetRemoteAddressSet(ctx *gin.Context) []zap.Field {
 	}
 
 	return []zap.Field{
-		zap.String("remote_IP", remoteIP),
-		zap.String("remote_port", remotePort),
+		zap.String("remoteIp", remoteIP),
+		zap.String("remotePort", remotePort),
 	}
 }

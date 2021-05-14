@@ -1,66 +1,72 @@
 ---
 # Bellow sections are RK common entries which is not necessary.
-rk:
-  appName: myapp
-  version: v0.0.1                                    # Optional, default: "v0.0.0"
-  description: "this is description"                 # Optional, default: ""
-  keywords: [ "rk", "golang" ]                       # Optional, default: []
-  homeURL: "http://example.com"                      # Optional, default: ""
-  iconURL: "http://example.com"                      # Optional, default: ""
-  docsURL: [ "http://example.com" ]                  # Optional, default: []
-  maintainers: [ "rk-dev" ]                          # Optional, default: []
-zapLogger:
-  - name: zap-logger
-eventLogger:
-  - name: event-logger
-cert:
-  local:
-    - name: "local-test"                             # Required
-      locale: "*::*::*::*"                           # Optional, default: *::*::*::*
-      serverCertPath: "example/boot/server.pem"      # Optional, default: "", path of certificate on local FS
-      serverKeyPath: "example/boot/server-key.pem"   # Optional, default: "", path of certificate on local FS
-#      clientCertPath: "example/client.pem"          # Optional, default: "", path of certificate on local FS
-#      clientKeyPath: "example/client.pem"           # Optional, default: "", path of certificate on local FS
+rk: # NOT required
+  appName: rk-example-entry           # Optional, default: "rkApp"
+  version: v0.0.1                     # Optional, default: "v0.0.0"
+  description: "this is description"  # Optional, default: ""
+  keywords: ["rk", "golang"]          # Optional, default: []
+  homeUrl: "http://example.com"       # Optional, default: ""
+  iconUrl: "http://example.com"       # Optional, default: ""
+  docsUrl: ["http://example.com"]     # Optional, default: []
+  maintainers: ["rk-dev"]             # Optional, default: []
+zapLogger:                                    # Optional
+  - name: zap-logger                          # Required
+    description: "Description of entry"       # Optional
+eventLogger:                                  # Optional
+  - name: event-logger                        # Required
+    description: "Description of entry"       # Optional
+cert:                                         # Optional
+  - name: "local-cert"                        # Required
+    description: "Description of entry"       # Optional
+    provider: "localFs"                       # Required, etcd, consul, localFs, remoteFs are supported options
+    locale: "*::*::*::*"                      # Optional, default: *::*::*::*
+    serverCertPath: "example/boot/server.pem"      # Optional, default: "", path of certificate on local FS
+    serverKeyPath: "example/boot/server-key.pem"   # Optional, default: "", path of certificate on local FS
+#    clientCertPath: "example/client.pem"     # Optional, default: "", path of certificate on local FS
+#    clientKeyPath: "example/client.pem"      # Optional, default: "", path of certificate on local FS
 # Gin entry
+config:
+  - name: rk-main                             # Required
+    path: "example/boot/config.yaml"          # Required
+    description: "Description of entry"       # Optional
+    locale: "*::*::*::*"                      # Optional, default: *::*::*::*
 gin:
-  - name: greeter                                    # Required
-    port: 8080                                       # Required
-    cert:
-      ref: "local-test"                              # Optional, default: "", reference of cert entry declared above
-    sw:
-      enabled: true                                  # Optional, default: false
-      path: "sw"                                     # Optional, default: "sw"
-      headers: ["sw:rk"]                             # Optional, default: []
-    commonService:
-      enabled: true                                  # Optional, default: false
-      pathPrefix: "/v1/rk/"                          # Optional, default: "/v1/rk/"
-    tv:
-      enabled:  true                                 # Optional, default: false
-      pathPrefix: "/v1/rk/"                          # Optional, default: "/v1/rk/"
-    prom:
-      enabled: true                                  # Optional, default: false
-      path: "metrics"                                # Optional, default: ""
-      cert:
-        ref: "local-test"                            # Optional, default: "", reference of cert entry declared above
-      pusher:
-        enabled: false                               # Optional, default: false
-        jobName: "greeter-pusher"                    # Required
-        remoteAddress: "localhost:9091"              # Required
-        basicAuth: "user:pass"                       # Optional, default: ""
-        intervalMS: 1000                             # Optional, default: 1000
-        cert:
-          ref: "local-test"                          # Optional, default: "", reference of cert entry declared above
-    logger:
-      zapLogger:
-        ref: zap-logger                              # Optional, default: logger of STDOUT, reference of logger entry declared above
-      eventLogger:
-        ref: event-logger                            # Optional, default: logger of STDOUT, reference of logger entry declared above
-    interceptors:
+  - name: greeter                             # Required
+    port: 8080                                # Required
+    cert:                                     # Optional
+      ref: "local-cert"                       # Optional, default: "", reference of cert entry declared above
+    sw:                                       # Optional
+      enabled: true                           # Optional, default: false
+      path: "sw"                              # Optional, default: "sw"
+      headers: ["sw:rk"]                      # Optional, default: []
+    commonService:                            # Optional
+      enabled: true                           # Optional, default: false
+    tv:                                       # Optional
+      enabled:  true                          # Optional, default: false
+    prom:                                     # Optional
+      enabled: true                           # Optional, default: false
+      path: "metrics"                         # Optional, default: ""
+      cert:                                   # Optional
+        ref: "local-test"                     # Optional, default: "", reference of cert entry declared above
+      pusher:                                 # Optional
+        enabled: false                        # Optional, default: false
+        jobName: "greeter-pusher"             # Required
+        remoteAddress: "localhost:9091"       # Required
+        basicAuth: "user:pass"                # Optional, default: ""
+        intervalMs: 1000                      # Optional, default: 1000
+        cert:                                 # Optional
+          ref: "local-test"                   # Optional, default: "", reference of cert entry declared above
+    logger:                                   # Optional
+      zapLogger:                              # Optional
+        ref: zap-logger                       # Optional, default: logger of STDOUT, reference of logger entry declared above
+      eventLogger:                            # Optional
+        ref: event-logger                     # Optional, default: logger of STDOUT, reference of logger entry declared above
+    interceptors:                             # Optional
       loggingZap:
-        enabled: true                                # Optional, default: false
+        enabled: true                         # Optional, default: false
       metricsProm:
-        enabled: true                                # Optional, default: false
-      basicAuth:
-        enabled: true                                # Optional, default: false
-        credentials:
-          - "user:pass"                              # Optional, default: ""
+        enabled: true                         # Optional, default: false
+#      basicAuth:
+#        enabled: true                        # Optional, default: false
+#       credentials:
+#         - "user:pass"                       # Optional, default: ""

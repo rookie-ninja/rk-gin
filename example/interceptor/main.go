@@ -5,13 +5,15 @@
 package main
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-gin/interceptor/auth"
-	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
-	"github.com/rookie-ninja/rk-gin/interceptor/panic/zap"
-	"github.com/rookie-ninja/rk-logger"
-	"github.com/rookie-ninja/rk-query"
+	rkginauth "github.com/rookie-ninja/rk-gin/interceptor/auth"
+	rkginbasic "github.com/rookie-ninja/rk-gin/interceptor/basic"
+	rkginlog "github.com/rookie-ninja/rk-gin/interceptor/log/zap"
+	rkginmetrics "github.com/rookie-ninja/rk-gin/interceptor/metrics/prom"
+	rkginpanic "github.com/rookie-ninja/rk-gin/interceptor/panic/zap"
+	rklogger "github.com/rookie-ninja/rk-logger"
+	rkquery "github.com/rookie-ninja/rk-query"
+	"net/http"
 )
 
 func main() {
@@ -19,15 +21,18 @@ func main() {
 
 	router := gin.New()
 	router.Use(
+		rkginbasic.BasicInterceptor(),
 		rkginlog.LoggingZapInterceptor(
 			rkginlog.WithEventFactory(rkquery.NewEventFactory()),
 			rkginlog.WithLogger(rklogger.StdoutLogger)),
+		rkginmetrics.MetricsPromInterceptor(),
 		rkginauth.BasicAuthInterceptor(gin.Accounts{"user": "pass"}, "realm"),
-		rkginpanic.PanicInterceptor())
+		rkginpanic.PanicInterceptor(),
+	)
 
 	router.GET("/hello", func(ctx *gin.Context) {
-		//ctx.String(http.StatusOK, "Hello world")
-		panic(errors.New(""))
+		ctx.String(http.StatusOK, "Hello world")
+		//panic(errors.New(""))
 	})
 	router.Run(":8080")
 }

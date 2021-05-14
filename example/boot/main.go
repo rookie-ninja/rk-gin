@@ -9,17 +9,16 @@ import (
 	"github.com/rookie-ninja/rk-entry/entry"
 	"github.com/rookie-ninja/rk-gin/boot"
 	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
-	"github.com/rookie-ninja/rk-logger"
-	"github.com/rookie-ninja/rk-query"
 )
 
 func main() {
 	bootFromConfig()
+	//bootFromCode()
 }
 
 func bootFromConfig() {
 	// Bootstrap basic entries from boot config.
-	rkentry.RegisterBasicEntriesFromConfig("example/boot/boot.yaml")
+	rkentry.RegisterInternalEntriesFromConfig("example/boot/boot.yaml")
 
 	// Bootstrap gin entry from boot config
 	res := rkgin.RegisterGinEntriesWithConfig("example/boot/boot.yaml")
@@ -35,24 +34,12 @@ func bootFromConfig() {
 }
 
 func bootFromCode() {
-	// Create event data
-	fac := rkquery.NewEventFactory()
-
-	// Create options for interceptor
-	opts := []rkginlog.Option{
-		rkginlog.WithEventFactory(fac),
-		rkginlog.WithLogger(rklogger.StdoutLogger),
-	}
-
 	// Create gin entry
 	entry := rkgin.RegisterGinEntry(
 		rkgin.WithNameGin("greeter"),
-		rkgin.WithZapLoggerEntryGin(rkentry.NoopZapLoggerEntry()),
-		rkgin.WithEventLoggerEntryGin(rkentry.NoopEventLoggerEntry()),
 		rkgin.WithPortGin(8080),
 		rkgin.WithCommonServiceEntryGin(rkgin.NewCommonServiceEntry()),
-		rkgin.WithTVEntryGin(rkgin.NewTVEntry()),
-		rkgin.WithInterceptorsGin(rkginlog.LoggingZapInterceptor(opts...)))
+		rkgin.WithInterceptorsGin(rkginlog.LoggingZapInterceptor([]rkginlog.Option{}...)))
 
 	// Start server
 	go entry.Bootstrap(context.Background())

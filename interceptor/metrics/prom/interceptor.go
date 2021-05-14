@@ -12,65 +12,61 @@ import (
 
 var (
 	DefaultLabelKeys = []string{
+		"entryName",
+		"entryType",
 		"realm",
 		"region",
 		"az",
 		"domain",
 		"instance",
-		"app_version",
-		"app_name",
+		"appVersion",
+		"appName",
 		"method",
 		"path",
-		"res_code",
+		"type",
+		"resCode",
 	}
 )
 
 const (
-	ElapsedNano = "elapsed_nano"
+	ElapsedNano = "elapsedNano"
 	Errors      = "errors"
-	ResCode     = "res_code"
-	null        = "null"
+	ResCode     = "resCode"
+	unknown     = "unknown"
 )
 
-// Global map stores metrics sets
-// Interceptor would distinguish metrics set based on
-var optionsMap = make(map[string]*options)
-
 func MetricsPromInterceptor(opts ...Option) gin.HandlerFunc {
-	defaultOptions := &options{
-		entryName:  rkginctx.RKEntryDefaultName,
-		registerer: prometheus.DefaultRegisterer,
+	set := &optionSet{
+		EntryName:  rkginctx.RKEntryNameValue,
+		EntryType:  "gin",
+		Registerer: prometheus.DefaultRegisterer,
 	}
 
 	for i := range opts {
-		opts[i](defaultOptions)
+		opts[i](set)
 	}
 
-	if len(defaultOptions.entryName) > 0 && defaultOptions.registerer != nil {
-		defaultOptions.metricsSet = rkprom.NewMetricsSet(
+	if len(set.EntryName) > 0 && set.Registerer != nil {
+		set.MetricsSet = rkprom.NewMetricsSet(
 			rkentry.GlobalAppCtx.GetAppInfoEntry().AppName,
-			defaultOptions.entryName,
-			defaultOptions.registerer)
+			set.EntryName,
+			set.Registerer)
 	} else {
-		defaultOptions.entryName = rkginctx.RKEntryDefaultName
-		defaultOptions.registerer = prometheus.DefaultRegisterer
-		defaultOptions.metricsSet = rkprom.NewMetricsSet(
+		set.EntryName = rkginctx.RKEntryNameValue
+		set.Registerer = prometheus.DefaultRegisterer
+		set.MetricsSet = rkprom.NewMetricsSet(
 			rkentry.GlobalAppCtx.GetAppInfoEntry().AppName,
-			rkginctx.RKEntryDefaultName,
-			defaultOptions.registerer)
+			set.EntryName,
+			set.Registerer)
 	}
 
-	if _, ok := optionsMap[defaultOptions.entryName]; !ok {
-		optionsMap[defaultOptions.entryName] = defaultOptions
+	if _, ok := optionsMap[set.EntryName]; !ok {
+		optionsMap[set.EntryName] = set
 		// init server and client metrics
-		initMetrics(defaultOptions)
+		initMetrics(set)
 	}
 
 	return func(ctx *gin.Context) {
-		if len(ctx.GetString(rkginctx.RKEntryNameKey)) < 1 {
-			ctx.Set(rkginctx.RKEntryNameKey, defaultOptions.entryName)
-		}
-
 		// start timer
 		startTime := time.Now()
 
@@ -93,42 +89,17 @@ func MetricsPromInterceptor(opts ...Option) gin.HandlerFunc {
 	}
 }
 
-func initMetrics(opts *options) {
-	opts.metricsSet.RegisterSummary(ElapsedNano, rkprom.SummaryObjectives, DefaultLabelKeys...)
-	opts.metricsSet.RegisterCounter(Errors, DefaultLabelKeys...)
-	opts.metricsSet.RegisterCounter(ResCode, DefaultLabelKeys...)
-}
-
-// options which is used while initializing logging interceptor
-type options struct {
-	entryName  string
-	registerer prometheus.Registerer
-	metricsSet *rkprom.MetricsSet
-}
-
-type Option func(*options)
-
-func WithEntryName(entryName string) Option {
-	return func(opt *options) {
-		if len(entryName) > 0 {
-			opt.entryName = entryName
-		}
-	}
-}
-
-func WithRegisterer(registerer prometheus.Registerer) Option {
-	return func(opt *options) {
-		if registerer != nil {
-			opt.registerer = registerer
-		}
-	}
+func initMetrics(opts *optionSet) {
+	opts.MetricsSet.RegisterSummary(ElapsedNano, rkprom.SummaryObjectives, DefaultLabelKeys...)
+	opts.MetricsSet.RegisterCounter(Errors, DefaultLabelKeys...)
+	opts.MetricsSet.RegisterCounter(ResCode, DefaultLabelKeys...)
 }
 
 // metrics
 // Server related
 func GetServerDurationMetrics(ctx *gin.Context) prometheus.Observer {
-	if metricsSet := GetServerMetricsSetFromContext(ctx); metricsSet != nil {
-		return metricsSet.GetSummaryWithValues(ElapsedNano, getValuesFromContext(ctx)...)
+	if metricsSet := GetServerMetricsSet(ctx); metricsSet != nil {
+		return metricsSet.GetSummaryWithValues(ElapsedNano, getValues(ctx)...)
 	}
 
 	return nil
@@ -139,8 +110,8 @@ func GetServerErrorMetrics(ctx *gin.Context) prometheus.Counter {
 		return nil
 	}
 
-	if metricsSet := GetServerMetricsSetFromContext(ctx); metricsSet != nil {
-		return metricsSet.GetCounterWithValues(Errors, getValuesFromContext(ctx)...)
+	if metricsSet := GetServerMetricsSet(ctx); metricsSet != nil {
+		return metricsSet.GetCounterWithValues(Errors, getValues(ctx)...)
 	}
 
 	return nil
@@ -151,42 +122,33 @@ func GetServerResCodeMetrics(ctx *gin.Context) prometheus.Counter {
 		return nil
 	}
 
-	if metricsSet := GetServerMetricsSetFromContext(ctx); metricsSet != nil {
-		return metricsSet.GetCounterWithValues(ResCode, getValuesFromContext(ctx)...)
+	if metricsSet := GetServerMetricsSet(ctx); metricsSet != nil {
+		return metricsSet.GetCounterWithValues(ResCode, getValues(ctx)...)
 	}
 
 	return nil
 }
 
-func GetServerMetricsSet(entryName string) *rkprom.MetricsSet {
-	if _, ok := optionsMap[entryName]; ok {
-		return optionsMap[entryName].metricsSet
+func GetServerMetricsSet(ctx *gin.Context) *rkprom.MetricsSet {
+	if set := getOptionSet(ctx); set != nil {
+		return set.MetricsSet
 	}
 
 	return nil
-}
-
-func GetServerMetricsSetFromContext(ctx *gin.Context) *rkprom.MetricsSet {
-	if ctx == nil {
-		return nil
-	}
-	entryName := ctx.GetString(rkginctx.RKEntryNameKey)
-
-	return GetServerMetricsSet(entryName)
 }
 
 func ListServerMetricsSets() []*rkprom.MetricsSet {
 	res := make([]*rkprom.MetricsSet, 0)
 	for _, v := range optionsMap {
-		res = append(res, v.metricsSet)
+		res = append(res, v.MetricsSet)
 	}
 
 	return res
 }
 
 // metrics set already set into context
-func getValuesFromContext(ctx *gin.Context) []string {
-	method, path, status := null, null, null
+func getValues(ctx *gin.Context) []string {
+	entryName, entryType, method, path, resCode := unknown, unknown, unknown, unknown, unknown
 	if ctx != nil && ctx.Request != nil {
 		method = ctx.Request.Method
 		if ctx.Request.URL != nil {
@@ -194,11 +156,18 @@ func getValuesFromContext(ctx *gin.Context) []string {
 		}
 
 		if ctx.Writer != nil {
-			status = strconv.Itoa(ctx.Writer.Status())
+			resCode = strconv.Itoa(ctx.Writer.Status())
 		}
 	}
 
+	if set := getOptionSet(ctx); set != nil {
+		entryName = set.EntryName
+		entryType = set.EntryType
+	}
+
 	values := []string{
+		entryName,
+		entryType,
 		rkginctx.Realm.String,
 		rkginctx.Region.String,
 		rkginctx.AZ.String,
@@ -208,7 +177,8 @@ func getValuesFromContext(ctx *gin.Context) []string {
 		rkentry.GlobalAppCtx.GetAppInfoEntry().AppName,
 		method,
 		path,
-		status,
+		"ginServer",
+		resCode,
 	}
 
 	return values
@@ -216,10 +186,53 @@ func getValuesFromContext(ctx *gin.Context) []string {
 
 func clearAllMetrics() {
 	for _, v := range optionsMap {
-		v.metricsSet.UnRegisterSummary(ElapsedNano)
-		v.metricsSet.UnRegisterCounter(Errors)
-		v.metricsSet.UnRegisterCounter(ResCode)
+		v.MetricsSet.UnRegisterSummary(ElapsedNano)
+		v.MetricsSet.UnRegisterCounter(Errors)
+		v.MetricsSet.UnRegisterCounter(ResCode)
 	}
 
-	optionsMap = make(map[string]*options)
+	optionsMap = make(map[string]*optionSet)
+}
+
+// Global map stores metrics sets
+// Interceptor would distinguish metrics set based on
+var optionsMap = make(map[string]*optionSet)
+
+// options which is used while initializing logging interceptor
+type optionSet struct {
+	EntryName  string
+	EntryType  string
+	Registerer prometheus.Registerer
+	MetricsSet *rkprom.MetricsSet
+}
+
+type Option func(*optionSet)
+
+func WithEntryNameAndType(entryName, entryType string) Option {
+	return func(opt *optionSet) {
+		if len(entryName) > 0 {
+			opt.EntryName = entryName
+		}
+
+		if len(entryType) > 0 {
+			opt.EntryType = entryType
+		}
+	}
+}
+
+func WithRegisterer(registerer prometheus.Registerer) Option {
+	return func(opt *optionSet) {
+		if registerer != nil {
+			opt.Registerer = registerer
+		}
+	}
+}
+
+func getOptionSet(ctx *gin.Context) *optionSet {
+	if ctx == nil {
+		return nil
+	}
+
+	entryName := ctx.GetString(rkginctx.RKEntryNameKey)
+	return optionsMap[entryName]
 }

@@ -1,0 +1,441 @@
+definitions:
+  rkentry.CpuInfo:
+    properties:
+      cacheSize:
+        type: integer
+      cpuUsedPercentage:
+        type: number
+      logicalCoreCount:
+        type: integer
+      mhz:
+        type: number
+      modelName:
+        type: string
+      physicalCoreCount:
+        type: integer
+      vendorId:
+        type: string
+    type: object
+  rkentry.Entry:
+    type: object
+  rkentry.GoEnvInfo:
+    properties:
+      goArch:
+        type: string
+      goos:
+        type: string
+      routinesCount:
+        type: integer
+      startTime:
+        type: string
+      upTimeSec:
+        type: integer
+      upTimeStr:
+        type: string
+      version:
+        type: string
+    type: object
+  rkentry.MemInfo:
+    properties:
+      forceGcCount:
+        type: integer
+      gcCountTotal:
+        type: integer
+      lastGcTimestamp:
+        type: string
+      memAllocByte:
+        type: integer
+      memUsedMb:
+        type: integer
+      memUsedPercentage:
+        type: number
+      sysAllocByte:
+        type: integer
+    type: object
+  rkentry.NetInfo:
+    properties:
+      netInterface:
+        items:
+          $ref: '#/definitions/rkentry.NetInterface'
+        type: array
+    type: object
+  rkentry.NetInterface:
+    properties:
+      addrs:
+        description: A list of unicast interface addresses for a specific interface.
+        items:
+          type: string
+        type: array
+      flags:
+        description: e.g., FlagUp, FlagLoopback, FlagMulticast
+        items:
+          type: string
+        type: array
+      hardwareAddr:
+        description: IEEE MAC-48, EUI-48 and EUI-64 form
+        type: string
+      mtu:
+        description: maximum transmission unit
+        type: integer
+      multicastAddrs:
+        description: A list of multicast, joined group addresses for a specific interface
+        items:
+          type: string
+        type: array
+      name:
+        description: e.g., "en0", "lo0", "eth0.100"
+        type: string
+    type: object
+  rkentry.OsInfo:
+    properties:
+      arch:
+        type: string
+      hostname:
+        type: string
+      os:
+        type: string
+    type: object
+  rkentry.ProcessInfo:
+    properties:
+      appName:
+        type: string
+      az:
+        type: string
+      description:
+        type: string
+      docsUrl:
+        items:
+          type: string
+        type: array
+      domain:
+        type: string
+      gid:
+        type: string
+      homeUrl:
+        type: string
+      iconUrl:
+        type: string
+      keywords:
+        items:
+          type: string
+        type: array
+      maintainers:
+        items:
+          type: string
+        type: array
+      realm:
+        type: string
+      region:
+        type: string
+      startTime:
+        type: string
+      uid:
+        type: string
+      upTimeSec:
+        type: integer
+      upTimeStr:
+        type: string
+      username:
+        type: string
+      version:
+        type: string
+    type: object
+  rkentry.ReqMetricsRK:
+    properties:
+      count:
+        type: integer
+      elapsedNanoP50:
+        type: number
+      elapsedNanoP90:
+        type: number
+      elapsedNanoP99:
+        type: number
+      elapsedNanoP999:
+        type: number
+      path:
+        type: string
+      resCode:
+        items:
+          $ref: '#/definitions/rkentry.ResCodeRK'
+        type: array
+    type: object
+  rkentry.ResCodeRK:
+    properties:
+      count:
+        type: integer
+      resCode:
+        type: string
+    type: object
+  rkgin.ApiResponse:
+    properties:
+      method:
+        type: string
+      name:
+        type: string
+      path:
+        type: string
+      port:
+        type: integer
+      swUrl:
+        type: string
+    type: object
+  rkgin.CertResponse:
+    properties:
+      clientCert:
+        type: string
+      clientCertPath:
+        type: string
+      clientKeyPath:
+        type: string
+      endpoint:
+        type: string
+      entryDescription:
+        type: string
+      entryName:
+        type: string
+      entryType:
+        type: string
+      locale:
+        type: string
+      provider:
+        type: string
+      serverCert:
+        type: string
+      serverCertPath:
+        type: string
+      serverKeyPath:
+        type: string
+    type: object
+  rkgin.ConfigResponse:
+    properties:
+      entryDescription:
+        type: string
+      entryMeta:
+        additionalProperties: true
+        type: object
+      entryName:
+        type: string
+      entryType:
+        type: string
+      path:
+        type: string
+    type: object
+  rkgin.EntryElement:
+    properties:
+      entryDescription:
+        type: string
+      entryMeta:
+        $ref: '#/definitions/rkentry.Entry'
+      entryName:
+        type: string
+      entryType:
+        type: string
+    type: object
+  rkgin.EntryResponse:
+    properties:
+      entries:
+        additionalProperties:
+          items:
+            $ref: '#/definitions/rkgin.EntryElement'
+          type: array
+        type: object
+    type: object
+  rkgin.GcResponse:
+    properties:
+      memStatAfterGc:
+        $ref: '#/definitions/rkentry.MemInfo'
+      memStatBeforeGc:
+        $ref: '#/definitions/rkentry.MemInfo'
+    type: object
+  rkgin.HealthyResponse:
+    properties:
+      healthy:
+        type: boolean
+    type: object
+  rkgin.LogEntryElement:
+    properties:
+      entryDescription:
+        type: string
+      entryMeta:
+        $ref: '#/definitions/rkentry.Entry'
+      entryName:
+        type: string
+      entryType:
+        type: string
+      errorOutputPaths:
+        items:
+          type: string
+        type: array
+      outputPaths:
+        items:
+          type: string
+        type: array
+    type: object
+  rkgin.LogResponse:
+    properties:
+      entries:
+        additionalProperties:
+          items:
+            $ref: '#/definitions/rkgin.LogEntryElement'
+          type: array
+        type: object
+    type: object
+  rkgin.SysResponse:
+    properties:
+      cpuInfo:
+        $ref: '#/definitions/rkentry.CpuInfo'
+      goEnvInfo:
+        $ref: '#/definitions/rkentry.GoEnvInfo'
+      memInfo:
+        $ref: '#/definitions/rkentry.MemInfo'
+      netInfo:
+        $ref: '#/definitions/rkentry.NetInfo'
+      osInfo:
+        $ref: '#/definitions/rkentry.OsInfo'
+    type: object
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a common service with rk-gin.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: RK Swagger for Gin
+  version: "1.0"
+paths:
+  /v1/rk/apis:
+    get:
+      operationId: "5"
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/rkgin.ApiResponse'
+            type: array
+      summary: List API
+  /v1/rk/certs:
+    get:
+      operationId: "9"
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/rkgin.CertResponse'
+            type: array
+      summary: List CertEntry
+  /v1/rk/configs:
+    get:
+      operationId: "4"
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rkgin.ConfigResponse'
+      summary: List ConfigEntry
+  /v1/rk/entries:
+    get:
+      operationId: "8"
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/rkgin.EntryResponse'
+            type: array
+      summary: List all Entry
+  /v1/rk/gc:
+    get:
+      operationId: "2"
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rkgin.GcResponse'
+      summary: Trigger Gc
+  /v1/rk/healthy:
+    get:
+      operationId: "1"
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rkgin.HealthyResponse'
+      summary: Get application healthy status
+  /v1/rk/info:
+    get:
+      operationId: "3"
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rkentry.ProcessInfo'
+      summary: Get application and process info
+  /v1/rk/logs:
+    get:
+      operationId: "10"
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/rkgin.LogResponse'
+            type: array
+      summary: List logger related entries
+  /v1/rk/req:
+    get:
+      operationId: "7"
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rkentry.ReqMetricsRK'
+      summary: List prometheus metrics of requests
+  /v1/rk/sys:
+    get:
+      operationId: "6"
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rkgin.SysResponse'
+      summary: Get OS Stat
+  /v1/rk/tv:
+    get:
+      operationId: "11"
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get HTML page of /tv
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"

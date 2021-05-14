@@ -6,6 +6,7 @@ package rkginlog
 
 import (
 	"github.com/gin-gonic/gin"
+	rkentry "github.com/rookie-ninja/rk-entry/entry"
 	"github.com/rookie-ninja/rk-gin/interceptor/context"
 	"github.com/rookie-ninja/rk-logger"
 	"github.com/rookie-ninja/rk-query"
@@ -15,55 +16,57 @@ import (
 	"time"
 )
 
-var optionsMap = make(map[string]*options)
-
 // LoggingZapInterceptor returns a gin.HandlerFunc (middleware) that logs requests using uber-go/zap.
 func LoggingZapInterceptor(opts ...Option) gin.HandlerFunc {
-	defaultOptions := &options{
-		entryName:    rkginctx.RKEntryDefaultName,
-		eventFactory: rkquery.NewEventFactory(),
-		logger:       rklogger.StdoutLogger,
+	set := &optionSet{
+		EntryName:    rkginctx.RKEntryNameValue,
+		EntryType:    "entry",
+		EventFactory: rkquery.NewEventFactory(),
+		Logger:       rklogger.StdoutLogger,
 	}
 
 	for i := range opts {
-		opts[i](defaultOptions)
+		opts[i](set)
 	}
 
-	if _, ok := optionsMap[defaultOptions.entryName]; !ok {
-		optionsMap[defaultOptions.entryName] = defaultOptions
+	if _, ok := optionsMap[set.EntryName]; !ok {
+		optionsMap[set.EntryName] = set
 	}
 
 	return func(ctx *gin.Context) {
-		// insert entry name into context
-		if len(ctx.GetString(rkginctx.RKEntryNameKey)) < 1 {
-			ctx.Set(rkginctx.RKEntryNameKey, defaultOptions.entryName)
-		}
-
 		// start timer
-		event := defaultOptions.eventFactory.CreateEvent()
+		event := set.EventFactory.CreateEvent(
+			rkquery.WithEntryName(set.EntryName),
+			rkquery.WithEntryType(set.EntryType))
+
 		event.SetStartTime(time.Now())
 		// insert event data into context
 		ctx.Set(rkginctx.RKEventKey, event)
 
 		incomingRequestIds := rkginctx.GetRequestIdsFromIncomingHeader(ctx)
 		// insert logger into context
-		ctx.Set(rkginctx.RKLoggerKey, defaultOptions.logger.With(zap.Strings("incoming_request_ids", incomingRequestIds)))
+		ctx.Set(rkginctx.RKLoggerKey, set.Logger.With(
+			zap.String("entryName", set.EntryName),
+			zap.String("entryType", set.EntryType),
+			zap.Strings("incomingRequestIds", incomingRequestIds)))
 
 		fields := []zap.Field{
 			rkginctx.Realm,
 			rkginctx.Region,
 			rkginctx.AZ,
 			rkginctx.Domain,
-			rkginctx.AppVersion,
-			rkginctx.LocalIP,
-			zap.String("entry_name", defaultOptions.entryName),
-			zap.String("api_path", ctx.Request.URL.Path),
-			zap.String("api_method", ctx.Request.Method),
-			zap.String("api_query", ctx.Request.URL.RawQuery),
-			zap.String("api_protocol", ctx.Request.Proto),
-			zap.String("user_agent", ctx.Request.UserAgent()),
-			zap.Strings("incoming_request_ids", incomingRequestIds),
-			zap.Time("start_time", event.GetStartTime()),
+			zap.String("appVersion", rkentry.GlobalAppCtx.GetAppInfoEntry().Version),
+			zap.String("appName", rkentry.GlobalAppCtx.GetAppInfoEntry().AppName),
+			rkginctx.LocalIp,
+			zap.String("entryName", set.EntryName),
+			zap.String("entryType", set.EntryType),
+			zap.String("apiPath", ctx.Request.URL.Path),
+			zap.String("apiMethod", ctx.Request.Method),
+			zap.String("apiQuery", ctx.Request.URL.RawQuery),
+			zap.String("apiProtocol", ctx.Request.Proto),
+			zap.String("userAgent", ctx.Request.UserAgent()),
+			zap.Strings("incomingRequestIds", incomingRequestIds),
+			zap.Time("startTime", event.GetStartTime()),
 		}
 
 		remoteAddressSet := rkginctx.GetRemoteAddressSet(ctx)
@@ -78,7 +81,7 @@ func LoggingZapInterceptor(opts ...Option) gin.HandlerFunc {
 		elapsed := endTime.Sub(event.GetStartTime())
 
 		outgoingRequestIds := rkginctx.GetRequestIdsFromOutgoingHeader(ctx)
-		ctx.Set(rkginctx.RKLoggerKey, defaultOptions.logger.With(zap.Strings("outgoing_request_ids", outgoingRequestIds)))
+		ctx.Set(rkginctx.RKLoggerKey, set.Logger.With(zap.Strings("outgoingRequestIds", outgoingRequestIds)))
 
 		// handle errors
 		if len(ctx.Errors) > 0 {
@@ -87,10 +90,10 @@ func LoggingZapInterceptor(opts ...Option) gin.HandlerFunc {
 
 		event.SetResCode(strconv.Itoa(ctx.Writer.Status()))
 		fields = append(fields,
-			zap.Int("res_code", ctx.Writer.Status()),
-			zap.Time("end_time", endTime),
-			zap.Int64("elapsed_nano", elapsed.Nanoseconds()),
-			zap.Strings("outgoing_request_ids", outgoingRequestIds),
+			zap.Int("resCode", ctx.Writer.Status()),
+			zap.Time("endTime", endTime),
+			zap.Int64("elapsedNano", elapsed.Nanoseconds()),
+			zap.Strings("outgoingRequestIds", outgoingRequestIds),
 		)
 
 		event.AddFields(fields...)
@@ -107,78 +110,73 @@ func LoggingZapInterceptor(opts ...Option) gin.HandlerFunc {
 	}
 }
 
-func GetEventFactory(entryName string) *rkquery.EventFactory {
-	if _, ok := optionsMap[entryName]; ok {
-		return optionsMap[entryName].eventFactory
+func GetEventFactory(ctx *gin.Context) *rkquery.EventFactory {
+	if set := getOptionSet(ctx); set != nil {
+		return set.EventFactory
 	}
 
 	return nil
 }
 
-func GetEventFactoryFromContext(ctx *gin.Context) *rkquery.EventFactory {
-	entryName := ctx.GetString(rkginctx.RKEntryNameKey)
-
-	return GetEventFactory(entryName)
-}
-
-func GetLogger(entryName string) *zap.Logger {
-	if _, ok := optionsMap[entryName]; ok {
-		return optionsMap[entryName].logger
+func GetLogger(ctx *gin.Context) *zap.Logger {
+	if set := getOptionSet(ctx); set != nil {
+		return set.Logger
 	}
 
 	return nil
 }
 
-func GetLoggerFromContext(ctx *gin.Context) *zap.Logger {
-	entryName := ctx.GetString(rkginctx.RKEntryNameKey)
-
-	return GetLogger(entryName)
-}
-
-func SetLogger(entryName string, logger *zap.Logger) bool {
-	if _, ok := optionsMap[entryName]; ok {
-		optionsMap[entryName].logger = logger
+func SetLogger(ctx *gin.Context, logger *zap.Logger) bool {
+	if set := getOptionSet(ctx); set != nil {
+		set.Logger = logger
 		return true
 	}
 
 	return false
 }
 
-func SetLoggerFromContext(ctx *gin.Context, logger *zap.Logger) bool {
-	entryName := ctx.GetString(rkginctx.RKEntryNameKey)
+func getOptionSet(ctx *gin.Context) *optionSet {
+	if ctx == nil {
+		return nil
+	}
 
-	return SetLogger(entryName, logger)
+	entryName := ctx.GetString(rkginctx.RKEntryNameKey)
+	return optionsMap[entryName]
 }
+
+var optionsMap = make(map[string]*optionSet)
 
 // options which is used while initializing logging interceptor
-type options struct {
-	entryName    string
-	eventFactory *rkquery.EventFactory
-	logger       *zap.Logger
+type optionSet struct {
+	EntryName    string
+	EntryType    string
+	EventFactory *rkquery.EventFactory
+	Logger       *zap.Logger
 }
 
-type Option func(*options)
+type Option func(*optionSet)
 
 func WithEventFactory(factory *rkquery.EventFactory) Option {
-	return func(opt *options) {
+	return func(opt *optionSet) {
 		if factory == nil {
 			factory = rkquery.NewEventFactory()
 		}
-		opt.eventFactory = factory
+		opt.EventFactory = factory
 	}
 }
 
 func WithLogger(logger *zap.Logger) Option {
-	return func(opt *options) {
+	return func(opt *optionSet) {
 		if logger == nil {
 			logger = rklogger.NoopLogger
 		}
-		opt.logger = logger
+		opt.Logger = logger
 	}
 }
 
-func WithEntryName(entryName string) Option {
-	return func(opt *options) {
-		opt.entryName = entryName
+func WithEntryNameAndType(entryName, entryType string) Option {
+	return func(opt *optionSet) {
+		opt.EntryName = entryName
+		opt.EntryType = entryType
 	}
 }
