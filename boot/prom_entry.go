@@ -10,7 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rookie-ninja/rk-entry/entry"
 	"github.com/rookie-ninja/rk-prom"
-	rkquery "github.com/rookie-ninja/rk-query"
+	"github.com/rookie-ninja/rk-query"
 	"go.uber.org/zap"
 	"strings"
 )
