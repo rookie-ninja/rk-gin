@@ -22,12 +22,12 @@ readme:
 	@doctoc . 2>&1
 
 .PHONY: swag
-readme:
+swag:
 	@echo "running swag..."
 	@swag init --generalInfo boot/common_service_entry.go --output boot/assets/sw/config --parseDependency 2 --propertyStrategy camelcase
 
 .PHONY: pkger
-readme:
+pkger:
 	@echo "running pkger..."
 	@pkger -o boot/assets
 

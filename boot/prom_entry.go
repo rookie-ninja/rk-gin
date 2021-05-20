@@ -244,7 +244,6 @@ func (entry *PromEntry) GetDescription() string {
 // Stringfy prom entry
 func (entry *PromEntry) String() string {
 	bytes, _ := json.Marshal(entry)
-
 	return string(bytes)
 }
 

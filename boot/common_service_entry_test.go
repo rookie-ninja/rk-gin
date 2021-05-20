@@ -511,7 +511,7 @@ func TestContainsMetrics_ExpectFalse(t *testing.T) {
 	api := "/rk/v1/non-exist"
 	metrics := make([]*rkentry.ReqMetricsRK, 0)
 	metrics = append(metrics, &rkentry.ReqMetricsRK{
-		Path: "/rk/v1/exist",
+		RestPath: "/rk/v1/exist",
 	})
 
 	assert.False(t, containsMetrics(api, metrics))
@@ -521,7 +521,7 @@ func TestContainsMetrics_ExpectTrue(t *testing.T) {
 	api := "/rk/v1/exist"
 	metrics := make([]*rkentry.ReqMetricsRK, 0)
 	metrics = append(metrics, &rkentry.ReqMetricsRK{
-		Path: api,
+		RestPath: api,
 	})
 
 	assert.True(t, containsMetrics(api, metrics))

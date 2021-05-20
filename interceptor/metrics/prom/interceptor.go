@@ -21,8 +21,8 @@ var (
 		"instance",
 		"appVersion",
 		"appName",
-		"method",
-		"path",
+		"restMethod",
+		"restPath",
 		"type",
 		"resCode",
 	}

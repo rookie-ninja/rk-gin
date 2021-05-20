@@ -61,8 +61,8 @@ func TestDefaultMetricsVariables_HappyCase(t *testing.T) {
 	assert.Contains(t, DefaultLabelKeys, "domain")
 	assert.Contains(t, DefaultLabelKeys, "appVersion")
 	assert.Contains(t, DefaultLabelKeys, "appName")
-	assert.Contains(t, DefaultLabelKeys, "method")
-	assert.Contains(t, DefaultLabelKeys, "path")
+	assert.Contains(t, DefaultLabelKeys, "restMethod")
+	assert.Contains(t, DefaultLabelKeys, "restPath")
 	assert.Contains(t, DefaultLabelKeys, "type")
 	assert.Contains(t, DefaultLabelKeys, "resCode")
 

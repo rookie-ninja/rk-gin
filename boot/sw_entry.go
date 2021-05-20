@@ -186,7 +186,7 @@ func (entry *SwEntry) Bootstrap(context.Context) {
 
 	defer entry.EventLoggerEntry.GetEventHelper().Finish(event)
 
-	entry.ZapLoggerEntry.GetLogger().Info("Bootstrapping SWEntry.", event.GetFields()...)
+	entry.ZapLoggerEntry.GetLogger().Info("Bootstrapping SwEntry.", event.GetFields()...)
 }
 
 // Interrupt swagger entry.
@@ -201,7 +201,7 @@ func (entry *SwEntry) Interrupt(context.Context) {
 
 	defer entry.EventLoggerEntry.GetEventHelper().Finish(event)
 
-	entry.ZapLoggerEntry.GetLogger().Info("Interrupting SWEntry.", event.GetFields()...)
+	entry.ZapLoggerEntry.GetLogger().Info("Interrupting SwEntry.", event.GetFields()...)
 }
 
 // Get name of entry.
@@ -244,7 +244,7 @@ func (entry *SwEntry) MarshalJSON() ([]byte, error) {
 }
 
 // Unmarshal entry
-func (entry *SwEntry) UnmarshalJSON(b []byte) error {
+func (entry *SwEntry) UnmarshalJSON([]byte) error {
 	return nil
 }
 
@@ -264,7 +264,7 @@ func (entry *SwEntry) AssetsFileHandler() gin.HandlerFunc {
 		w := ctx.Writer
 		r := ctx.Request
 
-		p := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/v1/rk"), "/")
+		p := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/rk/v1"), "/")
 
 		if file, err := pkger.Open(path.Join("/boot", p)); err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -325,11 +325,8 @@ func (entry *SwEntry) initSwaggerConfig() {
 	// 2: Add rk common APIs
 	if entry.EnableCommonService {
 		key := entry.EntryName + "-rk-common.swagger.json"
-		// add common service json file if enabled
-		if entry.EnableCommonService {
-			swaggerJsonFiles[key], _ = swag.ReadDoc()
-		}
-
+		// add common service json file
+		swaggerJsonFiles[key], _ = swag.ReadDoc()
 		swaggerUrlConfig.Urls = append(swaggerUrlConfig.Urls, &swUrl{
 			Name: key,
 			Url:  path.Join(entry.Path, key),
@@ -339,7 +336,7 @@ func (entry *SwEntry) initSwaggerConfig() {
 	// 3: Marshal to swagger-config.json and write to pkger
 	bytes, err := json.Marshal(swaggerUrlConfig)
 	if err != nil {
-		entry.ZapLoggerEntry.GetLogger().Error("failed to unmarshal swagger-config.json",
+		entry.ZapLoggerEntry.GetLogger().Error("Failed to unmarshal swagger-config.json",
 			zap.Error(err))
 		rkcommon.ShutdownWithError(err)
 	}
@@ -355,7 +352,7 @@ func (entry *SwEntry) listFilesWithSuffix(urlConfig *swUrlConfig) {
 	if !path.IsAbs(entry.JsonPath) {
 		wd, err := os.Getwd()
 		if err != nil {
-			entry.ZapLoggerEntry.GetLogger().Info("failed to get working directory",
+			entry.ZapLoggerEntry.GetLogger().Info("Failed to get working directory",
 				zap.String("error", err.Error()))
 			rkcommon.ShutdownWithError(err)
 		}
@@ -364,7 +361,7 @@ func (entry *SwEntry) listFilesWithSuffix(urlConfig *swUrlConfig) {
 
 	files, err := ioutil.ReadDir(jsonPath)
 	if err != nil {
-		entry.ZapLoggerEntry.GetLogger().Error("failed to list files with suffix",
+		entry.ZapLoggerEntry.GetLogger().Error("Failed to list files with suffix",
 			zap.String("path", jsonPath),
 			zap.String("suffix", suffix),
 			zap.String("error", err.Error()))
@@ -378,7 +375,7 @@ func (entry *SwEntry) listFilesWithSuffix(urlConfig *swUrlConfig) {
 			key := entry.EntryName + "-" + file.Name()
 
 			if err != nil {
-				entry.ZapLoggerEntry.GetLogger().Info("failed to read file with suffix",
+				entry.ZapLoggerEntry.GetLogger().Info("Failed to read file with suffix",
 					zap.String("path", path.Join(jsonPath, key)),
 					zap.String("suffix", suffix),
 					zap.String("error", err.Error()))

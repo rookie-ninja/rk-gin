@@ -33,7 +33,7 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/v1/rk/apis": {
+        "/rk/v1/apis": {
             "get": {
                 "produces": [
                     "application/json"
@@ -44,16 +44,13 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/rkgin.ApiResponse"
-                            }
+                            "$ref": "#/definitions/rkentry.ApisResponse"
                         }
                     }
                 }
             }
         },
-        "/v1/rk/certs": {
+        "/rk/v1/certs": {
             "get": {
                 "produces": [
                     "application/json"
@@ -64,16 +61,13 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/rkgin.CertResponse"
-                            }
+                            "$ref": "#/definitions/rkentry.CertsResponse"
                         }
                     }
                 }
             }
         },
-        "/v1/rk/configs": {
+        "/rk/v1/configs": {
             "get": {
                 "produces": [
                     "application/json"
@@ -84,13 +78,13 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rkgin.ConfigResponse"
+                            "$ref": "#/definitions/rkentry.ConfigsResponse"
                         }
                     }
                 }
             }
         },
-        "/v1/rk/entries": {
+        "/rk/v1/entries": {
             "get": {
                 "produces": [
                     "application/json"
@@ -101,16 +95,13 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/rkgin.EntryResponse"
-                            }
+                            "$ref": "#/definitions/rkentry.EntriesResponse"
                         }
                     }
                 }
             }
         },
-        "/v1/rk/gc": {
+        "/rk/v1/gc": {
             "get": {
                 "produces": [
                     "application/json"
@@ -121,13 +112,13 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rkgin.GcResponse"
+                            "$ref": "#/definitions/rkentry.GcResponse"
                         }
                     }
                 }
             }
         },
-        "/v1/rk/healthy": {
+        "/rk/v1/healthy": {
             "get": {
                 "produces": [
                     "application/json"
@@ -138,13 +129,13 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rkgin.HealthyResponse"
+                            "$ref": "#/definitions/rkentry.HealthyResponse"
                         }
                     }
                 }
             }
         },
-        "/v1/rk/info": {
+        "/rk/v1/info": {
             "get": {
                 "produces": [
                     "application/json"
@@ -161,7 +152,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/rk/logs": {
+        "/rk/v1/logs": {
             "get": {
                 "produces": [
                     "application/json"
@@ -172,16 +163,13 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/rkgin.LogResponse"
-                            }
+                            "$ref": "#/definitions/rkentry.LogsResponse"
                         }
                     }
                 }
             }
         },
-        "/v1/rk/req": {
+        "/rk/v1/req": {
             "get": {
                 "produces": [
                     "application/json"
@@ -192,13 +180,13 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rkentry.ReqMetricsRK"
+                            "$ref": "#/definitions/rkentry.ReqResponse"
                         }
                     }
                 }
             }
         },
-        "/v1/rk/sys": {
+        "/rk/v1/sys": {
             "get": {
                 "produces": [
                     "application/json"
@@ -209,13 +197,13 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rkgin.SysResponse"
+                            "$ref": "#/definitions/rkentry.SysResponse"
                         }
                     }
                 }
             }
         },
-        "/v1/rk/tv": {
+        "/rk/v1/tv": {
             "get": {
                 "produces": [
                     "text/html"
@@ -234,6 +222,152 @@ var doc = `{
         }
     },
     "definitions": {
+        "rkentry.ApisResponse": {
+            "type": "object",
+            "properties": {
+                "entries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/rkentry.ApisResponse_Entry"
+                    }
+                }
+            }
+        },
+        "rkentry.ApisResponse_Entry": {
+            "type": "object",
+            "properties": {
+                "entryName": {
+                    "type": "string"
+                },
+                "grpc": {
+                    "$ref": "#/definitions/rkentry.ApisResponse_Grpc"
+                },
+                "rest": {
+                    "$ref": "#/definitions/rkentry.ApisResponse_Rest"
+                }
+            }
+        },
+        "rkentry.ApisResponse_Grpc": {
+            "type": "object",
+            "properties": {
+                "gw": {
+                    "$ref": "#/definitions/rkentry.ApisResponse_Rest"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "service": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "rkentry.ApisResponse_Rest": {
+            "type": "object",
+            "properties": {
+                "method": {
+                    "type": "string"
+                },
+                "pattern": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "swUrl": {
+                    "type": "string"
+                }
+            }
+        },
+        "rkentry.CertsResponse": {
+            "type": "object",
+            "properties": {
+                "entries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/rkentry.CertsResponse_Entry"
+                    }
+                }
+            }
+        },
+        "rkentry.CertsResponse_Entry": {
+            "type": "object",
+            "properties": {
+                "clientCert": {
+                    "type": "string"
+                },
+                "clientCertPath": {
+                    "type": "string"
+                },
+                "clientKeyPath": {
+                    "type": "string"
+                },
+                "endpoint": {
+                    "type": "string"
+                },
+                "entryDescription": {
+                    "type": "string"
+                },
+                "entryName": {
+                    "type": "string"
+                },
+                "entryType": {
+                    "type": "string"
+                },
+                "locale": {
+                    "type": "string"
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "serverCert": {
+                    "type": "string"
+                },
+                "serverCertPath": {
+                    "type": "string"
+                },
+                "serverKeyPath": {
+                    "type": "string"
+                }
+            }
+        },
+        "rkentry.ConfigsResponse": {
+            "type": "object",
+            "properties": {
+                "entries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/rkentry.ConfigsResponse_ConfigEntry"
+                    }
+                }
+            }
+        },
+        "rkentry.ConfigsResponse_ConfigEntry": {
+            "type": "object",
+            "properties": {
+                "entryDescription": {
+                    "type": "string"
+                },
+                "entryMeta": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "entryName": {
+                    "type": "string"
+                },
+                "entryType": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
         "rkentry.CpuInfo": {
             "type": "object",
             "properties": {
@@ -260,8 +394,50 @@ var doc = `{
                 }
             }
         },
+        "rkentry.EntriesResponse": {
+            "type": "object",
+            "properties": {
+                "entries": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/definitions/rkentry.EntriesResponse_Entry"
+                        }
+                    }
+                }
+            }
+        },
+        "rkentry.EntriesResponse_Entry": {
+            "type": "object",
+            "properties": {
+                "entryDescription": {
+                    "type": "string"
+                },
+                "entryMeta": {
+                    "$ref": "#/definitions/rkentry.Entry"
+                },
+                "entryName": {
+                    "type": "string"
+                },
+                "entryType": {
+                    "type": "string"
+                }
+            }
+        },
         "rkentry.Entry": {
             "type": "object"
+        },
+        "rkentry.GcResponse": {
+            "type": "object",
+            "properties": {
+                "memStatAfterGc": {
+                    "$ref": "#/definitions/rkentry.MemInfo"
+                },
+                "memStatBeforeGc": {
+                    "$ref": "#/definitions/rkentry.MemInfo"
+                }
+            }
         },
         "rkentry.GoEnvInfo": {
             "type": "object",
@@ -286,6 +462,57 @@ var doc = `{
                 },
                 "version": {
                     "type": "string"
+                }
+            }
+        },
+        "rkentry.HealthyResponse": {
+            "type": "object",
+            "properties": {
+                "healthy": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "rkentry.LogsResponse": {
+            "type": "object",
+            "properties": {
+                "entries": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/definitions/rkentry.LogsResponse_Entry"
+                        }
+                    }
+                }
+            }
+        },
+        "rkentry.LogsResponse_Entry": {
+            "type": "object",
+            "properties": {
+                "entryDescription": {
+                    "type": "string"
+                },
+                "entryMeta": {
+                    "$ref": "#/definitions/rkentry.Entry"
+                },
+                "entryName": {
+                    "type": "string"
+                },
+                "entryType": {
+                    "type": "string"
+                },
+                "errorOutputPaths": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "outputPaths": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -464,13 +691,33 @@ var doc = `{
                 "elapsedNanoP999": {
                     "type": "number"
                 },
-                "path": {
+                "grpcMethod": {
+                    "type": "string"
+                },
+                "grpcService": {
                     "type": "string"
                 },
                 "resCode": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/rkentry.ResCodeRK"
+                    }
+                },
+                "restMethod": {
+                    "type": "string"
+                },
+                "restPath": {
+                    "type": "string"
+                }
+            }
+        },
+        "rkentry.ReqResponse": {
+            "type": "object",
+            "properties": {
+                "metrics": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/rkentry.ReqMetricsRK"
                     }
                 }
             }
@@ -486,182 +733,7 @@ var doc = `{
                 }
             }
         },
-        "rkgin.ApiResponse": {
-            "type": "object",
-            "properties": {
-                "method": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "port": {
-                    "type": "integer"
-                },
-                "swUrl": {
-                    "type": "string"
-                }
-            }
-        },
-        "rkgin.CertResponse": {
-            "type": "object",
-            "properties": {
-                "clientCert": {
-                    "type": "string"
-                },
-                "clientCertPath": {
-                    "type": "string"
-                },
-                "clientKeyPath": {
-                    "type": "string"
-                },
-                "endpoint": {
-                    "type": "string"
-                },
-                "entryDescription": {
-                    "type": "string"
-                },
-                "entryName": {
-                    "type": "string"
-                },
-                "entryType": {
-                    "type": "string"
-                },
-                "locale": {
-                    "type": "string"
-                },
-                "provider": {
-                    "type": "string"
-                },
-                "serverCert": {
-                    "type": "string"
-                },
-                "serverCertPath": {
-                    "type": "string"
-                },
-                "serverKeyPath": {
-                    "type": "string"
-                }
-            }
-        },
-        "rkgin.ConfigResponse": {
-            "type": "object",
-            "properties": {
-                "entryDescription": {
-                    "type": "string"
-                },
-                "entryMeta": {
-                    "type": "object",
-                    "additionalProperties": true
-                },
-                "entryName": {
-                    "type": "string"
-                },
-                "entryType": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                }
-            }
-        },
-        "rkgin.EntryElement": {
-            "type": "object",
-            "properties": {
-                "entryDescription": {
-                    "type": "string"
-                },
-                "entryMeta": {
-                    "$ref": "#/definitions/rkentry.Entry"
-                },
-                "entryName": {
-                    "type": "string"
-                },
-                "entryType": {
-                    "type": "string"
-                }
-            }
-        },
-        "rkgin.EntryResponse": {
-            "type": "object",
-            "properties": {
-                "entries": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/definitions/rkgin.EntryElement"
-                        }
-                    }
-                }
-            }
-        },
-        "rkgin.GcResponse": {
-            "type": "object",
-            "properties": {
-                "memStatAfterGc": {
-                    "$ref": "#/definitions/rkentry.MemInfo"
-                },
-                "memStatBeforeGc": {
-                    "$ref": "#/definitions/rkentry.MemInfo"
-                }
-            }
-        },
-        "rkgin.HealthyResponse": {
-            "type": "object",
-            "properties": {
-                "healthy": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "rkgin.LogEntryElement": {
-            "type": "object",
-            "properties": {
-                "entryDescription": {
-                    "type": "string"
-                },
-                "entryMeta": {
-                    "$ref": "#/definitions/rkentry.Entry"
-                },
-                "entryName": {
-                    "type": "string"
-                },
-                "entryType": {
-                    "type": "string"
-                },
-                "errorOutputPaths": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "outputPaths": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "rkgin.LogResponse": {
-            "type": "object",
-            "properties": {
-                "entries": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/definitions/rkgin.LogEntryElement"
-                        }
-                    }
-                }
-            }
-        },
-        "rkgin.SysResponse": {
+        "rkentry.SysResponse": {
             "type": "object",
             "properties": {
                 "cpuInfo": {

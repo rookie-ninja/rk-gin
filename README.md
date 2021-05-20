@@ -15,10 +15,12 @@ Currently, supports bellow interceptors
 - [Quick Start](#quick-start)
   - [Start Gin server from YAML config](#start-gin-server-from-yaml-config)
   - [Start Gin server from code](#start-gin-server-from-code)
-  - [Logging & Metrics interceptor](#logging--metrics-interceptor)
+  - [Logging Interceptor](#logging-interceptor)
+  - [Metrics interceptor](#metrics-interceptor)
   - [Panic interceptor](#panic-interceptor)
   - [Auth interceptor](#auth-interceptor)
-  - [Common Services](#common-services)
+  - [Common Service](#common-service)
+  - [TV Service](#tv-service)
   - [Development Status: Stable](#development-status-stable)
   - [Contributing](#contributing)
 
@@ -80,7 +82,7 @@ User can start multiple servers at the same time
 | gin.sw.jsonPath | Swagger json file path | string | / |
 | gin.sw.headers | Headers will send with swagger response | array | [] |
 | gin.commonService.enabled | Enable common service | boolean | false |
-| gin.tv.enabled | Enable RK TV whose path is /v1/rk/tv | boolean | false |
+| gin.tv.enabled | Enable RK TV whose path is /rk/v1/tv | boolean | false |
 | gin.prom.enabled | Enable prometheus | boolean | false |
 | gin.prom.path | Path of prometheus | string | metrics |
 | gin.prom.cert.ref |  Reference of cert entry declared in cert section | string | "" |
@@ -283,31 +285,31 @@ EOE
 
 | path | description |
 | ------ | ------ |
-| /v1/rk/apis | List API |
-| /v1/rk/certs | List CertEntry |
-| /v1/rk/configs | List ConfigEntry |
-| /v1/rk/entries | List all Entry |
-| /v1/rk/gc | Trigger GC |
-| /v1/rk/healthy | Get application healthy status, returns true if application is running |
-| /v1/rk/info | Get application and process info |
-| /v1/rk/logs | List logger related entries |
-| /v1/rk/req | List prometheus metrics of requests |
-| /v1/rk/sys | Get OS stat |
-| /v1/rk/tv | Get HTML page of /tv |
+| /rk/v1/apis | List API |
+| /rk/v1/certs | List CertEntry |
+| /rk/v1/configs | List ConfigEntry |
+| /rk/v1/entries | List all Entry |
+| /rk/v1/gc | Trigger GC |
+| /rk/v1/healthy | Get application healthy status, returns true if application is running |
+| /rk/v1/info | Get application and process info |
+| /rk/v1/logs | List logger related entries |
+| /rk/v1/req | List prometheus metrics of requests |
+| /rk/v1/sys | Get OS stat |
+| /rk/v1/tv | Get HTML page of /tv |
 
 ### TV Service
 
 | path | description |
 | ------ | ------ |
-| /v1/rk/tv or /v1/rk/tv/overview | Get application and process info of HTML page |
-| /v1/rk/tv/api | Get API of HTML page |
-| /v1/rk/tv/entry | Get entry of HTML page |
-| /v1/rk/tv/config | Get config of HTML page |
-| /v1/rk/tv/cert | Get cert of HTML page |
-| /v1/rk/tv/os | Get OS of HTML page |
-| /v1/rk/tv/env | Get Go environment of HTML page |
-| /v1/rk/tv/prometheus | Get metrics of HTML page |
-| /v1/rk/log | Get log of HTML page |
+| /rk/v1/tv or /rk/v1/tv/overview | Get application and process info of HTML page |
+| /rk/v1/tv/api | Get API of HTML page |
+| /rk/v1/tv/entry | Get entry of HTML page |
+| /rk/v1/tv/config | Get config of HTML page |
+| /rk/v1/tv/cert | Get cert of HTML page |
+| /rk/v1/tv/os | Get OS of HTML page |
+| /rk/v1/tv/env | Get Go environment of HTML page |
+| /rk/v1/tv/prometheus | Get metrics of HTML page |
+| /rk/v1/log | Get log of HTML page |
 
 ### Development Status: Stable
 

@@ -33,8 +33,8 @@ config:
 gin:
   - name: greeter                             # Required
     port: 8080                                # Required
-    cert:                                     # Optional
-      ref: "local-cert"                       # Optional, default: "", reference of cert entry declared above
+#    cert:                                     # Optional
+#      ref: "local-cert"                       # Optional, default: "", reference of cert entry declared above
     sw:                                       # Optional
       enabled: true                           # Optional, default: false
       path: "sw"                              # Optional, default: "sw"
@@ -54,8 +54,8 @@ gin:
         remoteAddress: "localhost:9091"       # Required
         basicAuth: "user:pass"                # Optional, default: ""
         intervalMs: 1000                      # Optional, default: 1000
-        cert:                                 # Optional
-          ref: "local-test"                   # Optional, default: "", reference of cert entry declared above
+#        cert:                                 # Optional
+#          ref: "local-test"                   # Optional, default: "", reference of cert entry declared above
     logger:                                   # Optional
       zapLogger:                              # Optional
         ref: zap-logger                       # Optional, default: logger of STDOUT, reference of logger entry declared above

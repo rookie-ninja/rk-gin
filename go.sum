@@ -455,10 +455,10 @@ github.com/rogpeppe/fastuuid v1.2.0/go.mod h1:jVj6XXZzXRy/MSR5jhDC/2q6DgLz+nrA6L
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/rookie-ninja/rk-common v1.0.9-0.20210512203920-9919edd253b8 h1:v+hxaBjaaxq2RRNGa0JCzzQ+4XWRuAqe8dDKzYBZc0A=
 github.com/rookie-ninja/rk-common v1.0.9-0.20210512203920-9919edd253b8/go.mod h1:1q4fwESQm1wnYeuUm7dJR2XVrVOCgfybQcAzocfo9oM=
-github.com/rookie-ninja/rk-entry v0.0.0-20210513200009-3c713a393799 h1:HNq1wgMXd/atjQxphCa2WoUvM8n7F6ITq7ZAX8KJygs=
 github.com/rookie-ninja/rk-entry v0.0.0-20210513200009-3c713a393799/go.mod h1:MLsagZLKrTV3Zwba/4kT8H+sS6g/EuH9HBRntuVD+Nc=
-github.com/rookie-ninja/rk-entry v0.0.0-20210514073654-4547958c855e h1:C0iNH8+w+kM+hlsgW+GIRAVifnGJjMFnT5zkCsHkGG4=
 github.com/rookie-ninja/rk-entry v0.0.0-20210514073654-4547958c855e/go.mod h1:MLsagZLKrTV3Zwba/4kT8H+sS6g/EuH9HBRntuVD+Nc=
+github.com/rookie-ninja/rk-entry v0.0.0-20210520082512-50eb725a62b0 h1:iq9c2Ep0mGGUDq1l6O5uDToCzzHmTFE394LT2nj/gUg=
+github.com/rookie-ninja/rk-entry v0.0.0-20210520082512-50eb725a62b0/go.mod h1:FBHaeot9bpUch0FN2dXs2zJFv14Rz/SCs4v4t/L96ys=
 github.com/rookie-ninja/rk-logger v1.0.9 h1:/nQHBVwOX8kzNf8SV9Vh8Tewt/xbbLRj9kLWCFPF2r4=
 github.com/rookie-ninja/rk-logger v1.0.9/go.mod h1:NDRMGnXMO/PBsFQc+N4LQgTmIxOKaFE1c7pDRmQUGjc=
 github.com/rookie-ninja/rk-logger v1.0.10-0.20210504211402-09ce5e5e3697 h1:KbtFmaL2tzMiD4qSY5+xieaL/0vyZRee1D/q4hIAjnE=

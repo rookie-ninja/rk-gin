@@ -49,7 +49,7 @@ func init() {
 // 3: Gin.Cert.Ref: Reference of rkentry.CertEntry.
 // 4: Gin.SW: See BootConfigSW for details.
 // 5: Gin.CommonService: See BootConfigCommonService for details.
-// 6: Gin.TV: See BootConfigTV for details.
+// 6: Gin.TV: See BootConfigTv for details.
 // 7: Gin.Prom: See BootConfigProm for details.
 // 8: Gin.Interceptors.LoggingZap.Enabled: Enable zap logging interceptor.
 // 9: Gin.Interceptors.MetricsProm.Enable: Enable prometheus interceptor.
@@ -57,7 +57,7 @@ func init() {
 // 11: Gin.interceptors.BasicAuth.Credentials: Credential for basic auth, scheme: <user:pass>
 // 12: Gin.Logger.ZapLogger.Ref: Zap logger reference, see rkentry.ZapLoggerEntry for details.
 // 13: Gin.Logger.EventLogger.Ref: Event logger reference, see rkentry.EventLoggerEntry for details.
-type bootConfig struct {
+type BootConfigGin struct {
 	Gin []struct {
 		Name        string `yaml:"name" json:"name"`
 		Port        uint64 `yaml:"port" json:"port"`
@@ -104,7 +104,7 @@ type bootConfig struct {
 // 8: CertEntry: See CertEntry for details..
 // 9: CommonServiceEntry: See CommonServiceEntry for details.
 // 10: PromEntry: See PromEntry for details.
-// 11: TVEntry: See TVEntry for details.
+// 11: TvEntry: See TvEntry for details.
 type GinEntry struct {
 	EntryName          string                    `json:"entryName" yaml:"entryName"`
 	EntryType          string                    `json:"entryType" yaml:"entryType"`
@@ -232,7 +232,7 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 	res := make(map[string]rkentry.Entry)
 
 	// 1: Decode config map into boot config struct
-	config := &bootConfig{}
+	config := &BootConfigGin{}
 	rkcommon.UnmarshalBootConfig(configFilePath, config)
 
 	// 2: Init gin entries with boot config
@@ -304,7 +304,7 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 			}
 
 			promEntry = NewPromEntry(
-				WithNameProm(fmt.Sprintf("gin-prom-%s", element.Name)),
+				WithNameProm(fmt.Sprintf("GinProm-%s", element.Name)),
 				WithPortProm(element.Port),
 				WithPathProm(element.Prom.Path),
 				WithCertStoreProm(certStore),
@@ -333,7 +333,7 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 		// Did we enabled metrics interceptor?
 		if element.Interceptors.MetricsProm.Enabled {
 			opts := []rkginmetrics.Option{
-				rkginmetrics.WithEntryNameAndType(element.Name, "gin"),
+				rkginmetrics.WithEntryNameAndType(element.Name, GinEntryType),
 			}
 
 			if promEntry != nil {
@@ -369,9 +369,9 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 		var tvEntry *TvEntry
 		if element.TV.Enabled {
 			tvEntry = NewTvEntry(
-				WithNameTV(fmt.Sprintf("GinTv-%s", element.Name)),
-				WithZapLoggerEntryTV(zapLoggerEntry),
-				WithEventLoggerEntryTV(eventLoggerEntry))
+				WithNameTv(fmt.Sprintf("GinTv-%s", element.Name)),
+				WithZapLoggerEntryTv(zapLoggerEntry),
+				WithEventLoggerEntryTv(eventLoggerEntry))
 		}
 
 		certEntry := rkentry.GlobalAppCtx.GetCertEntry(element.Cert.Ref)
@@ -409,6 +409,13 @@ func RegisterGinEntry(opts ...GinEntryOption) *GinEntry {
 		opts[i](entry)
 	}
 
+	entry.Interceptors = append([]gin.HandlerFunc{
+		rkginbasic.BasicInterceptor(rkginbasic.WithEntryNameAndType(entry.EntryName, entry.EntryType)),
+	}, entry.Interceptors...)
+
+	// insert panic interceptor
+	entry.Interceptors = append(entry.Interceptors, rkginpanic.PanicInterceptor())
+
 	if entry.ZapLoggerEntry == nil {
 		entry.ZapLoggerEntry = rkentry.GlobalAppCtx.GetZapLoggerEntryDefault()
 	}
@@ -420,12 +427,6 @@ func RegisterGinEntry(opts ...GinEntryOption) *GinEntry {
 	if len(entry.EntryName) < 1 {
 		entry.EntryName = "GinServer-" + strconv.FormatUint(entry.Port, 10)
 	}
-
-	// insert panic & basic interceptor
-	entry.Interceptors = append(entry.Interceptors,
-		rkginpanic.PanicInterceptor(),
-		rkginbasic.BasicInterceptor(
-			rkginbasic.WithEntryNameAndType(entry.EntryName, entry.EntryType)))
 
 	if entry.Router == nil {
 		gin.SetMode(gin.ReleaseMode)
@@ -464,7 +465,7 @@ func (entry *GinEntry) String() string {
 	return string(bytes)
 }
 
-// Add basic fields into event
+// Add basic fields into event.
 func (entry *GinEntry) logBasicInfo(event rkquery.Event) {
 	event.AddFields(
 		zap.String("entryName", entry.EntryName),
@@ -513,7 +514,7 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 	if entry.IsSwEnabled() {
 		// Register swagger path into Router.
 		entry.Router.GET(path.Join(entry.SwEntry.Path, "*any"), entry.SwEntry.ConfigFileHandler())
-		entry.Router.GET("/v1/rk/assets/sw/*any", entry.SwEntry.AssetsFileHandler())
+		entry.Router.GET("/rk/v1/assets/sw/*any", entry.SwEntry.AssetsFileHandler())
 
 		// Bootstrap swagger entry.
 		entry.SwEntry.Bootstrap(ctx)
@@ -531,16 +532,16 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 	// Is common service enabled?
 	if entry.IsCommonServiceEnabled() {
 		// Register common service path into Router.
-		entry.Router.GET("/v1/rk/healthy", entry.CommonServiceEntry.Healthy)
-		entry.Router.GET("/v1/rk/gc", entry.CommonServiceEntry.Gc)
-		entry.Router.GET("/v1/rk/info", entry.CommonServiceEntry.Info)
-		entry.Router.GET("/v1/rk/configs", entry.CommonServiceEntry.Configs)
-		entry.Router.GET("/v1/rk/apis", entry.CommonServiceEntry.Apis)
-		entry.Router.GET("/v1/rk/sys", entry.CommonServiceEntry.Sys)
-		entry.Router.GET("/v1/rk/req", entry.CommonServiceEntry.Req)
-		entry.Router.GET("/v1/rk/entries", entry.CommonServiceEntry.Entries)
-		entry.Router.GET("/v1/rk/certs", entry.CommonServiceEntry.Certs)
-		entry.Router.GET("/v1/rk/logs", entry.CommonServiceEntry.Logs)
+		entry.Router.GET("/  /healthy", entry.CommonServiceEntry.Healthy)
+		entry.Router.GET("/rk/v1/gc", entry.CommonServiceEntry.Gc)
+		entry.Router.GET("/rk/v1/info", entry.CommonServiceEntry.Info)
+		entry.Router.GET("/rk/v1/configs", entry.CommonServiceEntry.Configs)
+		entry.Router.GET("/rk/v1/apis", entry.CommonServiceEntry.Apis)
+		entry.Router.GET("/rk/v1/sys", entry.CommonServiceEntry.Sys)
+		entry.Router.GET("/rk/v1/req", entry.CommonServiceEntry.Req)
+		entry.Router.GET("/rk/v1/entries", entry.CommonServiceEntry.Entries)
+		entry.Router.GET("/rk/v1/certs", entry.CommonServiceEntry.Certs)
+		entry.Router.GET("/rk/v1/logs", entry.CommonServiceEntry.Logs)
 
 		// Bootstrap common service entry.
 		entry.CommonServiceEntry.Bootstrap(ctx)
@@ -549,8 +550,8 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 	// Is TV enabled?
 	if entry.IsTvEnabled() {
 		// Bootstrap TV entry.
-		entry.Router.RouterGroup.GET("/v1/rk/tv/*item", entry.TvEntry.TV)
-		entry.Router.GET("/v1/rk/assets/tv/*any", entry.TvEntry.AssetsFileHandler())
+		entry.Router.RouterGroup.GET("/rk/v1/tv/*item", entry.TvEntry.TV)
+		entry.Router.GET("/rk/v1/assets/tv/*any", entry.TvEntry.AssetsFileHandler())
 
 		entry.TvEntry.Bootstrap(ctx)
 	}

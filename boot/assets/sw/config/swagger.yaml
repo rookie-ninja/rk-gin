@@ -1,4 +1,99 @@
 definitions:
+  rkentry.ApisResponse:
+    properties:
+      entries:
+        items:
+          $ref: '#/definitions/rkentry.ApisResponse_Entry'
+        type: array
+    type: object
+  rkentry.ApisResponse_Entry:
+    properties:
+      entryName:
+        type: string
+      grpc:
+        $ref: '#/definitions/rkentry.ApisResponse_Grpc'
+      rest:
+        $ref: '#/definitions/rkentry.ApisResponse_Rest'
+    type: object
+  rkentry.ApisResponse_Grpc:
+    properties:
+      gw:
+        $ref: '#/definitions/rkentry.ApisResponse_Rest'
+      method:
+        type: string
+      port:
+        type: integer
+      service:
+        type: string
+      type:
+        type: string
+    type: object
+  rkentry.ApisResponse_Rest:
+    properties:
+      method:
+        type: string
+      pattern:
+        type: string
+      port:
+        type: integer
+      swUrl:
+        type: string
+    type: object
+  rkentry.CertsResponse:
+    properties:
+      entries:
+        items:
+          $ref: '#/definitions/rkentry.CertsResponse_Entry'
+        type: array
+    type: object
+  rkentry.CertsResponse_Entry:
+    properties:
+      clientCert:
+        type: string
+      clientCertPath:
+        type: string
+      clientKeyPath:
+        type: string
+      endpoint:
+        type: string
+      entryDescription:
+        type: string
+      entryName:
+        type: string
+      entryType:
+        type: string
+      locale:
+        type: string
+      provider:
+        type: string
+      serverCert:
+        type: string
+      serverCertPath:
+        type: string
+      serverKeyPath:
+        type: string
+    type: object
+  rkentry.ConfigsResponse:
+    properties:
+      entries:
+        items:
+          $ref: '#/definitions/rkentry.ConfigsResponse_ConfigEntry'
+        type: array
+    type: object
+  rkentry.ConfigsResponse_ConfigEntry:
+    properties:
+      entryDescription:
+        type: string
+      entryMeta:
+        additionalProperties: true
+        type: object
+      entryName:
+        type: string
+      entryType:
+        type: string
+      path:
+        type: string
+    type: object
   rkentry.CpuInfo:
     properties:
       cacheSize:
@@ -16,7 +111,34 @@ definitions:
       vendorId:
         type: string
     type: object
+  rkentry.EntriesResponse:
+    properties:
+      entries:
+        additionalProperties:
+          items:
+            $ref: '#/definitions/rkentry.EntriesResponse_Entry'
+          type: array
+        type: object
+    type: object
+  rkentry.EntriesResponse_Entry:
+    properties:
+      entryDescription:
+        type: string
+      entryMeta:
+        $ref: '#/definitions/rkentry.Entry'
+      entryName:
+        type: string
+      entryType:
+        type: string
+    type: object
   rkentry.Entry:
+    type: object
+  rkentry.GcResponse:
+    properties:
+      memStatAfterGc:
+        $ref: '#/definitions/rkentry.MemInfo'
+      memStatBeforeGc:
+        $ref: '#/definitions/rkentry.MemInfo'
     type: object
   rkentry.GoEnvInfo:
     properties:
@@ -34,6 +156,39 @@ definitions:
         type: string
       version:
         type: string
+    type: object
+  rkentry.HealthyResponse:
+    properties:
+      healthy:
+        type: boolean
+    type: object
+  rkentry.LogsResponse:
+    properties:
+      entries:
+        additionalProperties:
+          items:
+            $ref: '#/definitions/rkentry.LogsResponse_Entry'
+          type: array
+        type: object
+    type: object
+  rkentry.LogsResponse_Entry:
+    properties:
+      entryDescription:
+        type: string
+      entryMeta:
+        $ref: '#/definitions/rkentry.Entry'
+      entryName:
+        type: string
+      entryType:
+        type: string
+      errorOutputPaths:
+        items:
+          type: string
+        type: array
+      outputPaths:
+        items:
+          type: string
+        type: array
     type: object
   rkentry.MemInfo:
     properties:
@@ -152,11 +307,24 @@ definitions:
         type: number
       elapsedNanoP999:
         type: number
-      path:
+      grpcMethod:
+        type: string
+      grpcService:
         type: string
       resCode:
         items:
           $ref: '#/definitions/rkentry.ResCodeRK'
+        type: array
+      restMethod:
+        type: string
+      restPath:
+        type: string
+    type: object
+  rkentry.ReqResponse:
+    properties:
+      metrics:
+        items:
+          $ref: '#/definitions/rkentry.ReqMetricsRK'
         type: array
     type: object
   rkentry.ResCodeRK:
@@ -166,121 +334,7 @@ definitions:
       resCode:
         type: string
     type: object
-  rkgin.ApiResponse:
-    properties:
-      method:
-        type: string
-      name:
-        type: string
-      path:
-        type: string
-      port:
-        type: integer
-      swUrl:
-        type: string
-    type: object
-  rkgin.CertResponse:
-    properties:
-      clientCert:
-        type: string
-      clientCertPath:
-        type: string
-      clientKeyPath:
-        type: string
-      endpoint:
-        type: string
-      entryDescription:
-        type: string
-      entryName:
-        type: string
-      entryType:
-        type: string
-      locale:
-        type: string
-      provider:
-        type: string
-      serverCert:
-        type: string
-      serverCertPath:
-        type: string
-      serverKeyPath:
-        type: string
-    type: object
-  rkgin.ConfigResponse:
-    properties:
-      entryDescription:
-        type: string
-      entryMeta:
-        additionalProperties: true
-        type: object
-      entryName:
-        type: string
-      entryType:
-        type: string
-      path:
-        type: string
-    type: object
-  rkgin.EntryElement:
-    properties:
-      entryDescription:
-        type: string
-      entryMeta:
-        $ref: '#/definitions/rkentry.Entry'
-      entryName:
-        type: string
-      entryType:
-        type: string
-    type: object
-  rkgin.EntryResponse:
-    properties:
-      entries:
-        additionalProperties:
-          items:
-            $ref: '#/definitions/rkgin.EntryElement'
-          type: array
-        type: object
-    type: object
-  rkgin.GcResponse:
-    properties:
-      memStatAfterGc:
-        $ref: '#/definitions/rkentry.MemInfo'
-      memStatBeforeGc:
-        $ref: '#/definitions/rkentry.MemInfo'
-    type: object
-  rkgin.HealthyResponse:
-    properties:
-      healthy:
-        type: boolean
-    type: object
-  rkgin.LogEntryElement:
-    properties:
-      entryDescription:
-        type: string
-      entryMeta:
-        $ref: '#/definitions/rkentry.Entry'
-      entryName:
-        type: string
-      entryType:
-        type: string
-      errorOutputPaths:
-        items:
-          type: string
-        type: array
-      outputPaths:
-        items:
-          type: string
-        type: array
-    type: object
-  rkgin.LogResponse:
-    properties:
-      entries:
-        additionalProperties:
-          items:
-            $ref: '#/definitions/rkgin.LogEntryElement'
-          type: array
-        type: object
-    type: object
-  rkgin.SysResponse:
+  rkentry.SysResponse:
     properties:
       cpuInfo:
         $ref: '#/definitions/rkentry.CpuInfo'
@@ -306,7 +360,7 @@ info:
   title: RK Swagger for Gin
   version: "1.0"
 paths:
-  /v1/rk/apis:
+  /rk/v1/apis:
     get:
       operationId: "5"
       produces:
@@ -315,11 +369,9 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/rkgin.ApiResponse'
-            type: array
+            $ref: '#/definitions/rkentry.ApisResponse'
       summary: List API
-  /v1/rk/certs:
+  /rk/v1/certs:
     get:
       operationId: "9"
       produces:
@@ -328,11 +380,9 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/rkgin.CertResponse'
-            type: array
+            $ref: '#/definitions/rkentry.CertsResponse'
       summary: List CertEntry
-  /v1/rk/configs:
+  /rk/v1/configs:
     get:
       operationId: "4"
       produces:
@@ -341,9 +391,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rkgin.ConfigResponse'
+            $ref: '#/definitions/rkentry.ConfigsResponse'
       summary: List ConfigEntry
-  /v1/rk/entries:
+  /rk/v1/entries:
     get:
       operationId: "8"
       produces:
@@ -352,11 +402,9 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/rkgin.EntryResponse'
-            type: array
+            $ref: '#/definitions/rkentry.EntriesResponse'
       summary: List all Entry
-  /v1/rk/gc:
+  /rk/v1/gc:
     get:
       operationId: "2"
       produces:
@@ -365,9 +413,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rkgin.GcResponse'
+            $ref: '#/definitions/rkentry.GcResponse'
       summary: Trigger Gc
-  /v1/rk/healthy:
+  /rk/v1/healthy:
     get:
       operationId: "1"
       produces:
@@ -376,9 +424,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rkgin.HealthyResponse'
+            $ref: '#/definitions/rkentry.HealthyResponse'
       summary: Get application healthy status
-  /v1/rk/info:
+  /rk/v1/info:
     get:
       operationId: "3"
       produces:
@@ -389,7 +437,7 @@ paths:
           schema:
             $ref: '#/definitions/rkentry.ProcessInfo'
       summary: Get application and process info
-  /v1/rk/logs:
+  /rk/v1/logs:
     get:
       operationId: "10"
       produces:
@@ -398,11 +446,9 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/rkgin.LogResponse'
-            type: array
+            $ref: '#/definitions/rkentry.LogsResponse'
       summary: List logger related entries
-  /v1/rk/req:
+  /rk/v1/req:
     get:
       operationId: "7"
       produces:
@@ -411,9 +457,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rkentry.ReqMetricsRK'
+            $ref: '#/definitions/rkentry.ReqResponse'
       summary: List prometheus metrics of requests
-  /v1/rk/sys:
+  /rk/v1/sys:
     get:
       operationId: "6"
       produces:
@@ -422,9 +468,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rkgin.SysResponse'
+            $ref: '#/definitions/rkentry.SysResponse'
       summary: Get OS Stat
-  /v1/rk/tv:
+  /rk/v1/tv:
     get:
       operationId: "11"
       produces:
