@@ -33,8 +33,8 @@ config:
 gin:
   - name: greeter                             # Required
     port: 8080                                # Required
-#    cert:                                     # Optional
-#      ref: "local-cert"                       # Optional, default: "", reference of cert entry declared above
+    cert:                                     # Optional
+      ref: "local-cert"                       # Optional, default: "", reference of cert entry declared above
     sw:                                       # Optional
       enabled: true                           # Optional, default: false
       path: "sw"                              # Optional, default: "sw"
@@ -46,8 +46,6 @@ gin:
     prom:                                     # Optional
       enabled: true                           # Optional, default: false
       path: "metrics"                         # Optional, default: ""
-      cert:                                   # Optional
-        ref: "local-test"                     # Optional, default: "", reference of cert entry declared above
       pusher:                                 # Optional
         enabled: false                        # Optional, default: false
         jobName: "greeter-pusher"             # Required

@@ -44,14 +44,6 @@ func TestWithPusherProm_HappyCase(t *testing.T) {
 	assert.Equal(t, pusher, entry.Pusher)
 }
 
-func TestWithCertStoreProm_HappyCase(t *testing.T) {
-	store := &rkentry.CertStore{}
-
-	entry := NewPromEntry(WithCertStoreProm(store))
-
-	assert.Equal(t, store, entry.CertStore)
-}
-
 func TestWithPromRegistryProm_HappyCase(t *testing.T) {
 	registry := prometheus.NewRegistry()
 
@@ -66,7 +58,6 @@ func TestNewPromEntry_HappyCase(t *testing.T) {
 	zapLoggerEntry := rkentry.NoopZapLoggerEntry()
 	eventLoggerEntry := rkentry.NoopEventLoggerEntry()
 	pusher, _ := rkprom.NewPushGatewayPusher()
-	store := &rkentry.CertStore{}
 	registry := prometheus.NewRegistry()
 
 	entry := NewPromEntry(
@@ -75,7 +66,6 @@ func TestNewPromEntry_HappyCase(t *testing.T) {
 		WithZapLoggerEntryProm(zapLoggerEntry),
 		WithEventLoggerEntryProm(eventLoggerEntry),
 		WithPusherProm(pusher),
-		WithCertStoreProm(store),
 		WithPromRegistryProm(registry))
 
 	assert.Equal(t, port, entry.Port)
@@ -83,7 +73,6 @@ func TestNewPromEntry_HappyCase(t *testing.T) {
 	assert.Equal(t, zapLoggerEntry, entry.ZapLoggerEntry)
 	assert.Equal(t, eventLoggerEntry, entry.EventLoggerEntry)
 	assert.Equal(t, pusher, entry.Pusher)
-	assert.Equal(t, store, entry.CertStore)
 	assert.Equal(t, registry, entry.Registry)
 }
 

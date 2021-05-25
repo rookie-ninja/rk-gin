@@ -296,18 +296,10 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 					rkprom.WithCertStorePusher(certStore))
 			}
 
-			certEntry := rkentry.GlobalAppCtx.GetCertEntry(element.Prom.Cert.Ref)
-			var certStore *rkentry.CertStore
-
-			if certEntry != nil {
-				certStore = certEntry.Store
-			}
-
 			promEntry = NewPromEntry(
 				WithNameProm(fmt.Sprintf("%s-prom", element.Name)),
 				WithPortProm(element.Port),
 				WithPathProm(element.Prom.Path),
-				WithCertStoreProm(certStore),
 				WithZapLoggerEntryProm(zapLoggerEntry),
 				WithEventLoggerEntryProm(eventLoggerEntry),
 				WithPusherProm(pusher))

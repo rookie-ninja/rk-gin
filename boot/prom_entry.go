@@ -51,9 +51,6 @@ type BootConfigProm struct {
 			Ref string `yaml:"ref" json:"ref"`
 		} `yaml:"cert" json:"cert"`
 	} `yaml:"pusher" json:"pusher"`
-	Cert struct {
-		Ref string `yaml:"ref" json:"ref"`
-	} `yaml:"cert" json:"cert"`
 }
 
 // Prometheus entry which implements rkentry.Entry.
@@ -66,7 +63,6 @@ type BootConfigProm struct {
 // 6: Registry          Prometheus registry
 // 7: Registerer        Prometheus registerer
 // 8: Gatherer          Prometheus gatherer
-// 9: CertStore         rkentry.CertStore
 type PromEntry struct {
 	Pusher           *rkprom.PushGatewayPusher `json:"pushGateWayPusher" yaml:"pushGateWayPusher"`
 	EntryName        string                    `json:"entryName" yaml:"entryName"`
@@ -79,7 +75,6 @@ type PromEntry struct {
 	Registry         *prometheus.Registry      `json:"-" yaml:"-"`
 	Registerer       prometheus.Registerer     `json:"-" yaml:"-"`
 	Gatherer         prometheus.Gatherer       `json:"-" yaml:"-"`
-	CertStore        *rkentry.CertStore        `json:"-" yaml:"-"`
 }
 
 // Prom entry option used while initializing prom entry via code
@@ -124,13 +119,6 @@ func WithEventLoggerEntryProm(eventLoggerEntry *rkentry.EventLoggerEntry) PromEn
 func WithPusherProm(pusher *rkprom.PushGatewayPusher) PromEntryOption {
 	return func(entry *PromEntry) {
 		entry.Pusher = pusher
-	}
-}
-
-// PushGateway of prom entry
-func WithCertStoreProm(store *rkentry.CertStore) PromEntryOption {
-	return func(entry *PromEntry) {
-		entry.CertStore = store
 	}
 }
 
