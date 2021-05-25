@@ -30,7 +30,3 @@ swag:
 pkger:
 	@echo "running pkger..."
 	@pkger -o boot/assets
-
-
-
-
