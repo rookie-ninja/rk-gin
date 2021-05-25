@@ -289,7 +289,7 @@ func (entry *SwEntry) ConfigFileHandler() gin.HandlerFunc {
 
 		switch p {
 		case "/sw":
-			if file, err := pkger.Open("github.com/rookie-ninja/rk-gin:/boot/assets/sw/index.html"); err != nil {
+			if file, err := pkger.Open(path.Join("/boot/assets/sw/index.html")); err != nil {
 				http.Error(w, "Internal server error", http.StatusInternalServerError)
 			} else {
 				http.ServeContent(w, r, "index.html", time.Now(), file)
@@ -385,8 +385,8 @@ func (entry *SwEntry) listFilesWithSuffix(urlConfig *swUrlConfig) {
 			swaggerJsonFiles[key] = string(bytes)
 
 			urlConfig.Urls = append(urlConfig.Urls, &swUrl{
-				Name: path.Join(entry.Path, key),
-				Url:  key,
+				Name: key,
+				Url:  path.Join(entry.Path, key),
 			})
 		}
 	}
