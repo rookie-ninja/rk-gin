@@ -418,7 +418,14 @@ func containsMetrics(api string, metrics []*rkentry.ReqMetricsRK) bool {
 
 // Helper function for Req call
 func doReq(ctx *gin.Context) *rkentry.ReqResponse {
-	vector := rkginmetrics.GetServerMetricsSet(ctx).GetSummary(rkginmetrics.ElapsedNano)
+	metricsSet := rkginmetrics.GetServerMetricsSet(ctx)
+	if metricsSet == nil {
+		return &rkentry.ReqResponse{
+			Metrics: make([]*rkentry.ReqMetricsRK, 0),
+		}
+	}
+
+	vector := metricsSet.GetSummary(rkginmetrics.ElapsedNano)
 	reqMetrics := rkentry.NewPromMetricsInfo(vector)
 
 	// Fill missed metrics

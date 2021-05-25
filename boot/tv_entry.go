@@ -46,7 +46,7 @@ const (
 
 // Read go template files with Pkger.
 func readFileFromPkger(filePath string) []byte {
-	if file, err := pkger.Open(path.Join("/boot", filePath)); err != nil {
+	if file, err := pkger.Open(path.Join("github.com/rookie-ninja/rk-gin:/boot", filePath)); err != nil {
 		return []byte{}
 	} else {
 		if bytes, err := ioutil.ReadAll(file); err != nil {
@@ -163,8 +163,6 @@ func (entry *TvEntry) Bootstrap(ctx context.Context) {
 		rkquery.WithEntryType(entry.EntryType))
 
 	entry.logBasicInfo(event)
-
-	entry.ZapLoggerEntry.GetLogger().Info("Bootstrapping TvEntry.", event.GetFields()...)
 
 	event.AddFields(zap.String("path", "/rk/v1/tv/*item"))
 

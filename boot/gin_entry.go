@@ -304,7 +304,7 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 			}
 
 			promEntry = NewPromEntry(
-				WithNameProm(fmt.Sprintf("GinProm-%s", element.Name)),
+				WithNameProm(fmt.Sprintf("%s-prom", element.Name)),
 				WithPortProm(element.Port),
 				WithPathProm(element.Prom.Path),
 				WithCertStoreProm(certStore),
@@ -360,7 +360,7 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 		var commonServiceEntry *CommonServiceEntry
 		if element.CommonService.Enabled {
 			commonServiceEntry = NewCommonServiceEntry(
-				WithNameCommonService(fmt.Sprintf("gin-common-service-%s", element.Name)),
+				WithNameCommonService(fmt.Sprintf("%s-commonService", element.Name)),
 				WithZapLoggerEntryCommonService(zapLoggerEntry),
 				WithEventLoggerEntryCommonService(eventLoggerEntry))
 		}
@@ -369,7 +369,7 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 		var tvEntry *TvEntry
 		if element.TV.Enabled {
 			tvEntry = NewTvEntry(
-				WithNameTv(fmt.Sprintf("GinTv-%s", element.Name)),
+				WithNameTv(fmt.Sprintf("%s-tv", element.Name)),
 				WithZapLoggerEntryTv(zapLoggerEntry),
 				WithEventLoggerEntryTv(eventLoggerEntry))
 		}
