@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/markbates/pkger"
 	"github.com/rookie-ninja/rk-common/common"
@@ -208,8 +207,6 @@ func (entry *TvEntry) Bootstrap(ctx context.Context) {
 
 	// Parse overview template
 	if _, err := entry.Template.Parse(string(OverviewTemplate)); err != nil {
-		fmt.Println(string(OverviewTemplate))
-
 		entry.EventLoggerEntry.GetEventHelper().FinishWithError(event, err)
 		entry.ZapLoggerEntry.GetLogger().Error("Error occurs while overview template.")
 		rkcommon.ShutdownWithError(err)

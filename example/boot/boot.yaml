@@ -24,12 +24,12 @@ cert:                                         # Optional
     serverKeyPath: "example/boot/server-key.pem"   # Optional, default: "", path of certificate on local FS
 #    clientCertPath: "example/client.pem"     # Optional, default: "", path of certificate on local FS
 #    clientKeyPath: "example/client.pem"      # Optional, default: "", path of certificate on local FS
-# Gin entry
 config:
   - name: rk-main                             # Required
     path: "example/boot/config.yaml"          # Required
     description: "Description of entry"       # Optional
     locale: "*::*::*::*"                      # Optional, default: *::*::*::*
+# Gin entry
 gin:
   - name: greeter                             # Required
     port: 8080                                # Required
