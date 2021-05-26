@@ -691,10 +691,7 @@ var doc = `{
                 "elapsedNanoP999": {
                     "type": "number"
                 },
-                "grpcMethod": {
-                    "type": "string"
-                },
-                "grpcService": {
+                "path": {
                     "type": "string"
                 },
                 "resCode": {
@@ -702,12 +699,6 @@ var doc = `{
                     "items": {
                         "$ref": "#/definitions/rkentry.ResCodeRK"
                     }
-                },
-                "restMethod": {
-                    "type": "string"
-                },
-                "restPath": {
-                    "type": "string"
                 }
             }
         },

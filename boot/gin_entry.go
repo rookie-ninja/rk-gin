@@ -461,7 +461,7 @@ func (entry *GinEntry) String() string {
 func (entry *GinEntry) logBasicInfo(event rkquery.Event) {
 	event.AddFields(
 		zap.String("entryName", entry.EntryName),
-		zap.String("entry_type", entry.EntryType),
+		zap.String("entryType", entry.EntryType),
 		zap.Uint64("port", entry.Port),
 		zap.Int("interceptorsCount", len(entry.Interceptors)),
 		zap.Bool("swEnabled", entry.IsSwEnabled()),
