@@ -76,6 +76,7 @@ User can start multiple servers at the same time
 | ------ | ------ | ------ | ------ |
 | gin.name | Name of gin server entry | string | N/A |
 | gin.port | Port of server | integer | nil, server won't start |
+| gin.description | Description of server | string | "" |
 | gin.cert.ref | Reference of cert entry declared in cert section | string | "" |
 | gin.sw.enabled | Enable swagger | boolean | false | 
 | gin.sw.path | Swagger path | string | / |

@@ -203,6 +203,13 @@ func WithNameGin(name string) GinEntryOption {
 	}
 }
 
+// Provide name.
+func WithDescriptionGin(description string) GinEntryOption {
+	return func(entry *GinEntry) {
+		entry.EntryDescription = description
+	}
+}
+
 // Provide PromEntry.
 func WithPromEntryGin(prom *PromEntry) GinEntryOption {
 	return func(entry *GinEntry) {
