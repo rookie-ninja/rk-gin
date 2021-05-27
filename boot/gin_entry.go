@@ -556,36 +556,35 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 	}
 
 	// Start gin server
-	if entry.Server != nil {
-		entry.ZapLoggerEntry.GetLogger().Info("Bootstrapping GinEntry.", event.GetFields()...)
-		entry.EventLoggerEntry.GetEventHelper().Finish(event)
+	entry.ZapLoggerEntry.GetLogger().Info("Bootstrapping GinEntry.", event.GetFields()...)
+	go func(*GinEntry) {
+		if entry.Server != nil {
+			// If TLS was enabled, we need to load server certificate and key and start http server with ListenAndServeTLS()
+			if entry.IsTlsEnabled() {
+				if cert, err := tls.X509KeyPair(entry.CertEntry.Store.ServerCert, entry.CertEntry.Store.ServerKey); err != nil {
+					event.AddErr(err)
+					entry.ZapLoggerEntry.GetLogger().Error("Error occurs while parsing TLS.", event.GetFields()...)
+					rkcommon.ShutdownWithError(err)
+				} else {
+					entry.Server.TLSConfig = &tls.Config{Certificates: []tls.Certificate{cert}}
+				}
 
-		// If TLS was enabled, we need to load server certificate and key and start http server with ListenAndServeTLS()
-		if entry.IsTlsEnabled() {
-			if cert, err := tls.X509KeyPair(entry.CertEntry.Store.ServerCert, entry.CertEntry.Store.ServerKey); err != nil {
-				event.AddErr(err)
-				entry.ZapLoggerEntry.GetLogger().Error("Error occurs while parsing TLS.", event.GetFields()...)
-				entry.EventLoggerEntry.GetEventHelper().Finish(event)
-				rkcommon.ShutdownWithError(err)
+				if err := entry.Server.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
+					event.AddErr(err)
+					entry.ZapLoggerEntry.GetLogger().Error("Error occurs while serving gin-listener-tls.", event.GetFields()...)
+					rkcommon.ShutdownWithError(err)
+				}
 			} else {
-				entry.Server.TLSConfig = &tls.Config{Certificates: []tls.Certificate{cert}}
-			}
-
-			if err := entry.Server.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
-				event.AddErr(err)
-				entry.ZapLoggerEntry.GetLogger().Error("Error occurs while serving gin-listener-tls.", event.GetFields()...)
-				entry.EventLoggerEntry.GetEventHelper().Finish(event)
-				rkcommon.ShutdownWithError(err)
-			}
-		} else {
-			if err := entry.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-				event.AddErr(err)
-				entry.ZapLoggerEntry.GetLogger().Error("Error occurs while serving gin-listener.", event.GetFields()...)
-				entry.EventLoggerEntry.GetEventHelper().Finish(event)
-				rkcommon.ShutdownWithError(err)
+				if err := entry.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+					event.AddErr(err)
+					entry.ZapLoggerEntry.GetLogger().Error("Error occurs while serving gin-listener.", event.GetFields()...)
+					rkcommon.ShutdownWithError(err)
+				}
 			}
 		}
-	}
+	}(entry)
+
+	entry.EventLoggerEntry.GetEventHelper().Finish(event)
 }
 
 func (entry *GinEntry) Interrupt(ctx context.Context) {

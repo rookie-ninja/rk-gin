@@ -307,12 +307,18 @@ definitions:
         type: number
       elapsedNanoP999:
         type: number
-      path:
+      grpcMethod:
+        type: string
+      grpcService:
         type: string
       resCode:
         items:
           $ref: '#/definitions/rkentry.ResCodeRK'
         type: array
+      restMethod:
+        type: string
+      restPath:
+        type: string
     type: object
   rkentry.ReqResponse:
     properties:
