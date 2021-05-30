@@ -84,8 +84,11 @@ func LoggingZapInterceptor(opts ...Option) gin.HandlerFunc {
 		ctx.Set(rkginctx.RkLoggerKey, set.Logger.With(zap.Strings("outgoingRequestIds", outgoingRequestIds)))
 
 		// handle errors
-		if len(ctx.Errors) > 0 {
-			event.AddErr(ctx.Errors.Last().Err)
+		errors := ctx.Errors
+		if len(errors) > 0 {
+			for i := range errors {
+				event.AddErr(errors[i])
+			}
 		}
 
 		event.SetResCode(strconv.Itoa(ctx.Writer.Status()))
