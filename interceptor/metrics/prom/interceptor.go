@@ -37,8 +37,8 @@ const (
 
 func MetricsPromInterceptor(opts ...Option) gin.HandlerFunc {
 	set := &optionSet{
-		EntryName:  rkginctx.RKEntryNameValue,
-		EntryType:  "gin",
+		EntryName:  rkginctx.RkEntryNameValue,
+		EntryType:  rkginctx.RkEntryTypeValue,
 		Registerer: prometheus.DefaultRegisterer,
 	}
 
@@ -52,7 +52,7 @@ func MetricsPromInterceptor(opts ...Option) gin.HandlerFunc {
 			set.EntryName,
 			set.Registerer)
 	} else {
-		set.EntryName = rkginctx.RKEntryNameValue
+		set.EntryName = rkginctx.RkEntryNameValue
 		set.Registerer = prometheus.DefaultRegisterer
 		set.MetricsSet = rkprom.NewMetricsSet(
 			rkentry.GlobalAppCtx.GetAppInfoEntry().AppName,
@@ -233,6 +233,6 @@ func getOptionSet(ctx *gin.Context) *optionSet {
 		return nil
 	}
 
-	entryName := ctx.GetString(rkginctx.RKEntryNameKey)
+	entryName := ctx.GetString(rkginctx.RkEntryNameKey)
 	return optionsMap[entryName]
 }

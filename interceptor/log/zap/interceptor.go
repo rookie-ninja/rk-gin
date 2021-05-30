@@ -19,8 +19,8 @@ import (
 // LoggingZapInterceptor returns a gin.HandlerFunc (middleware) that logs requests using uber-go/zap.
 func LoggingZapInterceptor(opts ...Option) gin.HandlerFunc {
 	set := &optionSet{
-		EntryName:    rkginctx.RKEntryNameValue,
-		EntryType:    "entry",
+		EntryName:    rkginctx.RkEntryNameValue,
+		EntryType:    rkginctx.RkEntryTypeValue,
 		EventFactory: rkquery.NewEventFactory(),
 		Logger:       rklogger.StdoutLogger,
 	}
@@ -41,11 +41,11 @@ func LoggingZapInterceptor(opts ...Option) gin.HandlerFunc {
 
 		event.SetStartTime(time.Now())
 		// insert event data into context
-		ctx.Set(rkginctx.RKEventKey, event)
+		ctx.Set(rkginctx.RkEventKey, event)
 
 		incomingRequestIds := rkginctx.GetRequestIdsFromIncomingHeader(ctx)
 		// insert logger into context
-		ctx.Set(rkginctx.RKLoggerKey, set.Logger.With(
+		ctx.Set(rkginctx.RkLoggerKey, set.Logger.With(
 			zap.String("entryName", set.EntryName),
 			zap.String("entryType", set.EntryType),
 			zap.Strings("incomingRequestIds", incomingRequestIds)))
@@ -81,7 +81,7 @@ func LoggingZapInterceptor(opts ...Option) gin.HandlerFunc {
 		elapsed := endTime.Sub(event.GetStartTime())
 
 		outgoingRequestIds := rkginctx.GetRequestIdsFromOutgoingHeader(ctx)
-		ctx.Set(rkginctx.RKLoggerKey, set.Logger.With(zap.Strings("outgoingRequestIds", outgoingRequestIds)))
+		ctx.Set(rkginctx.RkLoggerKey, set.Logger.With(zap.Strings("outgoingRequestIds", outgoingRequestIds)))
 
 		// handle errors
 		if len(ctx.Errors) > 0 {
@@ -140,7 +140,7 @@ func getOptionSet(ctx *gin.Context) *optionSet {
 		return nil
 	}
 
-	entryName := ctx.GetString(rkginctx.RKEntryNameKey)
+	entryName := ctx.GetString(rkginctx.RkEntryNameKey)
 	return optionsMap[entryName]
 }
 

@@ -211,9 +211,6 @@ func (entry *CommonServiceEntry) Healthy(ctx *gin.Context) {
 		return
 	}
 
-	// Add auto generated request ID
-	rkginctx.AddRequestIdToOutgoingHeader(ctx)
-
 	ctx.JSON(http.StatusOK, doHealthy(ctx))
 }
 
@@ -236,9 +233,6 @@ func doGc(*gin.Context) *rkentry.GcResponse {
 // @Success 200 {object} rkentry.GcResponse
 // @Router /rk/v1/gc [get]
 func (entry *CommonServiceEntry) Gc(ctx *gin.Context) {
-	// Add auto generated request ID
-	rkginctx.AddRequestIdToOutgoingHeader(ctx)
-
 	if ctx == nil {
 		return
 	}
@@ -258,9 +252,6 @@ func doInfo(*gin.Context) *rkentry.ProcessInfo {
 // @Success 200 {object} rkentry.ProcessInfo
 // @Router /rk/v1/info [get]
 func (entry *CommonServiceEntry) Info(ctx *gin.Context) {
-	// Add auto generated request ID
-	rkginctx.AddRequestIdToOutgoingHeader(ctx)
-
 	if ctx == nil {
 		return
 	}
@@ -299,9 +290,6 @@ func (entry *CommonServiceEntry) Configs(ctx *gin.Context) {
 	if ctx == nil {
 		return
 	}
-
-	// Add auto generated request ID
-	rkginctx.AddRequestIdToOutgoingHeader(ctx)
 
 	ctx.JSON(http.StatusOK, doConfigs(ctx))
 }
@@ -371,9 +359,6 @@ func (entry *CommonServiceEntry) Apis(ctx *gin.Context) {
 
 	ctx.Header("Access-Control-Allow-Origin", "*")
 
-	// Add auto generated request ID
-	rkginctx.AddRequestIdToOutgoingHeader(ctx)
-
 	ctx.JSON(http.StatusOK, doApis(ctx))
 }
 
@@ -398,9 +383,6 @@ func (entry *CommonServiceEntry) Sys(ctx *gin.Context) {
 	if ctx == nil {
 		return
 	}
-
-	// Add auto generated request ID
-	rkginctx.AddRequestIdToOutgoingHeader(ctx)
 
 	ctx.JSON(http.StatusOK, doSys(ctx))
 }
@@ -431,7 +413,7 @@ func doReq(ctx *gin.Context) *rkentry.ReqResponse {
 	// Fill missed metrics
 	apis := make([]string, 0)
 
-	ginEntry := GetGinEntry(ctx.GetString(rkginctx.RKEntryNameKey))
+	ginEntry := GetGinEntry(ctx.GetString(rkginctx.RkEntryNameKey))
 	if ginEntry != nil {
 		routes := ginEntry.Router.Routes()
 		for j := range routes {
@@ -465,9 +447,6 @@ func (entry *CommonServiceEntry) Req(ctx *gin.Context) {
 	if ctx == nil {
 		return
 	}
-
-	// Add auto generated request Id
-	rkginctx.AddRequestIdToOutgoingHeader(ctx)
 
 	ctx.JSON(http.StatusOK, doReq(ctx))
 }
@@ -534,9 +513,6 @@ func (entry *CommonServiceEntry) Entries(ctx *gin.Context) {
 		return
 	}
 
-	// Add auto generated request ID
-	rkginctx.AddRequestIdToOutgoingHeader(ctx)
-
 	ctx.JSON(http.StatusOK, doEntries(ctx))
 }
 
@@ -594,9 +570,6 @@ func (entry *CommonServiceEntry) Certs(ctx *gin.Context) {
 		return
 	}
 
-	// Add auto generated request ID
-	rkginctx.AddRequestIdToOutgoingHeader(ctx)
-
 	ctx.JSON(http.StatusOK, doCerts(ctx))
 }
 
@@ -646,9 +619,6 @@ func doLogs(ctx *gin.Context) *rkentry.LogsResponse {
 		Entries: make(map[string][]*rkentry.LogsResponse_Entry),
 	}
 
-	// Add auto generated request ID
-	rkginctx.AddRequestIdToOutgoingHeader(ctx)
-
 	if ctx == nil {
 		return res
 	}
@@ -669,8 +639,6 @@ func (entry *CommonServiceEntry) Logs(ctx *gin.Context) {
 	if ctx == nil {
 		return
 	}
-	// Add auto generated request ID
-	rkginctx.AddRequestIdToOutgoingHeader(ctx)
 
 	ctx.JSON(http.StatusOK, doLogs(ctx))
 }
@@ -681,7 +649,7 @@ func getEntry(ctx *gin.Context) *GinEntry {
 		return nil
 	}
 
-	entryRaw := rkentry.GlobalAppCtx.GetEntry(ctx.GetString(rkginctx.RKEntryNameKey))
+	entryRaw := rkentry.GlobalAppCtx.GetEntry(ctx.GetString(rkginctx.RkEntryNameKey))
 	if entryRaw == nil {
 		return nil
 	}

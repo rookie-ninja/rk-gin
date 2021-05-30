@@ -38,7 +38,7 @@ func TestLoggingInterceptor_HappyCase(t *testing.T) {
 	handler(ctx)
 
 	// 1: event should be added into context
-	value, exist := ctx.Get(rkginctx.RKEventKey)
+	value, exist := ctx.Get(rkginctx.RkEventKey)
 	event := value.(rkquery.Event)
 	assert.True(t, exist)
 	assert.NotNil(t, event)
@@ -49,19 +49,17 @@ func TestLoggingInterceptor_HappyCase(t *testing.T) {
 	assert.Equal(t, "Ended", event.GetEventStatus().String())
 
 	// 2: logger should be added into context with incoming request ids
-	value, exist = ctx.Get(rkginctx.RKLoggerKey)
+	value, exist = ctx.Get(rkginctx.RkLoggerKey)
 	logger := value.(*zap.Logger)
 	assert.True(t, exist)
 	assert.NotNil(t, logger)
 }
 
-const unknown = "unknown"
-
 func TestDefaultVariables_HappyCase(t *testing.T) {
-	assert.Equal(t, unknown, rkginctx.Realm.String)
-	assert.Equal(t, unknown, rkginctx.Region.String)
-	assert.Equal(t, unknown, rkginctx.AZ.String)
-	assert.Equal(t, unknown, rkginctx.Domain.String)
+	assert.Equal(t, "*", rkginctx.Realm.String)
+	assert.Equal(t, "*", rkginctx.Region.String)
+	assert.Equal(t, "*", rkginctx.AZ.String)
+	assert.Equal(t, "*", rkginctx.Domain.String)
 	assert.NotEmpty(t, rkginctx.LocalIp.String)
 	assert.NotEmpty(t, rkginctx.LocalHostname.String)
 }

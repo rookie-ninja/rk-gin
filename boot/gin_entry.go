@@ -15,6 +15,7 @@ import (
 	"github.com/rookie-ninja/rk-entry/entry"
 	"github.com/rookie-ninja/rk-gin/interceptor/auth"
 	"github.com/rookie-ninja/rk-gin/interceptor/basic"
+	rkginextension "github.com/rookie-ninja/rk-gin/interceptor/extension"
 	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
 	"github.com/rookie-ninja/rk-gin/interceptor/metrics/prom"
 	"github.com/rookie-ninja/rk-gin/interceptor/panic/zap"
@@ -55,8 +56,10 @@ func init() {
 // 9: Gin.Interceptors.MetricsProm.Enable: Enable prometheus interceptor.
 // 10: Gin.Interceptors.BasicAuth.Enabled: Enable basic auth.
 // 11: Gin.interceptors.BasicAuth.Credentials: Credential for basic auth, scheme: <user:pass>
-// 12: Gin.Logger.ZapLogger.Ref: Zap logger reference, see rkentry.ZapLoggerEntry for details.
-// 13: Gin.Logger.EventLogger.Ref: Event logger reference, see rkentry.EventLoggerEntry for details.
+// 12: Gin.interceptors.Extension.Enabled: Enable extension interceptor.
+// 13: Gin.interceptors.Extension.Prefix: Prefix of extension header key.
+// 14: Gin.Logger.ZapLogger.Ref: Zap logger reference, see rkentry.ZapLoggerEntry for details.
+// 15: Gin.Logger.EventLogger.Ref: Event logger reference, see rkentry.EventLoggerEntry for details.
 type BootConfigGin struct {
 	Gin []struct {
 		Name        string `yaml:"name" json:"name"`
@@ -80,6 +83,10 @@ type BootConfigGin struct {
 				Enabled     bool     `yaml:"enabled" json:"enabled"`
 				Credentials []string `yaml:"credentials" json:"credentials"`
 			} `yaml:"basicAuth" json:"basicAuth"`
+			Extension struct {
+				Enabled bool   `yaml:"enabled" json:"enabled"`
+				Prefix  string `yaml:"prefix" json:"prefix"`
+			} `yaml:"extension" json:"extension"`
 		} `yaml:"interceptors" json:"interceptors"`
 		Logger struct {
 			ZapLogger struct {
@@ -355,6 +362,16 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 			inters = append(inters, rkginauth.BasicAuthInterceptor(accounts, element.Name))
 		}
 
+		// Did we enabled extension interceptor?
+		if element.Interceptors.Extension.Enabled {
+			opts := []rkginextension.Option{
+				rkginextension.WithEntryNameAndType(element.Name, GinEntryType),
+				rkginextension.WithPrefix(element.Interceptors.Extension.Prefix),
+			}
+
+			inters = append(inters, rkginextension.ExtensionInterceptor(opts...))
+		}
+
 		// Did we enabled common service?
 		var commonServiceEntry *CommonServiceEntry
 		if element.CommonService.Enabled {
@@ -432,9 +449,6 @@ func RegisterGinEntry(opts ...GinEntryOption) *GinEntry {
 		entry.Router = gin.New()
 	}
 
-	// Default interceptor should be at front
-	entry.Router.Use(entry.Interceptors...)
-
 	// Init server only if port is not zero
 	if entry.Port != 0 {
 		entry.Server = &http.Server{
@@ -508,6 +522,9 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 	entry.logBasicInfo(event)
 
 	ctx = context.Background()
+
+	// Default interceptor should be at front
+	entry.Router.Use(entry.Interceptors...)
 
 	// Is swagger enabled?
 	if entry.IsSwEnabled() {
@@ -587,6 +604,7 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 	entry.EventLoggerEntry.GetEventHelper().Finish(event)
 }
 
+// Interrupt GinEntry.
 func (entry *GinEntry) Interrupt(ctx context.Context) {
 	event := entry.EventLoggerEntry.GetEventHelper().Start(
 		"interrupt",
@@ -624,6 +642,12 @@ func (entry *GinEntry) Interrupt(ctx context.Context) {
 	}
 
 	entry.EventLoggerEntry.GetEventHelper().Finish(event)
+}
+
+// Add interceptors.
+// This function should be called before Bootstrap() called.
+func (entry *GinEntry) AddInterceptor(inters ...gin.HandlerFunc) {
+	entry.Interceptors = append(entry.Interceptors, inters...)
 }
 
 // Is swagger entry enabled?

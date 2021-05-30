@@ -34,8 +34,8 @@ gin:
   - name: greeter                             # Required
     port: 8080                                # Required
     description: "greeter server"             # Optional, default: ""
-    cert:                                     # Optional
-      ref: "local-cert"                       # Optional, default: "", reference of cert entry declared above
+    #cert:                                     # Optional
+    #  ref: "local-cert"                       # Optional, default: "", reference of cert entry declared above
     sw:                                       # Optional
       enabled: true                           # Optional, default: false
       path: "sw"                              # Optional, default: "sw"

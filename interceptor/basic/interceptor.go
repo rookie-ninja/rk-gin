@@ -7,8 +7,8 @@ import (
 
 func BasicInterceptor(opts ...Option) gin.HandlerFunc {
 	set := &optionSet{
-		EntryName: rkginctx.RKEntryNameValue,
-		EntryType: "gin",
+		EntryName: rkginctx.RkEntryNameValue,
+		EntryType: rkginctx.RkEntryTypeValue,
 	}
 
 	for i := range opts {
@@ -20,8 +20,8 @@ func BasicInterceptor(opts ...Option) gin.HandlerFunc {
 	}
 
 	return func(ctx *gin.Context) {
-		if len(ctx.GetString(rkginctx.RKEntryNameKey)) < 1 {
-			ctx.Set(rkginctx.RKEntryNameKey, set.EntryName)
+		if len(ctx.GetString(rkginctx.RkEntryNameKey)) < 1 {
+			ctx.Set(rkginctx.RkEntryNameKey, set.EntryName)
 		}
 
 		ctx.Next()
@@ -33,7 +33,7 @@ func getOptionSet(ctx *gin.Context) *optionSet {
 		return nil
 	}
 
-	entryName := ctx.GetString(rkginctx.RKEntryNameKey)
+	entryName := ctx.GetString(rkginctx.RkEntryNameKey)
 	return optionsMap[entryName]
 }
 

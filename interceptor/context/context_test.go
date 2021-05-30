@@ -156,7 +156,7 @@ func TestGetEvent_HappyCase(t *testing.T) {
 	ctx, _ := gin.CreateTestContext(writer)
 
 	event := rkquery.NewEventFactory().CreateEventNoop()
-	ctx.Set(RKEventKey, event)
+	ctx.Set(RkEventKey, event)
 
 	assert.Equal(t, event, GetEvent(ctx))
 }
@@ -187,7 +187,7 @@ func TestGetLogger_HappyCase(t *testing.T) {
 	ctx, _ := gin.CreateTestContext(writer)
 
 	logger := rklogger.NoopLogger
-	ctx.Set(RKLoggerKey, logger)
+	ctx.Set(RkLoggerKey, logger)
 
 	assert.Equal(t, logger, GetLogger(ctx))
 }

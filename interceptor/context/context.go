@@ -14,23 +14,24 @@ import (
 )
 
 var (
-	Realm         = zap.String("realm", rkcommon.GetEnvValueOrDefault("REALM", "unknown"))
-	Region        = zap.String("region", rkcommon.GetEnvValueOrDefault("REGION", "unknown"))
-	AZ            = zap.String("az", rkcommon.GetEnvValueOrDefault("AZ", "unknown"))
-	Domain        = zap.String("domain", rkcommon.GetEnvValueOrDefault("DOMAIN", "unknown"))
+	Realm         = zap.String("realm", rkcommon.GetEnvValueOrDefault("REALM", "*"))
+	Region        = zap.String("region", rkcommon.GetEnvValueOrDefault("REGION", "*"))
+	AZ            = zap.String("az", rkcommon.GetEnvValueOrDefault("AZ", "*"))
+	Domain        = zap.String("domain", rkcommon.GetEnvValueOrDefault("DOMAIN", "*"))
 	LocalIp       = zap.String("localIp", rkcommon.GetLocalIP())
 	LocalHostname = zap.String("localHostname", rkcommon.GetLocalHostname())
 )
 
 const (
-	RequestIdKeyLowerCase = "requestid"
-	RequestIdKeyDash      = "request-id"
-	RequestIdKeyUnderline = "request_id"
+	RequestIdKeyLowerCase = "Requestid"
+	RequestIdKeyDash      = "Request-Id"
+	RequestIdKeyUnderline = "Request_Id"
 	RequestIdKeyDefault   = RequestIdKeyDash
-	RKEventKey            = "rkevent"
-	RKLoggerKey           = "rklogger"
-	RKEntryNameKey        = "rkentry"
-	RKEntryNameValue      = "rkentry"
+	RkEventKey            = "rkEvent"
+	RkLoggerKey           = "rkLogger"
+	RkEntryNameKey        = "rkEntry"
+	RkEntryNameValue      = "rkEntry"
+	RkEntryTypeValue      = "gin"
 )
 
 // Add Key values to outgoing header
@@ -66,7 +67,7 @@ func GetEvent(ctx *gin.Context) rkquery.Event {
 		return rkquery.NewEventFactory().CreateEventNoop()
 	}
 
-	event, ok := ctx.Get(RKEventKey)
+	event, ok := ctx.Get(RkEventKey)
 
 	if !ok {
 		return rkquery.NewEventFactory().CreateEventNoop()
@@ -81,7 +82,7 @@ func GetLogger(ctx *gin.Context) *zap.Logger {
 		return rklogger.NoopLogger
 	}
 
-	logger, ok := ctx.Get(RKLoggerKey)
+	logger, ok := ctx.Get(RkLoggerKey)
 
 	if !ok {
 		return rklogger.NoopLogger

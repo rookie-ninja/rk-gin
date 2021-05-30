@@ -8,12 +8,13 @@ import (
 	"context"
 	"github.com/rookie-ninja/rk-entry/entry"
 	"github.com/rookie-ninja/rk-gin/boot"
+	"github.com/rookie-ninja/rk-gin/interceptor/extension"
 	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
 )
 
 func main() {
-	bootFromConfig()
-	//bootFromCode()
+	//bootFromConfig()
+	bootFromCode()
 }
 
 func bootFromConfig() {
@@ -39,7 +40,8 @@ func bootFromCode() {
 		rkgin.WithNameGin("greeter"),
 		rkgin.WithPortGin(8080),
 		rkgin.WithCommonServiceEntryGin(rkgin.NewCommonServiceEntry()),
-		rkgin.WithInterceptorsGin(rkginlog.LoggingZapInterceptor([]rkginlog.Option{}...)))
+		rkgin.WithInterceptorsGin(rkginlog.LoggingZapInterceptor([]rkginlog.Option{}...),
+			rkginextension.ExtensionInterceptor()))
 
 	// Start server
 	go entry.Bootstrap(context.Background())

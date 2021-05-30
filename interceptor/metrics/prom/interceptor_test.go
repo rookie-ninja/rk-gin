@@ -39,7 +39,7 @@ func TestMetricsInterceptor_HappyCase(t *testing.T) {
 func TestDefaultMetricsVariables_HappyCase(t *testing.T) {
 	ctx := &gin.Context{
 		Keys: map[string]interface{}{
-			rkginctx.RKEntryNameKey: rkginctx.RKEntryNameValue,
+			rkginctx.RkEntryNameKey: rkginctx.RkEntryNameValue,
 		},
 	}
 
@@ -50,7 +50,7 @@ func TestDefaultMetricsVariables_HappyCase(t *testing.T) {
 
 	// server metrics
 	assert.Equal(t, rkentry.AppNameDefault, GetServerMetricsSet(ctx).GetNamespace())
-	assert.Equal(t, rkginctx.RKEntryNameValue, GetServerMetricsSet(ctx).GetSubSystem())
+	assert.Equal(t, rkginctx.RkEntryNameValue, GetServerMetricsSet(ctx).GetSubSystem())
 
 	// default labels
 	assert.Contains(t, DefaultLabelKeys, "entryName")
@@ -72,11 +72,11 @@ func TestDefaultMetricsVariables_HappyCase(t *testing.T) {
 
 func TestInitMetrics_HappyCase(t *testing.T) {
 	set := &optionSet{
-		EntryName: rkginctx.RKEntryNameValue,
+		EntryName: rkginctx.RkEntryNameValue,
 		EntryType: "gin",
 		MetricsSet: rkprom.NewMetricsSet(
 			rkentry.GlobalAppCtx.GetAppInfoEntry().AppName,
-			rkginctx.RKEntryNameValue,
+			rkginctx.RkEntryNameValue,
 			prometheus.DefaultRegisterer),
 	}
 
@@ -106,7 +106,7 @@ func TestGetServerDurationMetrics_WithNilURL(t *testing.T) {
 	ctx := &gin.Context{
 		Request: &http.Request{},
 		Keys: map[string]interface{}{
-			rkginctx.RKEntryNameKey: rkginctx.RKEntryNameValue,
+			rkginctx.RkEntryNameKey: rkginctx.RkEntryNameValue,
 		},
 	}
 
@@ -124,7 +124,7 @@ func TestGetServerDurationMetrics_WithNilWriter(t *testing.T) {
 		Request: &http.Request{},
 		Writer:  nil,
 		Keys: map[string]interface{}{
-			rkginctx.RKEntryNameKey: rkginctx.RKEntryNameValue,
+			rkginctx.RkEntryNameKey: rkginctx.RkEntryNameValue,
 		},
 	}
 
@@ -143,7 +143,7 @@ func TestGetServerDurationMetrics_HappyCase(t *testing.T) {
 		URL: &url.URL{},
 	}
 
-	ctx.Set(rkginctx.RKEntryNameKey, rkginctx.RKEntryNameValue)
+	ctx.Set(rkginctx.RkEntryNameKey, rkginctx.RkEntryNameValue)
 
 	// init prom interceptor
 	MetricsPromInterceptor()
@@ -161,7 +161,7 @@ func TestGetServerErrorMetrics_WithNilContext(t *testing.T) {
 func TestGetServerErrorMetrics_WithNilRequest(t *testing.T) {
 	ctx := &gin.Context{
 		Keys: map[string]interface{}{
-			rkginctx.RKEntryNameKey: rkginctx.RKEntryNameValue,
+			rkginctx.RkEntryNameKey: rkginctx.RkEntryNameValue,
 		},
 	}
 
@@ -178,7 +178,7 @@ func TestGetServerErrorMetrics_WithNilURL(t *testing.T) {
 	ctx := &gin.Context{
 		Request: &http.Request{},
 		Keys: map[string]interface{}{
-			rkginctx.RKEntryNameKey: rkginctx.RKEntryNameValue,
+			rkginctx.RkEntryNameKey: rkginctx.RkEntryNameValue,
 		},
 	}
 
@@ -196,7 +196,7 @@ func TestGetServerErrorMetrics_WithNilWriter(t *testing.T) {
 		Request: &http.Request{},
 		Writer:  nil,
 		Keys: map[string]interface{}{
-			rkginctx.RKEntryNameKey: rkginctx.RKEntryNameValue,
+			rkginctx.RkEntryNameKey: rkginctx.RkEntryNameValue,
 		},
 	}
 
@@ -215,7 +215,7 @@ func TestGetServerErrorMetrics_HappyCase(t *testing.T) {
 		URL: &url.URL{},
 	}
 
-	ctx.Set(rkginctx.RKEntryNameKey, rkginctx.RKEntryNameValue)
+	ctx.Set(rkginctx.RkEntryNameKey, rkginctx.RkEntryNameValue)
 
 	// init prom interceptor
 	MetricsPromInterceptor()
@@ -233,7 +233,7 @@ func TestGetServerResCodeMetrics_WithNilContext(t *testing.T) {
 func TestGetServerResCodeMetrics_WithNilRequest(t *testing.T) {
 	ctx := &gin.Context{
 		Keys: map[string]interface{}{
-			rkginctx.RKEntryNameKey: rkginctx.RKEntryNameValue,
+			rkginctx.RkEntryNameKey: rkginctx.RkEntryNameValue,
 		},
 	}
 
@@ -250,7 +250,7 @@ func TestGetServerResCodeMetrics_WithNilURL(t *testing.T) {
 	ctx := &gin.Context{
 		Request: &http.Request{},
 		Keys: map[string]interface{}{
-			rkginctx.RKEntryNameKey: rkginctx.RKEntryNameValue,
+			rkginctx.RkEntryNameKey: rkginctx.RkEntryNameValue,
 		},
 	}
 
@@ -268,7 +268,7 @@ func TestGetServerResCodeMetrics_WithNilWriter(t *testing.T) {
 		Request: &http.Request{},
 		Writer:  nil,
 		Keys: map[string]interface{}{
-			rkginctx.RKEntryNameKey: rkginctx.RKEntryNameValue,
+			rkginctx.RkEntryNameKey: rkginctx.RkEntryNameValue,
 		},
 	}
 
@@ -287,7 +287,7 @@ func TestGetServerResCodeMetrics_HappyCase(t *testing.T) {
 		URL: &url.URL{},
 	}
 
-	ctx.Set(rkginctx.RKEntryNameKey, rkginctx.RKEntryNameValue)
+	ctx.Set(rkginctx.RkEntryNameKey, rkginctx.RkEntryNameValue)
 
 	// init prom interceptor
 	MetricsPromInterceptor()
