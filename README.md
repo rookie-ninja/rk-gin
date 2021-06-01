@@ -351,6 +351,7 @@ $ curl -vs -X GET "http://localhost:8080/rk/v1/configs" -H  "accept: application
 | /rk/v1/tv/env | Get Go environment of HTML page |
 | /rk/v1/tv/prometheus | Get metrics of HTML page |
 | /rk/v1/log | Get log of HTML page |
+| /rk/v1/dep | Get dependency of HTML page |
 
 ### Development Status: Stable
 

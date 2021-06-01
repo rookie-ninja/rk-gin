@@ -9,6 +9,7 @@ rk: # NOT required
   iconUrl: "http://example.com"       # Optional, default: ""
   docsUrl: ["http://example.com"]     # Optional, default: []
   maintainers: ["rk-dev"]             # Optional, default: []
+  depDocPath: "example/boot/dep"
 zapLogger:                                    # Optional
   - name: zap-logger                          # Required
     description: "Description of entry"       # Optional

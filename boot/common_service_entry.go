@@ -28,17 +28,14 @@ const (
 // @version 1.0
 // @description This is a common service with rk-gin.
 // @termsOfService http://swagger.io/terms/
-
 // @contact.name API Support
 // @contact.url http://www.swagger.io/support
 // @contact.email support@swagger.io
-
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
-
 // @securityDefinitions.basic BasicAuth
-
 // @name Authorization
+// @schemes http https
 
 // Bootstrap config of common service.
 // 1: Enabled: Enable common service.
@@ -656,4 +653,51 @@ func getEntry(ctx *gin.Context) *GinEntry {
 
 	entry, _ := entryRaw.(*GinEntry)
 	return entry
+}
+
+// @Summary List dependencies related application
+// @Id 11
+// @version 1.0
+// @produce application/json
+// @Success 200 {object} rkentry.DepResponse
+// @Router /rk/v1/deps [get]
+func (entry *CommonServiceEntry) Deps(ctx *gin.Context) {
+	if ctx == nil {
+		return
+	}
+
+	ctx.JSON(http.StatusOK, doDeps(ctx))
+}
+
+// Extract Gin entry from gin_zap middleware
+func doDeps(ctx *gin.Context) *rkentry.DepResponse {
+	res := &rkentry.DepResponse{
+		Deps: make([]*rkentry.DepResponse_Dep, 0),
+	}
+
+	if ctx == nil {
+		return res
+	}
+
+	appInfoEntry := rkentry.GlobalAppCtx.GetAppInfoEntry()
+	if appInfoEntry == nil {
+		return res
+	}
+
+	for i := range appInfoEntry.Dependencies {
+		element := appInfoEntry.Dependencies[i]
+		// Only shows direct dependency currently
+		if !element.Indirect && !element.Main {
+			res.Deps = append(res.Deps, &rkentry.DepResponse_Dep{
+				Path:      element.Path,
+				Main:      element.Main,
+				Indirect:  element.Indirect,
+				Version:   element.Version,
+				GoVersion: element.GoVersion,
+				Time:      element.Time,
+			})
+		}
+	}
+
+	return res
 }

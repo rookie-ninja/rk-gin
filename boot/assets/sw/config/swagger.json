@@ -1,4 +1,8 @@
 {
+    "schemes": [
+        "http",
+        "https"
+    ],
     "swagger": "2.0",
     "info": {
         "description": "This is a common service with rk-gin.",
@@ -62,6 +66,23 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/rkentry.ConfigsResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rk/v1/deps": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List dependencies related application",
+                "operationId": "11",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/rkentry.DepResponse"
                         }
                     }
                 }
@@ -192,7 +213,7 @@
                     "text/html"
                 ],
                 "summary": "Get HTML page of /tv",
-                "operationId": "11",
+                "operationId": "12",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -373,6 +394,40 @@
                     "type": "integer"
                 },
                 "vendorId": {
+                    "type": "string"
+                }
+            }
+        },
+        "rkentry.DepResponse": {
+            "type": "object",
+            "properties": {
+                "deps": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/rkentry.DepResponse_Dep"
+                    }
+                }
+            }
+        },
+        "rkentry.DepResponse_Dep": {
+            "type": "object",
+            "properties": {
+                "goVersion": {
+                    "type": "string"
+                },
+                "indirect": {
+                    "type": "boolean"
+                },
+                "main": {
+                    "type": "boolean"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "version": {
                     "type": "string"
                 }
             }

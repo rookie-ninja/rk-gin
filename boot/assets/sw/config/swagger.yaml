@@ -111,6 +111,28 @@ definitions:
       vendorId:
         type: string
     type: object
+  rkentry.DepResponse:
+    properties:
+      deps:
+        items:
+          $ref: '#/definitions/rkentry.DepResponse_Dep'
+        type: array
+    type: object
+  rkentry.DepResponse_Dep:
+    properties:
+      goVersion:
+        type: string
+      indirect:
+        type: boolean
+      main:
+        type: boolean
+      path:
+        type: string
+      time:
+        type: string
+      version:
+        type: string
+    type: object
   rkentry.EntriesResponse:
     properties:
       entries:
@@ -393,6 +415,17 @@ paths:
           schema:
             $ref: '#/definitions/rkentry.ConfigsResponse'
       summary: List ConfigEntry
+  /rk/v1/deps:
+    get:
+      operationId: "11"
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rkentry.DepResponse'
+      summary: List dependencies related application
   /rk/v1/entries:
     get:
       operationId: "8"
@@ -472,7 +505,7 @@ paths:
       summary: Get OS Stat
   /rk/v1/tv:
     get:
-      operationId: "11"
+      operationId: "12"
       produces:
       - text/html
       responses:
@@ -481,6 +514,9 @@ paths:
           schema:
             type: string
       summary: Get HTML page of /tv
+schemes:
+- http
+- https
 securityDefinitions:
   BasicAuth:
     type: basic

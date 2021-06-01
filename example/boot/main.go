@@ -13,8 +13,8 @@ import (
 )
 
 func main() {
-	//bootFromConfig()
-	bootFromCode()
+	bootFromConfig()
+	//bootFromCode()
 }
 
 func bootFromConfig() {

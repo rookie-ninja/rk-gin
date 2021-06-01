@@ -23,3 +23,5 @@ require (
 	golang.org/x/sys v0.0.0-20210426230700-d19ff857e887 // indirect
 	golang.org/x/tools v0.1.0 // indirect
 )
+
+replace github.com/rookie-ninja/rk-entry => /Users/dongxuny/workspace/rk/rk-entry

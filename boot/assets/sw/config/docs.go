@@ -84,6 +84,23 @@ var doc = `{
                 }
             }
         },
+        "/rk/v1/deps": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List dependencies related application",
+                "operationId": "11",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/rkentry.DepResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/rk/v1/entries": {
             "get": {
                 "produces": [
@@ -209,7 +226,7 @@ var doc = `{
                     "text/html"
                 ],
                 "summary": "Get HTML page of /tv",
-                "operationId": "11",
+                "operationId": "12",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -390,6 +407,40 @@ var doc = `{
                     "type": "integer"
                 },
                 "vendorId": {
+                    "type": "string"
+                }
+            }
+        },
+        "rkentry.DepResponse": {
+            "type": "object",
+            "properties": {
+                "deps": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/rkentry.DepResponse_Dep"
+                    }
+                }
+            }
+        },
+        "rkentry.DepResponse_Dep": {
+            "type": "object",
+            "properties": {
+                "goVersion": {
+                    "type": "string"
+                },
+                "indirect": {
+                    "type": "boolean"
+                },
+                "main": {
+                    "type": "boolean"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "version": {
                     "type": "string"
                 }
             }
@@ -775,7 +826,7 @@ var SwaggerInfo = swaggerInfo{
 	Version:     "1.0",
 	Host:        "",
 	BasePath:    "",
-	Schemes:     []string{},
+	Schemes:     []string{"http", "https"},
 	Title:       "RK Swagger for Gin",
 	Description: "This is a common service with rk-gin.",
 }

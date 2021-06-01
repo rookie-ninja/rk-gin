@@ -35,6 +35,7 @@ var (
 	OsTemplate            = readFileFromPkger("/assets/tv/os.tmpl")
 	EnvTemplate           = readFileFromPkger("/assets/tv/env.tmpl")
 	PrometheusTemplate    = readFileFromPkger("/assets/tv/prometheus.tmpl")
+	DepTemplate           = readFileFromPkger("/assets/tv/dep.tmpl")
 	LogTemplate           = readFileFromPkger("/assets/tv/log.tmpl")
 )
 
@@ -156,6 +157,7 @@ func (entry *TvEntry) AssetsFileHandler() gin.HandlerFunc {
 // 12: env.tmpl
 // 13: prometheus.tmpl
 // 14: log.tmpl
+// 15: dep.tmpl
 func (entry *TvEntry) Bootstrap(ctx context.Context) {
 	event := entry.EventLoggerEntry.GetEventHelper().Start(
 		"bootstrap",
@@ -266,6 +268,13 @@ func (entry *TvEntry) Bootstrap(ctx context.Context) {
 		rkcommon.ShutdownWithError(err)
 	}
 
+	// Parse dep template
+	if _, err := entry.Template.Parse(string(DepTemplate)); err != nil {
+		entry.EventLoggerEntry.GetEventHelper().FinishWithError(event, err)
+		entry.ZapLoggerEntry.GetLogger().Error("Error occurs while dep template.")
+		rkcommon.ShutdownWithError(err)
+	}
+
 	// Parse not found template
 	if _, err := entry.Template.Parse(string(NotFoundTemplate)); err != nil {
 		entry.EventLoggerEntry.GetEventHelper().FinishWithError(event, err)
@@ -347,7 +356,7 @@ func (entry *TvEntry) logBasicInfo(event rkquery.Event) {
 }
 
 // @Summary Get HTML page of /tv
-// @Id 11
+// @Id 12
 // @version 1.0
 // @produce text/html
 // @Success 200 string HTML
@@ -442,6 +451,15 @@ func (entry *TvEntry) TV(ctx *gin.Context) {
 		buf := new(bytes.Buffer)
 
 		if err := entry.Template.ExecuteTemplate(buf, "log", doLogs(ctx)); err != nil {
+			logger.Warn("Failed to execute template", zap.Error(err))
+			buf.Reset()
+			entry.Template.ExecuteTemplate(buf, "internal-error", nil)
+		}
+		ctx.Data(http.StatusOK, contentType, buf.Bytes())
+	case "/dep":
+		buf := new(bytes.Buffer)
+
+		if err := entry.Template.ExecuteTemplate(buf, "dep", doDeps(ctx)); err != nil {
 			logger.Warn("Failed to execute template", zap.Error(err))
 			buf.Reset()
 			entry.Template.ExecuteTemplate(buf, "internal-error", nil)
