@@ -36,6 +36,8 @@ var (
 	EnvTemplate           = readFileFromPkger("/assets/tv/env.tmpl")
 	PrometheusTemplate    = readFileFromPkger("/assets/tv/prometheus.tmpl")
 	DepTemplate           = readFileFromPkger("/assets/tv/dep.tmpl")
+	LicenseTemplate       = readFileFromPkger("/assets/tv/license.tmpl")
+	InfoTemplate          = readFileFromPkger("/assets/tv/info.tmpl")
 	LogTemplate           = readFileFromPkger("/assets/tv/log.tmpl")
 )
 
@@ -158,6 +160,8 @@ func (entry *TvEntry) AssetsFileHandler() gin.HandlerFunc {
 // 13: prometheus.tmpl
 // 14: log.tmpl
 // 15: dep.tmpl
+// 16: license.tmpl
+// 17: readme.tmpl
 func (entry *TvEntry) Bootstrap(ctx context.Context) {
 	event := entry.EventLoggerEntry.GetEventHelper().Start(
 		"bootstrap",
@@ -275,6 +279,20 @@ func (entry *TvEntry) Bootstrap(ctx context.Context) {
 		rkcommon.ShutdownWithError(err)
 	}
 
+	// Parse license template
+	if _, err := entry.Template.Parse(string(LicenseTemplate)); err != nil {
+		entry.EventLoggerEntry.GetEventHelper().FinishWithError(event, err)
+		entry.ZapLoggerEntry.GetLogger().Error("Error occurs while license template.")
+		rkcommon.ShutdownWithError(err)
+	}
+
+	// Parse info template
+	if _, err := entry.Template.Parse(string(InfoTemplate)); err != nil {
+		entry.EventLoggerEntry.GetEventHelper().FinishWithError(event, err)
+		entry.ZapLoggerEntry.GetLogger().Error("Error occurs while info template.")
+		rkcommon.ShutdownWithError(err)
+	}
+
 	// Parse not found template
 	if _, err := entry.Template.Parse(string(NotFoundTemplate)); err != nil {
 		entry.EventLoggerEntry.GetEventHelper().FinishWithError(event, err)
@@ -356,7 +374,7 @@ func (entry *TvEntry) logBasicInfo(event rkquery.Event) {
 }
 
 // @Summary Get HTML page of /tv
-// @Id 12
+// @Id 14
 // @version 1.0
 // @produce text/html
 // @Success 200 string HTML
@@ -374,10 +392,10 @@ func (entry *TvEntry) TV(ctx *gin.Context) {
 	contentType := "text/html; charset=utf-8"
 
 	switch item := ctx.Param("item"); item {
-	case "/", "/overview":
+	case "/", "/overview", "/application":
 		buf := new(bytes.Buffer)
 
-		if err := entry.Template.ExecuteTemplate(buf, "overview", doInfo(ctx)); err != nil {
+		if err := entry.Template.ExecuteTemplate(buf, "overview", doReadme(ctx)); err != nil {
 			logger.Warn("Failed to execute template", zap.Error(err))
 			buf.Reset()
 			entry.Template.ExecuteTemplate(buf, "internal-error", nil)
@@ -460,6 +478,24 @@ func (entry *TvEntry) TV(ctx *gin.Context) {
 		buf := new(bytes.Buffer)
 
 		if err := entry.Template.ExecuteTemplate(buf, "dep", doDeps(ctx)); err != nil {
+			logger.Warn("Failed to execute template", zap.Error(err))
+			buf.Reset()
+			entry.Template.ExecuteTemplate(buf, "internal-error", nil)
+		}
+		ctx.Data(http.StatusOK, contentType, buf.Bytes())
+	case "/license":
+		buf := new(bytes.Buffer)
+
+		if err := entry.Template.ExecuteTemplate(buf, "license", doLicense(ctx)); err != nil {
+			logger.Warn("Failed to execute template", zap.Error(err))
+			buf.Reset()
+			entry.Template.ExecuteTemplate(buf, "internal-error", nil)
+		}
+		ctx.Data(http.StatusOK, contentType, buf.Bytes())
+	case "/info":
+		buf := new(bytes.Buffer)
+
+		if err := entry.Template.ExecuteTemplate(buf, "info", doInfo(ctx)); err != nil {
 			logger.Warn("Failed to execute template", zap.Error(err))
 			buf.Reset()
 			entry.Template.ExecuteTemplate(buf, "internal-error", nil)

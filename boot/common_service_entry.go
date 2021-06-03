@@ -671,9 +671,7 @@ func (entry *CommonServiceEntry) Deps(ctx *gin.Context) {
 
 // Extract Gin entry from gin_zap middleware
 func doDeps(ctx *gin.Context) *rkentry.DepResponse {
-	res := &rkentry.DepResponse{
-		Deps: make([]*rkentry.DepResponse_Dep, 0),
-	}
+	res := &rkentry.DepResponse{}
 
 	if ctx == nil {
 		return res
@@ -684,20 +682,71 @@ func doDeps(ctx *gin.Context) *rkentry.DepResponse {
 		return res
 	}
 
-	for i := range appInfoEntry.Dependencies {
-		element := appInfoEntry.Dependencies[i]
-		// Only shows direct dependency currently
-		if !element.Indirect && !element.Main {
-			res.Deps = append(res.Deps, &rkentry.DepResponse_Dep{
-				Path:      element.Path,
-				Main:      element.Main,
-				Indirect:  element.Indirect,
-				Version:   element.Version,
-				GoVersion: element.GoVersion,
-				Time:      element.Time,
-			})
-		}
+	res.GoMod = appInfoEntry.GoMod
+
+	return res
+}
+
+// @Summary Get license related application
+// @Id 12
+// @version 1.0
+// @produce application/json
+// @Success 200 {object} rkentry.LicenseResponse
+// @Router /rk/v1/license [get]
+func (entry *CommonServiceEntry) License(ctx *gin.Context) {
+	if ctx == nil {
+		return
 	}
+
+	ctx.JSON(http.StatusOK, doDeps(ctx))
+}
+
+// Extract Gin entry from gin_zap middleware
+func doLicense(ctx *gin.Context) *rkentry.LicenseResponse {
+	res := &rkentry.LicenseResponse{}
+
+	if ctx == nil {
+		return res
+	}
+
+	appInfoEntry := rkentry.GlobalAppCtx.GetAppInfoEntry()
+	if appInfoEntry == nil {
+		return res
+	}
+
+	res.License = appInfoEntry.License
+
+	return res
+}
+
+// @Summary List dependencies related application
+// @Id 13
+// @version 1.0
+// @produce application/json
+// @Success 200 {object} rkentry.ReadmeResponse
+// @Router /rk/v1/readme [get]
+func (entry *CommonServiceEntry) Readme(ctx *gin.Context) {
+	if ctx == nil {
+		return
+	}
+
+	ctx.JSON(http.StatusOK, doDeps(ctx))
+}
+
+// Extract Gin entry from gin_zap middleware
+func doReadme(ctx *gin.Context) *rkentry.ReadmeResponse {
+	res := &rkentry.ReadmeResponse{}
+
+	if ctx == nil {
+		return res
+	}
+
+	appInfoEntry := rkentry.GlobalAppCtx.GetAppInfoEntry()
+	if appInfoEntry == nil {
+		return res
+	}
+
+	res.Readme = appInfoEntry.Readme
 
 	return res
 }

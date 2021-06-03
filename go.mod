@@ -8,8 +8,8 @@ require (
 	github.com/go-playground/validator/v10 v10.4.0 // indirect
 	github.com/markbates/pkger v0.17.1
 	github.com/prometheus/client_golang v1.10.0
-	github.com/rookie-ninja/rk-common v1.0.9-0.20210530171126-79321c44dfc3
-	github.com/rookie-ninja/rk-entry v0.0.0-20210530171619-c77e0de5e0d5
+	github.com/rookie-ninja/rk-common v1.0.9-0.20210602174956-0d8f06f467bf
+	github.com/rookie-ninja/rk-entry v0.0.0-20210603184540-aa346baf4180
 	github.com/rookie-ninja/rk-logger v1.0.10-0.20210527055114-0f92ffe223bd
 	github.com/rookie-ninja/rk-prom v1.0.9-0.20210527055610-630e7f52f31f
 	github.com/rookie-ninja/rk-query v1.0.12-0.20210527055238-1903a9f7266e
@@ -23,5 +23,3 @@ require (
 	golang.org/x/sys v0.0.0-20210426230700-d19ff857e887 // indirect
 	golang.org/x/tools v0.1.0 // indirect
 )
-
-replace github.com/rookie-ninja/rk-entry => /Users/dongxuny/workspace/rk/rk-entry

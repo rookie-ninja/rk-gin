@@ -109,7 +109,13 @@ func LoggingZapInterceptor(opts ...Option) gin.HandlerFunc {
 		}
 
 		event.SetEndTime(endTime)
-		event.WriteLog()
+
+		// ignoring /rk/v1/assets, /rk/v1/tv and /sw/ path while logging since these are internal APIs.
+		if !strings.HasPrefix(ctx.Request.RequestURI, "/rk/v1/assets") &&
+			!strings.HasPrefix(ctx.Request.RequestURI, "/rk/v1/tv") &&
+			!strings.HasPrefix(ctx.Request.RequestURI, "/sw/") {
+			event.WriteLog()
+		}
 	}
 }
 

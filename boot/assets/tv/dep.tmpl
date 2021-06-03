@@ -4,9 +4,6 @@
 {{template "head"}}
 
 <body>
-<link rel="stylesheet" href="https://www.jqueryscript.net/demo/Paginate-Sort-Filter-Table-Sortable/table-sortable.css" />
-<script src="https://www.jqueryscript.net/demo/Paginate-Sort-Filter-Table-Sortable/table-sortable.js"></script>
-
 {{template "svg-sprite"}}
 
 <div class="wrapper dark-mode-dim">
@@ -33,45 +30,16 @@
         <div class="gdoc-page__anchorwrap">
           <h1 id="dep"> Dependency </h1>
         </div>
-        <input type="text" placeholder="Search in table..." id="searchField">
-        <select name="rowsPerPage" id="changeRows">
-            <option value="10" selected>10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-        </select>
-        <div id="table-sortable"></div>
+        <div class="gdoc-markdown--nested">
+          <div class="highlight">
+            <pre class="" id="goMod">{{ .GoMod }}</pre>
+          </div>
+        </div>
       </article>
     </div>
   </main>
-  {template "footer"}}
+  {{template "footer"}}
 </div>
 </body>
-<script>
-    var columns = {
-        path: 'Dependency',
-        version: 'Version',
-        time: 'Time',
-    }
-
-    var table = $('#table-sortable').tableSortable({
-        data: [],
-        columns: columns,
-        rowsPerPage: 10,
-        pagination: true,
-        searchField: '#searchField',
-    });
-
-  var remoteURL = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port;
-
-  $.get(remoteURL + "/rk/v1/deps", function(data) {
-    table.setData(data.deps, columns, false);
-  })
-
-  $('#changeRows').on('change', function() {
-    table.updateRowsPerPage(parseInt($(this).val(), 10));
-  })
-</script>
-
 </html>
 {{end}}

@@ -169,6 +169,23 @@ var doc = `{
                 }
             }
         },
+        "/rk/v1/license": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get license related application",
+                "operationId": "12",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/rkentry.LicenseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/rk/v1/logs": {
             "get": {
                 "produces": [
@@ -181,6 +198,23 @@ var doc = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/rkentry.LogsResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rk/v1/readme": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List dependencies related application",
+                "operationId": "13",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/rkentry.ReadmeResponse"
                         }
                     }
                 }
@@ -226,7 +260,7 @@ var doc = `{
                     "text/html"
                 ],
                 "summary": "Get HTML page of /tv",
-                "operationId": "12",
+                "operationId": "14",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -414,33 +448,7 @@ var doc = `{
         "rkentry.DepResponse": {
             "type": "object",
             "properties": {
-                "deps": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/rkentry.DepResponse_Dep"
-                    }
-                }
-            }
-        },
-        "rkentry.DepResponse_Dep": {
-            "type": "object",
-            "properties": {
-                "goVersion": {
-                    "type": "string"
-                },
-                "indirect": {
-                    "type": "boolean"
-                },
-                "main": {
-                    "type": "boolean"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "time": {
-                    "type": "string"
-                },
-                "version": {
+                "goMod": {
                     "type": "string"
                 }
             }
@@ -521,6 +529,14 @@ var doc = `{
             "properties": {
                 "healthy": {
                     "type": "boolean"
+                }
+            }
+        },
+        "rkentry.LicenseResponse": {
+            "type": "object",
+            "properties": {
+                "license": {
+                    "type": "string"
                 }
             }
         },
@@ -720,6 +736,14 @@ var doc = `{
                     "type": "string"
                 },
                 "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "rkentry.ReadmeResponse": {
+            "type": "object",
+            "properties": {
+                "readme": {
                     "type": "string"
                 }
             }
