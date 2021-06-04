@@ -7,6 +7,7 @@ import (
 	"github.com/rookie-ninja/rk-gin/interceptor/context"
 	"github.com/rookie-ninja/rk-prom"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -75,16 +76,21 @@ func MetricsPromInterceptor(opts ...Option) gin.HandlerFunc {
 		// end timer
 		elapsed := time.Now().Sub(startTime)
 
-		if durationMetrics := GetServerDurationMetrics(ctx); durationMetrics != nil {
-			durationMetrics.Observe(float64(elapsed.Nanoseconds()))
-		}
-		if len(ctx.Errors) > 0 {
-			if errorMetrics := GetServerErrorMetrics(ctx); errorMetrics != nil {
-				errorMetrics.Inc()
+		// ignoring /rk/v1/assets, /rk/v1/tv and /sw/ path while logging since these are internal APIs.
+		if !strings.HasPrefix(ctx.Request.RequestURI, "/rk/v1/assets") &&
+			!strings.HasPrefix(ctx.Request.RequestURI, "/rk/v1/tv") &&
+			!strings.HasPrefix(ctx.Request.RequestURI, "/sw/") {
+			if durationMetrics := GetServerDurationMetrics(ctx); durationMetrics != nil {
+				durationMetrics.Observe(float64(elapsed.Nanoseconds()))
 			}
-		}
-		if resCodeMetrics := GetServerResCodeMetrics(ctx); resCodeMetrics != nil {
-			resCodeMetrics.Inc()
+			if len(ctx.Errors) > 0 {
+				if errorMetrics := GetServerErrorMetrics(ctx); errorMetrics != nil {
+					errorMetrics.Inc()
+				}
+			}
+			if resCodeMetrics := GetServerResCodeMetrics(ctx); resCodeMetrics != nil {
+				resCodeMetrics.Inc()
+			}
 		}
 	}
 }
