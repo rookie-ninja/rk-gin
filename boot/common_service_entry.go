@@ -698,7 +698,7 @@ func (entry *CommonServiceEntry) License(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, doDeps(ctx))
+	ctx.JSON(http.StatusOK, doLicense(ctx))
 }
 
 // Extract Gin entry from gin_zap middleware
@@ -730,7 +730,7 @@ func (entry *CommonServiceEntry) Readme(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, doDeps(ctx))
+	ctx.JSON(http.StatusOK, doReadme(ctx))
 }
 
 // Extract Gin entry from gin_zap middleware

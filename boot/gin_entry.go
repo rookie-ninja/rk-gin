@@ -548,7 +548,7 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 	// Is common service enabled?
 	if entry.IsCommonServiceEnabled() {
 		// Register common service path into Router.
-		entry.Router.GET("/  /healthy", entry.CommonServiceEntry.Healthy)
+		entry.Router.GET("/rk/v1/healthy", entry.CommonServiceEntry.Healthy)
 		entry.Router.GET("/rk/v1/gc", entry.CommonServiceEntry.Gc)
 		entry.Router.GET("/rk/v1/info", entry.CommonServiceEntry.Info)
 		entry.Router.GET("/rk/v1/configs", entry.CommonServiceEntry.Configs)
@@ -559,6 +559,8 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 		entry.Router.GET("/rk/v1/certs", entry.CommonServiceEntry.Certs)
 		entry.Router.GET("/rk/v1/logs", entry.CommonServiceEntry.Logs)
 		entry.Router.GET("/rk/v1/deps", entry.CommonServiceEntry.Deps)
+		entry.Router.GET("/rk/v1/license", entry.CommonServiceEntry.License)
+		entry.Router.GET("/rk/v1/readme", entry.CommonServiceEntry.Readme)
 
 		// Bootstrap common service entry.
 		entry.CommonServiceEntry.Bootstrap(ctx)
