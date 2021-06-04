@@ -166,7 +166,7 @@ func (entry *TvEntry) AssetsFileHandler() gin.HandlerFunc {
 // 14: log.tmpl
 // 15: dep.tmpl
 // 16: license.tmpl
-// 17: readme.tmpl
+// 17: info.tmpl
 func (entry *TvEntry) Bootstrap(ctx context.Context) {
 	event := entry.EventLoggerEntry.GetEventHelper().Start(
 		"bootstrap",
