@@ -37,19 +37,19 @@ func init() {
 	Templates["head"] = readFileFromPkger("/assets/tv/head.tmpl")
 	Templates["svg-sprite"] = readFileFromPkger("/assets/tv/svg-sprite.tmpl")
 	Templates["overview"] = readFileFromPkger("/assets/tv/overview.tmpl")
-	Templates["api"] = readFileFromPkger("/assets/tv/api.tmpl")
-	Templates["entry"] = readFileFromPkger("/assets/tv/entry.tmpl")
-	Templates["config"] = readFileFromPkger("/assets/tv/config.tmpl")
-	Templates["cert"] = readFileFromPkger("/assets/tv/cert.tmpl")
+	Templates["apis"] = readFileFromPkger("/assets/tv/apis.tmpl")
+	Templates["entries"] = readFileFromPkger("/assets/tv/entries.tmpl")
+	Templates["configs"] = readFileFromPkger("/assets/tv/configs.tmpl")
+	Templates["certs"] = readFileFromPkger("/assets/tv/certs.tmpl")
 	Templates["not-found"] = readFileFromPkger("/assets/tv/not-found.tmpl")
 	Templates["internal-error"] = readFileFromPkger("/assets/tv/internal-error.tmpl")
 	Templates["os"] = readFileFromPkger("/assets/tv/os.tmpl")
 	Templates["env"] = readFileFromPkger("/assets/tv/env.tmpl")
 	Templates["prometheus"] = readFileFromPkger("/assets/tv/prometheus.tmpl")
-	Templates["dep"] = readFileFromPkger("/assets/tv/dep.tmpl")
+	Templates["deps"] = readFileFromPkger("/assets/tv/deps.tmpl")
 	Templates["license"] = readFileFromPkger("/assets/tv/license.tmpl")
 	Templates["info"] = readFileFromPkger("/assets/tv/info.tmpl")
-	Templates["log"] = readFileFromPkger("/assets/tv/log.tmpl")
+	Templates["logs"] = readFileFromPkger("/assets/tv/logs.tmpl")
 }
 
 // Read go template files with Pkger.
@@ -156,15 +156,15 @@ func (entry *TvEntry) AssetsFileHandler() gin.HandlerFunc {
 // 4: aside.tmpl
 // 5: svg-sprite.tmpl
 // 6: overview.tmpl
-// 7: api.tmpl
-// 8: entry.tmpl
-// 9: config.tmpl
-// 10: cert.tmpl
+// 7: apis.tmpl
+// 8: entries.tmpl
+// 9: configs.tmpl
+// 10: certs.tmpl
 // 11: os.tmpl
 // 12: env.tmpl
 // 13: prometheus.tmpl
-// 14: log.tmpl
-// 15: dep.tmpl
+// 14: logs.tmpl
+// 15: deps.tmpl
 // 16: license.tmpl
 // 17: info.tmpl
 func (entry *TvEntry) Bootstrap(ctx context.Context) {
@@ -276,17 +276,17 @@ func (entry *TvEntry) TV(ctx *gin.Context) {
 	case "/", "/overview", "/application":
 		buf := entry.doExecuteTemplate("overview", doReadme(ctx), logger)
 		ctx.Data(http.StatusOK, contentType, buf.Bytes())
-	case "/api":
-		buf := entry.doExecuteTemplate("api", doApis(ctx), logger)
+	case "/apis":
+		buf := entry.doExecuteTemplate("apis", doApis(ctx), logger)
 		ctx.Data(http.StatusOK, contentType, buf.Bytes())
-	case "/entry":
-		buf := entry.doExecuteTemplate("entry", doEntries(ctx), logger)
+	case "/entries":
+		buf := entry.doExecuteTemplate("entries", doEntries(ctx), logger)
 		ctx.Data(http.StatusOK, contentType, buf.Bytes())
-	case "/config":
-		buf := entry.doExecuteTemplate("config", doConfigs(ctx), logger)
+	case "/configs":
+		buf := entry.doExecuteTemplate("configs", doConfigs(ctx), logger)
 		ctx.Data(http.StatusOK, contentType, buf.Bytes())
-	case "/cert":
-		buf := entry.doExecuteTemplate("cert", doCerts(ctx), logger)
+	case "/certs":
+		buf := entry.doExecuteTemplate("certs", doCerts(ctx), logger)
 		ctx.Data(http.StatusOK, contentType, buf.Bytes())
 	case "/os":
 		buf := entry.doExecuteTemplate("os", doSys(ctx), logger)
@@ -297,11 +297,11 @@ func (entry *TvEntry) TV(ctx *gin.Context) {
 	case "/prometheus":
 		buf := entry.doExecuteTemplate("prometheus", nil, logger)
 		ctx.Data(http.StatusOK, contentType, buf.Bytes())
-	case "/log":
-		buf := entry.doExecuteTemplate("log", doLogs(ctx), logger)
+	case "/logs":
+		buf := entry.doExecuteTemplate("logs", doLogs(ctx), logger)
 		ctx.Data(http.StatusOK, contentType, buf.Bytes())
-	case "/dep":
-		buf := entry.doExecuteTemplate("dep", doDeps(ctx), logger)
+	case "/deps":
+		buf := entry.doExecuteTemplate("deps", doDeps(ctx), logger)
 		ctx.Data(http.StatusOK, contentType, buf.Bytes())
 	case "/license":
 		buf := entry.doExecuteTemplate("license", doLicense(ctx), logger)
