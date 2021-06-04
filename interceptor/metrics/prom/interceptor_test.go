@@ -29,7 +29,7 @@ func TestMetricsInterceptor_HappyCase(t *testing.T) {
 	handler := MetricsPromInterceptor()
 	ctx, _ := gin.CreateTestContext(&httptest.TestResponseWriter{})
 	ctx.Request = &http.Request{
-		RequestURI: "/ur",
+		RequestURI: "/ut",
 	}
 
 	// call interceptor
