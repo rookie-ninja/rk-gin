@@ -6,6 +6,8 @@ Currently, supports bellow interceptors
 - logging
 - metrics
 - panic
+- extension
+- tracing
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -20,6 +22,7 @@ Currently, supports bellow interceptors
   - [Panic interceptor](#panic-interceptor)
   - [Auth interceptor](#auth-interceptor)
   - [Extension interceptor](#extension-interceptor)
+  - [Tracing interceptor](#tracing-interceptor)
   - [Common Service](#common-service)
   - [TV Service](#tv-service)
   - [Development Status: Stable](#development-status-stable)
@@ -102,6 +105,11 @@ User can start multiple servers at the same time
 | gin.interceptors.basicAuth.credentials | Provide basic auth credentials, form of \<user:pass\> | string | false |
 | gin.interceptors.extension.enabled | Enable extension interceptor | boolean | false |
 | gin.interceptors.extension.prefix | Prefix of extension header key | string | rk |
+| gin.interceptors.tracingTelemetry.enabled | Enable tracing interceptor with opentelemetry | bool | false |
+| gin.interceptors.extension.exporter.file.enabled | Enable exporter which will write tracing info to file or stdout | string | stdout |
+| gin.interceptors.extension.exporter.file.outputPath | Output path of tracing log | string | stdout |
+| gin.interceptors.extension.exporter.jaeger.enabled | Enable exporter which will write tracing info to jaeger agent | bool | false |
+| gin.interceptors.extension.exporter.jaeger.agentEndpoint | Jaeger agent endpoint | string | "localhost:6832" |
 
 Interceptors can be used with chain.
 
@@ -152,27 +160,22 @@ Logging interceptor uses [zap logger](https://github.com/uber-go/zap) and [rk-qu
 Output: 
 ```log
 ------------------------------------------------------------------------
-endTime=2021-05-15T00:38:18.028488+08:00
-startTime=2021-05-15T00:38:18.028409+08:00
-elapsedNano=79322
-hostname=lark.local
-timing={}
-counter={}
-pair={}
-error={}
-field={"apiMethod":"GET","apiPath":"/hello","apiProtocol":"HTTP/1.1","apiQuery":"","appName":"rkApp","appVersion":"v0.0.0","az":"unknown","domain":"unknown","elapsedNano":79322,"endTime":"2021-05-15T00:38:18.028488+08:00","entryName":"rkentry","entryType":"entry","incomingRequestIds":[],"localIp":"192.168.101.5","outgoingRequestIds":[],"realm":"unknown","region":"unknown","remoteIp":"localhost","remotePort":"50622","resCode":200,"startTime":"2021-05-15T00:38:18.028409+08:00","userAgent":"curl/7.64.1"}
-remoteAddr=localhost:50622
-appName=unknown
-appVersion=unknown
-entryName=rkentry
-entryType=entry
-locale=unknown
-operation=GET:/hello
-eventStatus=Ended
-resCode=200
+endTime=2021-06-15T02:46:00.256757+08:00
+startTime=2021-06-15T02:46:00.256704+08:00
+elapsedNano=53081
 timezone=CST
-os=darwin
-arch=amd64
+ids={"eventId":"ab6695d3-e698-4434-8121-c0c21e4451b4"}
+app={"appName":"unknown","appVersion":"unknown","entryName":"rkEntry","entryType":"gin"}
+env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.2","os":"darwin","realm":"*","region":"*"}
+payloads={"apiMethod":"GET","apiPath":"/hello","apiProtocol":"HTTP/1.1","apiQuery":"","userAgent":"curl/7.64.1"}
+error={}
+counters={}
+pairs={}
+timing={}
+remoteAddr=localhost:61435
+operation=/hello
+resCode=200
+eventStatus=Ended
 EOE
 ```
 
@@ -215,27 +218,22 @@ func main() {
 Output
 ```log
 ------------------------------------------------------------------------
-endTime=2021-05-15T00:41:09.804115+08:00
-startTime=2021-05-15T00:41:09.803402+08:00
-elapsedNano=713047
-hostname=lark.local
-timing={}
-counter={}
-pair={}
-error={}
-field={"apiMethod":"GET","apiPath":"/hello","apiProtocol":"HTTP/1.1","apiQuery":"","appName":"rkApp","appVersion":"v0.0.0","az":"unknown","domain":"unknown","elapsedNano":721167,"endTime":"2021-05-15T00:41:09.804123+08:00","entryName":"rkentry","entryType":"entry","incomingRequestIds":[],"localIp":"10.8.0.2","outgoingRequestIds":[],"realm":"unknown","region":"unknown","remoteIp":"localhost","remotePort":"51347","resCode":500,"startTime":"2021-05-15T00:41:09.803402+08:00","userAgent":"curl/7.64.1"}
-remoteAddr=localhost:51347
-appName=unknown
-appVersion=unknown
-entryName=rkentry
-entryType=entry
-locale=unknown
-operation=GET:/hello
-eventStatus=Ended
-resCode=500
+endTime=2021-06-15T02:47:10.368031+08:00
+startTime=2021-06-15T02:47:10.367417+08:00
+elapsedNano=614458
 timezone=CST
-os=darwin
-arch=amd64
+ids={"eventId":"310a4255-1de4-4607-9eed-67c0e858864f"}
+app={"appName":"unknown","appVersion":"unknown","entryName":"rkEntry","entryType":"gin"}
+env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.2","os":"darwin","realm":"*","region":"*"}
+payloads={"apiMethod":"GET","apiPath":"/hello","apiProtocol":"HTTP/1.1","apiQuery":"","userAgent":"curl/7.64.1"}
+error={}
+counters={}
+pairs={}
+timing={}
+remoteAddr=localhost:61440
+operation=/hello
+resCode=500
+eventStatus=Ended
 EOE
 ```
 
@@ -261,27 +259,22 @@ func main() {
 Output
 ```log
 ------------------------------------------------------------------------
-endTime=2021-05-15T00:48:12.436157+08:00
-startTime=2021-05-15T00:48:12.435914+08:00
-elapsedNano=243532
-hostname=lark.local
-timing={}
-counter={}
-pair={}
-error={}
-field={"apiMethod":"GET","apiPath":"/hello","apiProtocol":"HTTP/1.1","apiQuery":"","appName":"rkApp","appVersion":"v0.0.0","az":"unknown","domain":"unknown","elapsedNano":243532,"endTime":"2021-05-15T00:48:12.436157+08:00","entryName":"rkentry","entryType":"entry","incomingRequestIds":[],"localIp":"10.8.0.2","outgoingRequestIds":[],"realm":"unknown","region":"unknown","remoteIp":"localhost","remotePort":"53164","resCode":200,"startTime":"2021-05-15T00:48:12.435914+08:00","userAgent":"curl/7.64.1"}
-remoteAddr=localhost:53164
-appName=unknown
-appVersion=unknown
-entryName=rkentry
-entryType=entry
-locale=unknown
-operation=GET:/hello
-eventStatus=Ended
-resCode=200
+endTime=2021-06-15T02:46:00.256757+08:00
+startTime=2021-06-15T02:46:00.256704+08:00
+elapsedNano=53081
 timezone=CST
-os=darwin
-arch=amd64
+ids={"eventId":"ab6695d3-e698-4434-8121-c0c21e4451b4"}
+app={"appName":"unknown","appVersion":"unknown","entryName":"rkEntry","entryType":"gin"}
+env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.2","os":"darwin","realm":"*","region":"*"}
+payloads={"apiMethod":"GET","apiPath":"/hello","apiProtocol":"HTTP/1.1","apiQuery":"","userAgent":"curl/7.64.1"}
+error={}
+counters={}
+pairs={}
+timing={}
+remoteAddr=localhost:61435
+operation=/hello
+resCode=200
+eventStatus=Ended
 EOE
 ```
 
@@ -320,6 +313,196 @@ $ curl -vs -X GET "http://localhost:8080/rk/v1/configs" -H  "accept: application
 <
 * Connection #0 to host localhost left intact
 {"entries":[]}
+```
+
+### Tracing interceptor
+This interceptor will automatically collect tracing spans and export to specified exporter.
+- File exporter (Write trace log to files or stdout)
+- Jaeger exporter (Write to jaeger agent)
+
+```go
+func main() {
+	gin.SetMode(gin.ReleaseMode)
+
+	router := gin.New()
+	router.Use(
+		rkginbasic.BasicInterceptor(),
+		rkgintrace.TelemetryInterceptor(),
+		rkginpanic.PanicInterceptor(),
+	)
+
+	router.GET("/hello", func(ctx *gin.Context) {
+		ctx.String(http.StatusOK, "Hello world")
+	})
+	router.Run(":8080")
+}
+```
+
+```json
+[
+        {
+                "SpanContext": {
+                        "TraceID": "b8af9be0722842783499a2b4756af62c",
+                        "SpanID": "0bf79b2c5e49bcb6",
+                        "TraceFlags": "01",
+                        "TraceState": null,
+                        "Remote": false
+                },
+                "Parent": {
+                        "TraceID": "00000000000000000000000000000000",
+                        "SpanID": "0000000000000000",
+                        "TraceFlags": "00",
+                        "TraceState": null,
+                        "Remote": false
+                },
+                "SpanKind": 2,
+                "Name": "/hello",
+                "StartTime": "2021-06-15T02:51:25.349015+08:00",
+                "EndTime": "2021-06-15T02:51:25.349068874+08:00",
+                "Attributes": [
+                        {
+                                "Key": "net.transport",
+                                "Value": {
+                                        "Type": "STRING",
+                                        "Value": "IP.TCP"
+                                }
+                        },
+                        {
+                                "Key": "net.peer.name",
+                                "Value": {
+                                        "Type": "STRING",
+                                        "Value": "[::1]"
+                                }
+                        },
+                        {
+                                "Key": "net.peer.port",
+                                "Value": {
+                                        "Type": "INT64",
+                                        "Value": 61452
+                                }
+                        },
+                        {
+                                "Key": "net.host.name",
+                                "Value": {
+                                        "Type": "STRING",
+                                        "Value": "localhost"
+                                }
+                        },
+                        {
+                                "Key": "net.host.port",
+                                "Value": {
+                                        "Type": "INT64",
+                                        "Value": 8080
+                                }
+                        },
+                        {
+                                "Key": "http.method",
+                                "Value": {
+                                        "Type": "STRING",
+                                        "Value": "GET"
+                                }
+                        },
+                        {
+                                "Key": "http.target",
+                                "Value": {
+                                        "Type": "STRING",
+                                        "Value": "/hello"
+                                }
+                        },
+                        {
+                                "Key": "http.server_name",
+                                "Value": {
+                                        "Type": "STRING",
+                                        "Value": "rkApp"
+                                }
+                        },
+                        {
+                                "Key": "http.route",
+                                "Value": {
+                                        "Type": "STRING",
+                                        "Value": "/hello"
+                                }
+                        },
+                        {
+                                "Key": "http.user_agent",
+                                "Value": {
+                                        "Type": "STRING",
+                                        "Value": "curl/7.64.1"
+                                }
+                        },
+                        {
+                                "Key": "http.scheme",
+                                "Value": {
+                                        "Type": "STRING",
+                                        "Value": "http"
+                                }
+                        },
+                        {
+                                "Key": "http.host",
+                                "Value": {
+                                        "Type": "STRING",
+                                        "Value": "localhost:8080"
+                                }
+                        },
+                        {
+                                "Key": "http.flavor",
+                                "Value": {
+                                        "Type": "STRING",
+                                        "Value": "1.1"
+                                }
+                        },
+                        {
+                                "Key": "http.status_code",
+                                "Value": {
+                                        "Type": "INT64",
+                                        "Value": 200
+                                }
+                        }
+                ],
+                "MessageEvents": null,
+                "Links": null,
+                "StatusCode": "Unset",
+                "StatusMessage": "",
+                "DroppedAttributeCount": 0,
+                "DroppedMessageEventCount": 0,
+                "DroppedLinkCount": 0,
+                "ChildSpanCount": 0,
+                "Resource": [
+                        {
+                                "Key": "service.entryName",
+                                "Value": {
+                                        "Type": "STRING",
+                                        "Value": "rkEntry"
+                                }
+                        },
+                        {
+                                "Key": "service.entryType",
+                                "Value": {
+                                        "Type": "STRING",
+                                        "Value": "gin"
+                                }
+                        },
+                        {
+                                "Key": "service.name",
+                                "Value": {
+                                        "Type": "STRING",
+                                        "Value": "rkApp"
+                                }
+                        },
+                        {
+                                "Key": "service.version",
+                                "Value": {
+                                        "Type": "STRING",
+                                        "Value": "v0.0.0"
+                                }
+                        }
+                ],
+                "InstrumentationLibrary": {
+                        "Name": "rkEntry",
+                        "Version": "semver:0.20.0"
+                }
+        }
+]
 ```
 
 ### Common Service

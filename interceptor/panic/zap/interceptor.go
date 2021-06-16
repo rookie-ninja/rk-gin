@@ -6,7 +6,7 @@ package rkginpanic
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-gin/interceptor/context"
+	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
 	"net"
 	"net/http"
 	"os"
@@ -23,11 +23,11 @@ func PanicInterceptor() gin.HandlerFunc {
 			return
 		}
 
-		event := rkginctx.GetEvent(ctx)
+		event := rkginlog.GetEvent(ctx)
 
 		defer func() {
 			if err := recover(); err != nil {
-				rkginctx.GetLogger(ctx).Error("panic occurs\n" + string(debug.Stack()))
+				rkginlog.GetLogger(ctx).Error("panic occurs\n" + string(debug.Stack()))
 				// Check for a broken connection, as it is not really a
 				// condition that warrants a panic stack trace.
 				var brokenPipe bool
@@ -44,7 +44,7 @@ func PanicInterceptor() gin.HandlerFunc {
 				}
 
 				if brokenPipe {
-					rkginctx.GetLogger(ctx).Error(string(debug.Stack()))
+					rkginlog.GetLogger(ctx).Error(string(debug.Stack()))
 					event.SetEndTime(time.Now())
 					event.SetResCode(strconv.Itoa(http.StatusInternalServerError))
 					// If the connection is dead, we can't write a status to it.

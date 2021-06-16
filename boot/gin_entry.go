@@ -15,12 +15,16 @@ import (
 	"github.com/rookie-ninja/rk-entry/entry"
 	"github.com/rookie-ninja/rk-gin/interceptor/auth"
 	"github.com/rookie-ninja/rk-gin/interceptor/basic"
-	rkginextension "github.com/rookie-ninja/rk-gin/interceptor/extension"
+	"github.com/rookie-ninja/rk-gin/interceptor/extension"
 	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
 	"github.com/rookie-ninja/rk-gin/interceptor/metrics/prom"
 	"github.com/rookie-ninja/rk-gin/interceptor/panic/zap"
+	rkgintrace "github.com/rookie-ninja/rk-gin/interceptor/tracing/open-telemetry"
 	"github.com/rookie-ninja/rk-prom"
 	"github.com/rookie-ninja/rk-query"
+	"go.opencensus.io/plugin/ochttp"
+	"go.opentelemetry.io/otel/sdk/trace"
+	"net"
 	"reflect"
 	"runtime"
 
@@ -35,6 +39,7 @@ import (
 const (
 	GinEntryType        = "GinEntry"
 	GinEntryDescription = "Internal RK entry which helps to bootstrap with Gin framework."
+	bootstrapEventIdKey = "bootstrapEventId"
 )
 
 // This must be declared in order to register registration function into rk context
@@ -87,6 +92,19 @@ type BootConfigGin struct {
 				Enabled bool   `yaml:"enabled" json:"enabled"`
 				Prefix  string `yaml:"prefix" json:"prefix"`
 			} `yaml:"extension" json:"extension"`
+			TracingTelemetry struct {
+				Enabled  bool `yaml:"enabled" json:"enabled"`
+				Exporter struct {
+					File struct {
+						Enabled    bool   `yaml:"enabled" json:"enabled"`
+						OutputPath string `yaml:"outputPath" json:"outputPath"`
+					} `yaml:"file" json:"file"`
+					Jaeger struct {
+						Enabled       bool   `yaml:"enabled" json:"enabled"`
+						AgentEndpoint string `yaml:"agentEndpoint" json:"agentEndpoint"`
+					} `yaml:"jaeger" json:"jaeger"`
+				} `yaml:"exporter" json:"exporter"`
+			} `tracingTelemetry`
 		} `yaml:"interceptors" json:"interceptors"`
 		Logger struct {
 			ZapLogger struct {
@@ -372,6 +390,28 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 			inters = append(inters, rkginextension.ExtensionInterceptor(opts...))
 		}
 
+		// Did we enabled tracing interceptor?
+		if element.Interceptors.TracingTelemetry.Enabled {
+			var exporter trace.SpanExporter
+
+			if element.Interceptors.TracingTelemetry.Exporter.File.Enabled {
+				exporter = rkgintrace.CreateFileExporter(element.Interceptors.TracingTelemetry.Exporter.File.OutputPath)
+			}
+
+			if element.Interceptors.TracingTelemetry.Exporter.Jaeger.Enabled {
+				host, port, _ := net.SplitHostPort(element.Interceptors.TracingTelemetry.Exporter.Jaeger.AgentEndpoint)
+				exporter = rkgintrace.CreateJaegerExporter(host, port)
+			}
+
+			opts := []rkgintrace.Option{
+				rkgintrace.WithEntryNameAndType(element.Name, GinEntryType),
+				rkgintrace.WithExporter(exporter),
+			}
+
+			inters = append(inters, rkgintrace.TelemetryInterceptor(opts...))
+			rkentry.GlobalAppCtx.AddShutdownHook("tracing exporter", rkgintrace.ShutdownExporters)
+		}
+
 		// Did we enabled common service?
 		var commonServiceEntry *CommonServiceEntry
 		if element.CommonService.Enabled {
@@ -449,11 +489,12 @@ func RegisterGinEntry(opts ...GinEntryOption) *GinEntry {
 		entry.Router = gin.New()
 	}
 
-	// Init server only if port is not zero
 	if entry.Port != 0 {
 		entry.Server = &http.Server{
-			Addr:    "0.0.0.0:" + strconv.FormatUint(entry.Port, 10),
-			Handler: entry.Router,
+			Addr: "0.0.0.0:" + strconv.FormatUint(entry.Port, 10),
+			Handler: &ochttp.Handler{
+				Handler: entry.Router,
+			},
 		}
 	}
 
@@ -480,7 +521,7 @@ func (entry *GinEntry) String() string {
 
 // Add basic fields into event.
 func (entry *GinEntry) logBasicInfo(event rkquery.Event) {
-	event.AddFields(
+	event.AddPayloads(
 		zap.String("entryName", entry.EntryName),
 		zap.String("entryType", entry.EntryType),
 		zap.Uint64("port", entry.Port),
@@ -492,11 +533,11 @@ func (entry *GinEntry) logBasicInfo(event rkquery.Event) {
 	)
 
 	if entry.IsSwEnabled() {
-		event.AddFields(zap.String("swPath", entry.SwEntry.Path))
+		event.AddPayloads(zap.String("swPath", entry.SwEntry.Path))
 	}
 
 	if entry.IsPromEnabled() {
-		event.AddFields(
+		event.AddPayloads(
 			zap.String("promPath", entry.PromEntry.Path),
 			zap.Uint64("promPort", entry.PromEntry.Port))
 	}
@@ -521,7 +562,8 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 
 	entry.logBasicInfo(event)
 
-	ctx = context.Background()
+	ctx = context.WithValue(context.Background(), bootstrapEventIdKey, event.GetEventId())
+	logger := entry.ZapLoggerEntry.GetLogger().With(zap.String("eventId", event.GetEventId()))
 
 	// Default interceptor should be at front
 	entry.Router.Use(entry.Interceptors...)
@@ -576,14 +618,14 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 	}
 
 	// Start gin server
-	entry.ZapLoggerEntry.GetLogger().Info("Bootstrapping GinEntry.", event.GetFields()...)
+	logger.Info("Bootstrapping GinEntry.", event.ListPayloads()...)
 	go func(*GinEntry) {
 		if entry.Server != nil {
 			// If TLS was enabled, we need to load server certificate and key and start http server with ListenAndServeTLS()
 			if entry.IsTlsEnabled() {
 				if cert, err := tls.X509KeyPair(entry.CertEntry.Store.ServerCert, entry.CertEntry.Store.ServerKey); err != nil {
 					event.AddErr(err)
-					entry.ZapLoggerEntry.GetLogger().Error("Error occurs while parsing TLS.", event.GetFields()...)
+					logger.Error("Error occurs while parsing TLS.", event.ListPayloads()...)
 					rkcommon.ShutdownWithError(err)
 				} else {
 					entry.Server.TLSConfig = &tls.Config{Certificates: []tls.Certificate{cert}}
@@ -591,13 +633,13 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 
 				if err := entry.Server.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
 					event.AddErr(err)
-					entry.ZapLoggerEntry.GetLogger().Error("Error occurs while serving gin-listener-tls.", event.GetFields()...)
+					logger.Error("Error occurs while serving gin-listener-tls.", event.ListPayloads()...)
 					rkcommon.ShutdownWithError(err)
 				}
 			} else {
 				if err := entry.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 					event.AddErr(err)
-					entry.ZapLoggerEntry.GetLogger().Error("Error occurs while serving gin-listener.", event.GetFields()...)
+					logger.Error("Error occurs while serving gin-listener.", event.ListPayloads()...)
 					rkcommon.ShutdownWithError(err)
 				}
 			}
@@ -613,6 +655,9 @@ func (entry *GinEntry) Interrupt(ctx context.Context) {
 		"interrupt",
 		rkquery.WithEntryName(entry.EntryName),
 		rkquery.WithEntryType(entry.EntryType))
+
+	ctx = context.WithValue(context.Background(), bootstrapEventIdKey, event.GetEventId())
+	logger := entry.ZapLoggerEntry.GetLogger().With(zap.String("eventId", event.GetEventId()))
 
 	entry.logBasicInfo(event)
 
@@ -637,10 +682,10 @@ func (entry *GinEntry) Interrupt(ctx context.Context) {
 	}
 
 	if entry.Router != nil && entry.Server != nil {
-		entry.ZapLoggerEntry.GetLogger().Info("Interrupting GinEntry.", event.GetFields()...)
+		logger.Info("Interrupting GinEntry.", event.ListPayloads()...)
 		if err := entry.Server.Shutdown(context.Background()); err != nil {
 			event.AddErr(err)
-			entry.ZapLoggerEntry.GetLogger().Warn("Error occurs while stopping gin-server.", event.GetFields()...)
+			logger.Warn("Error occurs while stopping gin-server.", event.ListPayloads()...)
 		}
 	}
 

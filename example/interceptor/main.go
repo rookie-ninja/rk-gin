@@ -11,6 +11,7 @@ import (
 	rkginlog "github.com/rookie-ninja/rk-gin/interceptor/log/zap"
 	rkginmetrics "github.com/rookie-ninja/rk-gin/interceptor/metrics/prom"
 	rkginpanic "github.com/rookie-ninja/rk-gin/interceptor/panic/zap"
+	rkgintrace "github.com/rookie-ninja/rk-gin/interceptor/tracing/open-telemetry"
 	rklogger "github.com/rookie-ninja/rk-logger"
 	rkquery "github.com/rookie-ninja/rk-query"
 	"net/http"
@@ -27,6 +28,7 @@ func main() {
 			rkginlog.WithLogger(rklogger.StdoutLogger)),
 		rkginmetrics.MetricsPromInterceptor(),
 		rkginauth.BasicAuthInterceptor(gin.Accounts{"user": "pass"}, "realm"),
+		rkgintrace.TelemetryInterceptor(),
 		rkginpanic.PanicInterceptor(),
 	)
 

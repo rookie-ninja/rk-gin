@@ -1,7 +1,7 @@
 package rkginextension
 
 import (
-	"github.com/rookie-ninja/rk-gin/interceptor/context"
+	rkginbasic "github.com/rookie-ninja/rk-gin/interceptor/basic"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -30,7 +30,7 @@ func TestWithPrefix_HappyCase(t *testing.T) {
 func TestExtensionInterceptor_WithoutOption(t *testing.T) {
 	ExtensionInterceptor()
 
-	assert.NotNil(t, optionsMap[rkginctx.RkEntryNameValue])
+	assert.NotNil(t, optionsMap[rkginbasic.RkEntryNameValue])
 }
 
 func TestExtensionInterceptor_HappyCase(t *testing.T) {

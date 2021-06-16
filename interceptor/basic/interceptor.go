@@ -2,13 +2,35 @@ package rkginbasic
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-gin/interceptor/context"
+	"github.com/rookie-ninja/rk-common/common"
+	"go.uber.org/zap"
+)
+
+var (
+	Realm         = zap.String("realm", rkcommon.GetEnvValueOrDefault("REALM", "*"))
+	Region        = zap.String("region", rkcommon.GetEnvValueOrDefault("REGION", "*"))
+	AZ            = zap.String("az", rkcommon.GetEnvValueOrDefault("AZ", "*"))
+	Domain        = zap.String("domain", rkcommon.GetEnvValueOrDefault("DOMAIN", "*"))
+	LocalIp       = zap.String("localIp", rkcommon.GetLocalIP())
+	LocalHostname = zap.String("localHostname", rkcommon.GetLocalHostname())
+)
+
+const (
+	RkEventKey          = "rkEvent"
+	RkLoggerKey         = "rkLogger"
+	RkTracerKey         = "rkTracer"
+	RkTracerProviderKey = "rkTracerProvider"
+	RkPropagatorKey     = "rkPropagator"
+	RkTraceIdKey        = "rkTraceId"
+	RkEntryNameKey      = "rkEntry"
+	RkEntryNameValue    = "rkEntry"
+	RkEntryTypeValue    = "gin"
 )
 
 func BasicInterceptor(opts ...Option) gin.HandlerFunc {
 	set := &optionSet{
-		EntryName: rkginctx.RkEntryNameValue,
-		EntryType: rkginctx.RkEntryTypeValue,
+		EntryName: RkEntryNameValue,
+		EntryType: RkEntryTypeValue,
 	}
 
 	for i := range opts {
@@ -20,8 +42,8 @@ func BasicInterceptor(opts ...Option) gin.HandlerFunc {
 	}
 
 	return func(ctx *gin.Context) {
-		if len(ctx.GetString(rkginctx.RkEntryNameKey)) < 1 {
-			ctx.Set(rkginctx.RkEntryNameKey, set.EntryName)
+		if len(ctx.GetString(RkEntryNameKey)) < 1 {
+			ctx.Set(RkEntryNameKey, set.EntryName)
 		}
 
 		ctx.Next()
@@ -33,7 +55,7 @@ func getOptionSet(ctx *gin.Context) *optionSet {
 		return nil
 	}
 
-	entryName := ctx.GetString(rkginctx.RkEntryNameKey)
+	entryName := ctx.GetString(RkEntryNameKey)
 	return optionsMap[entryName]
 }
 

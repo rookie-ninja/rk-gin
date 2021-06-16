@@ -173,9 +173,13 @@ func (entry *TvEntry) Bootstrap(ctx context.Context) {
 		rkquery.WithEntryName(entry.EntryName),
 		rkquery.WithEntryType(entry.EntryType))
 
+	if raw := ctx.Value(bootstrapEventIdKey); raw != nil {
+		event.SetEventId(raw.(string))
+	}
+
 	entry.logBasicInfo(event)
 
-	event.AddFields(zap.String("path", "/rk/v1/tv/*item"))
+	event.AddPayloads(zap.String("path", "/rk/v1/tv/*item"))
 
 	entry.Template = template.New("rk-tv")
 
@@ -188,23 +192,29 @@ func (entry *TvEntry) Bootstrap(ctx context.Context) {
 		}
 	}
 
-	entry.ZapLoggerEntry.GetLogger().Info("Bootstrapping tvEntry.", event.GetFields()...)
+	entry.ZapLoggerEntry.GetLogger().Info("Bootstrapping tvEntry.", event.ListPayloads()...)
 
 	entry.EventLoggerEntry.GetEventHelper().Finish(event)
 }
 
 // Interrupt TV entry.
-func (entry *TvEntry) Interrupt(context.Context) {
+func (entry *TvEntry) Interrupt(ctx context.Context) {
 	event := entry.EventLoggerEntry.GetEventHelper().Start(
 		"interrupt",
 		rkquery.WithEntryName(entry.EntryName),
 		rkquery.WithEntryType(entry.EntryType))
 
+	logger := entry.ZapLoggerEntry.GetLogger()
+	if raw := ctx.Value(bootstrapEventIdKey); raw != nil {
+		event.SetEventId(raw.(string))
+		logger = logger.With(zap.String("eventId", event.GetEventId()))
+	}
+
 	entry.logBasicInfo(event)
 
 	defer entry.EventLoggerEntry.GetEventHelper().Finish(event)
 
-	entry.ZapLoggerEntry.GetLogger().Info("Interrupting TvEntry.", event.GetFields()...)
+	logger.Info("Interrupting TvEntry.", event.ListPayloads()...)
 }
 
 // Get name of entry.
@@ -248,7 +258,7 @@ func (entry *TvEntry) UnmarshalJSON([]byte) error {
 
 // Add basic fields into event.
 func (entry *TvEntry) logBasicInfo(event rkquery.Event) {
-	event.AddFields(
+	event.AddPayloads(
 		zap.String("entryName", entry.EntryName),
 		zap.String("entryType", entry.EntryType),
 	)
@@ -264,9 +274,6 @@ func (entry *TvEntry) TV(ctx *gin.Context) {
 	if ctx == nil {
 		return
 	}
-
-	// Add auto generated request ID
-	rkginctx.AddRequestIdToOutgoingHeader(ctx)
 
 	logger := rkginctx.GetLogger(ctx)
 

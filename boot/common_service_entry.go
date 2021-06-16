@@ -10,7 +10,8 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-entry/entry"
-	"github.com/rookie-ninja/rk-gin/interceptor/context"
+	rkginbasic "github.com/rookie-ninja/rk-gin/interceptor/basic"
+	rkginctx "github.com/rookie-ninja/rk-gin/interceptor/context"
 	"github.com/rookie-ninja/rk-gin/interceptor/metrics/prom"
 	"github.com/rookie-ninja/rk-query"
 	"go.uber.org/zap"
@@ -115,32 +116,46 @@ func NewCommonServiceEntry(opts ...CommonServiceEntryOption) *CommonServiceEntry
 }
 
 // Bootstrap common service entry.
-func (entry *CommonServiceEntry) Bootstrap(context.Context) {
+func (entry *CommonServiceEntry) Bootstrap(ctx context.Context) {
 	// No op
 	event := entry.EventLoggerEntry.GetEventHelper().Start(
 		"bootstrap",
 		rkquery.WithEntryName(entry.EntryName),
 		rkquery.WithEntryType(entry.EntryType))
 
+	logger := entry.ZapLoggerEntry.GetLogger().With(zap.String("eventId", event.GetEventId()))
+
+	if raw := ctx.Value(bootstrapEventIdKey); raw != nil {
+		event.SetEventId(raw.(string))
+		logger = logger.With(zap.String("eventId", event.GetEventId()))
+	}
+
 	entry.logBasicInfo(event)
 
 	defer entry.EventLoggerEntry.GetEventHelper().Finish(event)
 
-	entry.ZapLoggerEntry.GetLogger().Info("Bootstrapping CommonServiceEntry.", event.GetFields()...)
+	logger.Info("Bootstrapping CommonServiceEntry.", event.ListPayloads()...)
 }
 
 // Interrupt common service entry.
-func (entry *CommonServiceEntry) Interrupt(context.Context) {
+func (entry *CommonServiceEntry) Interrupt(ctx context.Context) {
 	event := entry.EventLoggerEntry.GetEventHelper().Start(
 		"interrupt",
 		rkquery.WithEntryName(entry.EntryName),
 		rkquery.WithEntryType(entry.EntryType))
 
+	logger := entry.ZapLoggerEntry.GetLogger().With(zap.String("eventId", event.GetEventId()))
+
+	if raw := ctx.Value(bootstrapEventIdKey); raw != nil {
+		event.SetEventId(raw.(string))
+		logger = logger.With(zap.String("eventId", event.GetEventId()))
+	}
+
 	entry.logBasicInfo(event)
 
 	defer entry.EventLoggerEntry.GetEventHelper().Finish(event)
 
-	entry.ZapLoggerEntry.GetLogger().Info("Interrupting CommonServiceEntry.", event.GetFields()...)
+	logger.Info("Interrupting CommonServiceEntry.", event.ListPayloads()...)
 }
 
 // Get name of entry.
@@ -184,7 +199,7 @@ func (entry *CommonServiceEntry) UnmarshalJSON([]byte) error {
 
 // Add basic fields into event.
 func (entry *CommonServiceEntry) logBasicInfo(event rkquery.Event) {
-	event.AddFields(
+	event.AddPayloads(
 		zap.String("entryName", entry.EntryName),
 		zap.String("entryType", entry.EntryType),
 	)
@@ -233,6 +248,9 @@ func (entry *CommonServiceEntry) Gc(ctx *gin.Context) {
 	if ctx == nil {
 		return
 	}
+
+	rkginctx.GetLogger(ctx).Info("first")
+	rkginctx.GetLogger(ctx).Info("second")
 
 	ctx.JSON(http.StatusOK, doGc(ctx))
 }
@@ -410,7 +428,7 @@ func doReq(ctx *gin.Context) *rkentry.ReqResponse {
 	// Fill missed metrics
 	apis := make([]string, 0)
 
-	ginEntry := GetGinEntry(ctx.GetString(rkginctx.RkEntryNameKey))
+	ginEntry := GetGinEntry(ctx.GetString(rkginbasic.RkEntryNameKey))
 	if ginEntry != nil {
 		routes := ginEntry.Router.Routes()
 		for j := range routes {
@@ -646,7 +664,7 @@ func getEntry(ctx *gin.Context) *GinEntry {
 		return nil
 	}
 
-	entryRaw := rkentry.GlobalAppCtx.GetEntry(ctx.GetString(rkginctx.RkEntryNameKey))
+	entryRaw := rkentry.GlobalAppCtx.GetEntry(ctx.GetString(rkginbasic.RkEntryNameKey))
 	if entryRaw == nil {
 		return nil
 	}

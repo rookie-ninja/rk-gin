@@ -3,11 +3,12 @@ package rkginctx
 import (
 	"github.com/gin-gonic/gin"
 	rkcommon "github.com/rookie-ninja/rk-common/common"
+	rkginbasic "github.com/rookie-ninja/rk-gin/interceptor/basic"
+	rkginextension "github.com/rookie-ninja/rk-gin/interceptor/extension"
 	"github.com/rookie-ninja/rk-logger"
 	"github.com/rookie-ninja/rk-query"
 	"github.com/stretchr/testify/assert"
 	httptest "github.com/stretchr/testify/http"
-	"net/http"
 	"os"
 	"strings"
 	"testing"
@@ -104,7 +105,7 @@ func TestAddRequestIdToOutgoingHeader_WithNilContext(t *testing.T) {
 		}
 	}()
 
-	assert.Empty(t, AddRequestIdToOutgoingHeader(nil))
+	assert.Empty(t, SetRequestIdToOutgoingHeader(nil))
 }
 
 func TestAddRequestIdToOutgoingHeader_WithContextWithNilWriter(t *testing.T) {
@@ -118,16 +119,17 @@ func TestAddRequestIdToOutgoingHeader_WithContextWithNilWriter(t *testing.T) {
 		}
 	}()
 
-	assert.Empty(t, AddRequestIdToOutgoingHeader(&gin.Context{}))
+	assert.Empty(t, SetRequestIdToOutgoingHeader(&gin.Context{}))
 }
 
 func TestAddRequestIdToOutgoingHeader_HappyCase(t *testing.T) {
 	writer := &httptest.TestResponseWriter{}
 	ctx, _ := gin.CreateTestContext(writer)
 
-	id := AddRequestIdToOutgoingHeader(ctx)
+	id := SetRequestIdToOutgoingHeader(ctx)
 	assert.NotEmpty(t, id)
-	assert.Equal(t, id, ctx.Writer.Header().Get(RequestIdKeyDefault))
+
+	assert.Equal(t, id, ctx.Writer.Header().Get(rkginextension.RequestIdHeaderKeyDefault))
 }
 
 func TestGetEvent_WithNilContext(t *testing.T) {
@@ -156,7 +158,7 @@ func TestGetEvent_HappyCase(t *testing.T) {
 	ctx, _ := gin.CreateTestContext(writer)
 
 	event := rkquery.NewEventFactory().CreateEventNoop()
-	ctx.Set(RkEventKey, event)
+	ctx.Set(rkginbasic.RkEventKey, event)
 
 	assert.Equal(t, event, GetEvent(ctx))
 }
@@ -187,7 +189,7 @@ func TestGetLogger_HappyCase(t *testing.T) {
 	ctx, _ := gin.CreateTestContext(writer)
 
 	logger := rklogger.NoopLogger
-	ctx.Set(RkLoggerKey, logger)
+	ctx.Set(rkginbasic.RkLoggerKey, logger)
 
 	assert.Equal(t, logger, GetLogger(ctx))
 }
@@ -203,7 +205,7 @@ func TestGetRequestIdsFromOutgoingHeader_WithNilContext(t *testing.T) {
 		}
 	}()
 
-	assert.Empty(t, GetRequestIdsFromOutgoingHeader(nil))
+	assert.Empty(t, GetRequestId(nil))
 }
 
 func TestGetRequestIdsFromOutgoingHeader_WithContextWithNilWriter(t *testing.T) {
@@ -217,112 +219,26 @@ func TestGetRequestIdsFromOutgoingHeader_WithContextWithNilWriter(t *testing.T) 
 		}
 	}()
 
-	assert.Empty(t, GetRequestIdsFromOutgoingHeader(&gin.Context{}))
+	assert.Empty(t, GetRequestId(&gin.Context{}))
 }
 
 func TestGetRequestIdsFromOutgoingHeader_WithoutRequestId(t *testing.T) {
 	writer := &httptest.TestResponseWriter{}
 	ctx, _ := gin.CreateTestContext(writer)
 
-	assert.Empty(t, GetRequestIdsFromOutgoingHeader(ctx))
+	assert.Empty(t, GetRequestId(ctx))
 }
 
 func TestGetRequestIdsFromOutgoingHeader_HappyCase(t *testing.T) {
 	writer := &httptest.TestResponseWriter{}
 	ctx, _ := gin.CreateTestContext(writer)
 
-	first := rkcommon.GenerateRequestId()
-	second := rkcommon.GenerateRequestId()
-	third := rkcommon.GenerateRequestId()
+	id := rkcommon.GenerateRequestId()
 
-	ctx.Writer.Header().Set(RequestIdKeyDash, first)
-	ctx.Writer.Header().Set(RequestIdKeyUnderline, second)
-	ctx.Writer.Header().Set(RequestIdKeyLowerCase, third)
+	ctx.Writer.Header().Set(rkginextension.RequestIdHeaderKeyDefault, id)
 
-	ids := GetRequestIdsFromOutgoingHeader(ctx)
-	assert.Len(t, ids, 3)
-
-	assert.Contains(t, ids, first)
-	assert.Contains(t, ids, second)
-	assert.Contains(t, ids, third)
-}
-
-func TestGetRequestIdsFromIncomingHeader_WithNilContext(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			// expect panic to be called with non nil error
-			assert.True(t, false)
-		} else {
-			// this should never be called in case of a bug
-			assert.True(t, true)
-		}
-	}()
-
-	assert.Empty(t, GetRequestIdsFromIncomingHeader(nil))
-}
-
-func TestGetRequestIdsFromIncomingHeader_WithContextWithNilRequest(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			// expect panic to be called with non nil error
-			assert.True(t, false)
-		} else {
-			// this should never be called in case of a bug
-			assert.True(t, true)
-		}
-	}()
-
-	assert.Empty(t, GetRequestIdsFromIncomingHeader(&gin.Context{}))
-}
-
-func TestGetRequestIdsFromIncomingHeader_WithContextWithNilHeader(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			// expect panic to be called with non nil error
-			assert.True(t, false)
-		} else {
-			// this should never be called in case of a bug
-			assert.True(t, true)
-		}
-	}()
-
-	ctx := &gin.Context{
-		Request: &http.Request{},
-	}
-	assert.Empty(t, GetRequestIdsFromIncomingHeader(ctx))
-}
-
-func TestGetRequestIdsFromIncomingHeader_WithoutRequestId(t *testing.T) {
-	ctx := &gin.Context{
-		Request: &http.Request{
-			Header: http.Header{},
-		},
-	}
-
-	assert.Empty(t, GetRequestIdsFromIncomingHeader(ctx))
-}
-
-func TestGetRequestIdsFromIncomingHeader_HappyCase(t *testing.T) {
-	ctx := &gin.Context{
-		Request: &http.Request{
-			Header: http.Header{},
-		},
-	}
-
-	first := rkcommon.GenerateRequestId()
-	second := rkcommon.GenerateRequestId()
-	third := rkcommon.GenerateRequestId()
-
-	ctx.Request.Header.Set(RequestIdKeyDash, first)
-	ctx.Request.Header.Set(RequestIdKeyUnderline, second)
-	ctx.Request.Header.Set(RequestIdKeyLowerCase, third)
-
-	ids := GetRequestIdsFromIncomingHeader(ctx)
-	assert.Len(t, ids, 3)
-
-	assert.Contains(t, ids, first)
-	assert.Contains(t, ids, second)
-	assert.Contains(t, ids, third)
+	res := GetRequestId(ctx)
+	assert.Contains(t, res, id)
 }
 
 func TestGenerateRequestId_HappyCase(t *testing.T) {

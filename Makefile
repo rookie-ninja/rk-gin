@@ -1,5 +1,5 @@
 .PHONY: all
-all: test lint readme fmt swag pkger
+all: gomod test lint readme fmt swag pkger
 
 .PHONY: lint
 lint:
@@ -30,3 +30,8 @@ swag:
 pkger:
 	@echo "running pkger..."
 	@pkger -o boot/assets
+
+.PHONY: gomod
+gomod:
+	@echo "running go mod tidy..."
+	@go mod tidy

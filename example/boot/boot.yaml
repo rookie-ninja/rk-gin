@@ -46,7 +46,7 @@ gin:
     tv:                                       # Optional
       enabled:  true                          # Optional, default: false
     prom:                                     # Optional
-      enabled: true                           # Optional, default: false
+      enabled: false                          # Optional, default: false
       path: "metrics"                         # Optional, default: ""
       pusher:                                 # Optional
         enabled: false                        # Optional, default: false
@@ -65,7 +65,18 @@ gin:
       loggingZap:
         enabled: true                         # Optional, default: false
       metricsProm:
+        enabled: false                        # Optional, default: false
+      extension:
         enabled: true                         # Optional, default: false
+      tracingTelemetry:
+        enabled: true                         # Optional, default: false
+        exporter:                             # Optional, default will create a stdout exporter
+          file:
+            enabled: true                     # Optional, default: false
+#            outputPath: "logs/trace.log"      # Optional, default: stdout
+#          jaeger:
+#            enabled: true                     # Optional, default: false
+#            agentEndpoint: ""                 # Optional, default: localhost:6832
 #      basicAuth:
 #        enabled: true                        # Optional, default: false
 #        credentials:

@@ -3,8 +3,8 @@ package rkginmetrics
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
-	rkentry "github.com/rookie-ninja/rk-entry/entry"
-	"github.com/rookie-ninja/rk-gin/interceptor/context"
+	"github.com/rookie-ninja/rk-entry/entry"
+	"github.com/rookie-ninja/rk-gin/interceptor/basic"
 	"github.com/rookie-ninja/rk-prom"
 	"strconv"
 	"strings"
@@ -38,8 +38,8 @@ const (
 
 func MetricsPromInterceptor(opts ...Option) gin.HandlerFunc {
 	set := &optionSet{
-		EntryName:  rkginctx.RkEntryNameValue,
-		EntryType:  rkginctx.RkEntryTypeValue,
+		EntryName:  rkginbasic.RkEntryNameValue,
+		EntryType:  rkginbasic.RkEntryTypeValue,
 		Registerer: prometheus.DefaultRegisterer,
 	}
 
@@ -53,7 +53,7 @@ func MetricsPromInterceptor(opts ...Option) gin.HandlerFunc {
 			set.EntryName,
 			set.Registerer)
 	} else {
-		set.EntryName = rkginctx.RkEntryNameValue
+		set.EntryName = rkginbasic.RkEntryNameValue
 		set.Registerer = prometheus.DefaultRegisterer
 		set.MetricsSet = rkprom.NewMetricsSet(
 			rkentry.GlobalAppCtx.GetAppInfoEntry().AppName,
@@ -174,11 +174,11 @@ func getValues(ctx *gin.Context) []string {
 	values := []string{
 		entryName,
 		entryType,
-		rkginctx.Realm.String,
-		rkginctx.Region.String,
-		rkginctx.AZ.String,
-		rkginctx.Domain.String,
-		rkginctx.LocalHostname.String,
+		rkginbasic.Realm.String,
+		rkginbasic.Region.String,
+		rkginbasic.AZ.String,
+		rkginbasic.Domain.String,
+		rkginbasic.LocalHostname.String,
 		rkentry.GlobalAppCtx.GetAppInfoEntry().Version,
 		rkentry.GlobalAppCtx.GetAppInfoEntry().AppName,
 		method,
@@ -239,6 +239,6 @@ func getOptionSet(ctx *gin.Context) *optionSet {
 		return nil
 	}
 
-	entryName := ctx.GetString(rkginctx.RkEntryNameKey)
+	entryName := ctx.GetString(rkginbasic.RkEntryNameKey)
 	return optionsMap[entryName]
 }

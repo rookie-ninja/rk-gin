@@ -40,7 +40,8 @@ func bootFromCode() {
 		rkgin.WithNameGin("greeter"),
 		rkgin.WithPortGin(8080),
 		rkgin.WithCommonServiceEntryGin(rkgin.NewCommonServiceEntry()),
-		rkgin.WithInterceptorsGin(rkginlog.LoggingZapInterceptor([]rkginlog.Option{}...),
+		rkgin.WithInterceptorsGin(
+			rkginlog.LoggingZapInterceptor([]rkginlog.Option{}...),
 			rkginextension.ExtensionInterceptor()))
 
 	// Start server

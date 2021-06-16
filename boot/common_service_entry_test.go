@@ -82,23 +82,6 @@ func TestNewCommonServiceEntry_HappyCase(t *testing.T) {
 	assert.NotEmpty(t, entry.GetType())
 }
 
-func TestCommonServiceEntry_Bootstrap_WithNilParam(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			// expect panic to be called with non nil error
-			assert.True(t, false)
-		} else {
-			// this should never be called in case of a bug
-			assert.True(t, true)
-		}
-	}()
-
-	entry := NewCommonServiceEntry(
-		WithZapLoggerEntryCommonService(rkentry.NoopZapLoggerEntry()),
-		WithEventLoggerEntryCommonService(rkentry.NoopEventLoggerEntry()))
-	entry.Bootstrap(nil)
-}
-
 func TestCommonServiceEntry_Bootstrap_WithoutRouter(t *testing.T) {
 	defer func() {
 		if r := recover(); r != nil {

@@ -2,7 +2,6 @@ package rkginbasic
 
 import (
 	"github.com/gin-gonic/gin"
-	rkginctx "github.com/rookie-ninja/rk-gin/interceptor/context"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -31,7 +30,7 @@ func TestGetOptionSet_HappyCase(t *testing.T) {
 	BasicInterceptor(WithEntryNameAndType("ut-name", "ut-type"))
 	ctx := &gin.Context{
 		Keys: map[string]interface{}{
-			rkginctx.RkEntryNameKey: "ut-name",
+			RkEntryNameKey: "ut-name",
 		},
 	}
 
@@ -41,7 +40,7 @@ func TestGetOptionSet_HappyCase(t *testing.T) {
 func TestBasicInterceptor_WithoutOption(t *testing.T) {
 	BasicInterceptor()
 
-	assert.NotNil(t, optionsMap[rkginctx.RkEntryNameValue])
+	assert.NotNil(t, optionsMap[RkEntryNameValue])
 }
 
 func TestBasicInterceptor_HappyCase(t *testing.T) {

@@ -178,11 +178,18 @@ func NewPromEntry(opts ...PromEntryOption) *PromEntry {
 }
 
 // Start prometheus client
-func (entry *PromEntry) Bootstrap(context.Context) {
+func (entry *PromEntry) Bootstrap(ctx context.Context) {
 	event := entry.EventLoggerEntry.GetEventHelper().Start(
 		"bootstrap",
 		rkquery.WithEntryName(entry.EntryName),
 		rkquery.WithEntryType(entry.EntryType))
+
+	logger := entry.ZapLoggerEntry.GetLogger().With(zap.String("eventId", event.GetEventId()))
+
+	if raw := ctx.Value(bootstrapEventIdKey); raw != nil {
+		event.SetEventId(raw.(string))
+		logger = logger.With(zap.String("eventId", event.GetEventId()))
+	}
 
 	entry.logBasicInfo(event)
 
@@ -193,15 +200,22 @@ func (entry *PromEntry) Bootstrap(context.Context) {
 		entry.Pusher.Start()
 	}
 
-	entry.ZapLoggerEntry.GetLogger().Info("Bootstrapping promEntry.", event.GetFields()...)
+	logger.Info("Bootstrapping promEntry.", event.ListPayloads()...)
 }
 
 // Shutdown prometheus client
-func (entry *PromEntry) Interrupt(context.Context) {
+func (entry *PromEntry) Interrupt(ctx context.Context) {
 	event := entry.EventLoggerEntry.GetEventHelper().Start(
 		"interrupt",
 		rkquery.WithEntryName(entry.EntryName),
 		rkquery.WithEntryType(entry.EntryType))
+
+	logger := entry.ZapLoggerEntry.GetLogger().With(zap.String("eventId", event.GetEventId()))
+
+	if raw := ctx.Value(bootstrapEventIdKey); raw != nil {
+		event.SetEventId(raw.(string))
+		logger = logger.With(zap.String("eventId", event.GetEventId()))
+	}
 
 	entry.logBasicInfo(event)
 
@@ -211,7 +225,7 @@ func (entry *PromEntry) Interrupt(context.Context) {
 		entry.Pusher.Stop()
 	}
 
-	entry.ZapLoggerEntry.GetLogger().Info("Interrupting promEntry.", event.GetFields()...)
+	logger.Info("Interrupting promEntry.", event.ListPayloads()...)
 }
 
 // Return name of prom entry
@@ -257,7 +271,7 @@ func (entry *PromEntry) UnmarshalJSON(b []byte) error {
 }
 
 func (entry *PromEntry) logBasicInfo(event rkquery.Event) {
-	event.AddFields(
+	event.AddPayloads(
 		zap.String("entryName", entry.EntryName),
 		zap.String("entryType", entry.EntryType),
 		zap.String("entryDescription", entry.EntryDescription),
@@ -266,7 +280,7 @@ func (entry *PromEntry) logBasicInfo(event rkquery.Event) {
 	)
 
 	if entry.Pusher != nil {
-		event.AddFields(
+		event.AddPayloads(
 			zap.String("pusherRemoteAddr", entry.Pusher.RemoteAddress),
 			zap.Duration("pusherIntervalMs", entry.Pusher.IntervalMs),
 			zap.String("pusherJobName", entry.Pusher.JobName),
