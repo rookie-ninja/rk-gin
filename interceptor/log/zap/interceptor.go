@@ -1,4 +1,4 @@
-// Copyright (c) 2020 rookie-ninja
+// Copyright (c) 2021 rookie-ninja
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
@@ -150,22 +150,25 @@ func getRemoteAddressSet(ctx *gin.Context) []zap.Field {
 	}
 }
 
+// Get rkquery.EventFactory with this interceptor with gin.Context
 func GetEventFactory(ctx *gin.Context) *rkquery.EventFactory {
-	if set := getOptionSet(ctx); set != nil {
+	if set := GetOptionSet(ctx); set != nil {
 		return set.EventFactory
 	}
 
 	return nil
 }
 
+// Get rkquery.EventFactory with this interceptor with gin.Context
 func GetLogger(ctx *gin.Context) *zap.Logger {
-	if set := getOptionSet(ctx); set != nil {
+	if set := GetOptionSet(ctx); set != nil {
 		return set.Logger
 	}
 
 	return rklogger.NoopLogger
 }
 
+// Get rkquery.Event with this interceptor with gin.Context
 func GetEvent(ctx *gin.Context) rkquery.Event {
 	if v, ok := ctx.Get(rkginbasic.RkEventKey); !ok {
 		return rkquery.NewEventFactory().CreateEventNoop()
@@ -174,8 +177,9 @@ func GetEvent(ctx *gin.Context) rkquery.Event {
 	}
 }
 
+// Get rkquery.Event with this interceptor with gin.Context
 func SetLogger(ctx *gin.Context, logger *zap.Logger) bool {
-	if set := getOptionSet(ctx); set != nil {
+	if set := GetOptionSet(ctx); set != nil {
 		set.Logger = logger
 		return true
 	}
@@ -183,7 +187,8 @@ func SetLogger(ctx *gin.Context, logger *zap.Logger) bool {
 	return false
 }
 
-func getOptionSet(ctx *gin.Context) *optionSet {
+// Get optionSet with gin.Context
+func GetOptionSet(ctx *gin.Context) *optionSet {
 	if ctx == nil {
 		return nil
 	}
@@ -205,6 +210,7 @@ type optionSet struct {
 
 type Option func(*optionSet)
 
+// Provide rkquery.EventFactory.
 func WithEventFactory(factory *rkquery.EventFactory) Option {
 	return func(opt *optionSet) {
 		if factory == nil {
@@ -214,6 +220,7 @@ func WithEventFactory(factory *rkquery.EventFactory) Option {
 	}
 }
 
+// Provide zap.Logger.
 func WithLogger(logger *zap.Logger) Option {
 	return func(opt *optionSet) {
 		if logger == nil {
@@ -223,6 +230,7 @@ func WithLogger(logger *zap.Logger) Option {
 	}
 }
 
+// Provide entry name and entry type.
 func WithEntryNameAndType(entryName, entryType string) Option {
 	return func(opt *optionSet) {
 		opt.EntryName = entryName

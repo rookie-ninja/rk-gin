@@ -1,9 +1,13 @@
+// Copyright (c) 2021 rookie-ninja
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
 package rkginlog
 
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-common/common"
-	rkginbasic "github.com/rookie-ninja/rk-gin/interceptor/basic"
+	"github.com/rookie-ninja/rk-gin/interceptor/basic"
 	"github.com/rookie-ninja/rk-logger"
 	"github.com/rookie-ninja/rk-query"
 	"github.com/stretchr/testify/assert"

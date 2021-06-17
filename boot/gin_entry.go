@@ -1,4 +1,4 @@
-// Copyright (c) 2020 rookie-ninja
+// Copyright (c) 2021 rookie-ninja
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
@@ -19,7 +19,7 @@ import (
 	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
 	"github.com/rookie-ninja/rk-gin/interceptor/metrics/prom"
 	"github.com/rookie-ninja/rk-gin/interceptor/panic/zap"
-	rkgintrace "github.com/rookie-ninja/rk-gin/interceptor/tracing/open-telemetry"
+	"github.com/rookie-ninja/rk-gin/interceptor/tracing/open-telemetry"
 	"github.com/rookie-ninja/rk-prom"
 	"github.com/rookie-ninja/rk-query"
 	"go.opencensus.io/plugin/ochttp"
@@ -60,11 +60,16 @@ func init() {
 // 8: Gin.Interceptors.LoggingZap.Enabled: Enable zap logging interceptor.
 // 9: Gin.Interceptors.MetricsProm.Enable: Enable prometheus interceptor.
 // 10: Gin.Interceptors.BasicAuth.Enabled: Enable basic auth.
-// 11: Gin.interceptors.BasicAuth.Credentials: Credential for basic auth, scheme: <user:pass>
-// 12: Gin.interceptors.Extension.Enabled: Enable extension interceptor.
-// 13: Gin.interceptors.Extension.Prefix: Prefix of extension header key.
-// 14: Gin.Logger.ZapLogger.Ref: Zap logger reference, see rkentry.ZapLoggerEntry for details.
-// 15: Gin.Logger.EventLogger.Ref: Event logger reference, see rkentry.EventLoggerEntry for details.
+// 11: Gin.Interceptors.BasicAuth.Credentials: Credential for basic auth, scheme: <user:pass>
+// 12: Gin.Interceptors.Extension.Enabled: Enable extension interceptor.
+// 13: Gin.Interceptors.Extension.Prefix: Prefix of extension header key.
+// 14: Gin.Interceptors.TracingTelemetry.Enabled: Enable tracing interceptor with opentelemetry.
+// 15: Gin.Interceptors.TracingTelemetry.Exporter.File.Enabled: Enable file exporter which support type of stdout and local file.
+// 16: Gin.Interceptors.TracingTelemetry.Exporter.File.OutputPath: Output path of file exporter, stdout and file path is supported.
+// 17: Gin.Interceptors.TracingTelemetry.Exporter.Jaeger.Enabled: Enable jaeger exporter.
+// 18: Gin.Interceptors.TracingTelemetry.Exporter.Jaeger.AgentEndpoint: Specify jeager agent endpoint, localhost:6832 would be used by default.
+// 19: Gin.Logger.ZapLogger.Ref: Zap logger reference, see rkentry.ZapLoggerEntry for details.
+// 20: Gin.Logger.EventLogger.Ref: Event logger reference, see rkentry.EventLoggerEntry for details.
 type BootConfigGin struct {
 	Gin []struct {
 		Name        string `yaml:"name" json:"name"`
@@ -104,7 +109,7 @@ type BootConfigGin struct {
 						AgentEndpoint string `yaml:"agentEndpoint" json:"agentEndpoint"`
 					} `yaml:"jaeger" json:"jaeger"`
 				} `yaml:"exporter" json:"exporter"`
-			} `tracingTelemetry`
+			} `yaml:"tracingTelemetry" json:"tracingTelemetry"`
 		} `yaml:"interceptors" json:"interceptors"`
 		Logger struct {
 			ZapLogger struct {
@@ -513,6 +518,11 @@ func (entry *GinEntry) GetType() string {
 	return entry.EntryType
 }
 
+// Get description of entry.
+func (entry *GinEntry) GetDescription() string {
+	return entry.EntryDescription
+}
+
 // Stringfy gin entry.
 func (entry *GinEntry) String() string {
 	bytes, _ := json.Marshal(entry)
@@ -757,9 +767,4 @@ func (entry *GinEntry) MarshalJSON() ([]byte, error) {
 // Not supported.
 func (entry *GinEntry) UnmarshalJSON([]byte) error {
 	return nil
-}
-
-// Unmarshal entry.
-func (entry *GinEntry) GetDescription() string {
-	return entry.EntryDescription
 }

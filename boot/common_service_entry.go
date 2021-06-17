@@ -1,4 +1,4 @@
-// Copyright (c) 2020 rookie-ninja
+// Copyright (c) 2021 rookie-ninja
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
@@ -45,21 +45,25 @@ type BootConfigCommonService struct {
 }
 
 // RK common service which contains commonly used APIs
-// 1: Healthy GET Returns true if process is alive
-// 2: Gc GET Trigger gc()
-// 3: Info GET Returns entry basic information
-// 4: Configs GET Returns viper configs in GlobalAppCtx
-// 5: Apis GET Returns list of apis registered in gin router
-// 6: Sys GET Returns CPU and Memory information
-// 7: Req GET Returns request metrics
-// 8: Certs GET Returns certificates
-// 9: Entries GET Returns entries
+// 1: Healthy Returns true if process is alive
+// 2: Gc Trigger gc()
+// 3: Info Returns entry basic information
+// 4: Configs Returns viper configs in GlobalAppCtx
+// 5: Apis Returns list of apis registered in gin router
+// 6: Sys Returns CPU and Memory information
+// 7: Req Returns request metrics
+// 8: Certs Returns certificates
+// 9: Entries Returns entries
+// 10: Logs Returns log entries
+// 12: Deps Returns dependency which is full  go.mod file content
+// 13: License Returns license file content
+// 14: Readme Returns README file content
 type CommonServiceEntry struct {
 	EntryName        string                    `json:"entryName" yaml:"entryName"`
 	EntryType        string                    `json:"entryType" yaml:"entryType"`
 	EntryDescription string                    `json:"entryDescription" yaml:"entryDescription"`
-	EventLoggerEntry *rkentry.EventLoggerEntry `json:"eventLoggerEntry" yaml:"eventLoggerEntry"`
-	ZapLoggerEntry   *rkentry.ZapLoggerEntry   `json:"zapLoggerEntry" yaml:"zapLoggerEntry"`
+	EventLoggerEntry *rkentry.EventLoggerEntry `json:"-" yaml:"-"`
+	ZapLoggerEntry   *rkentry.ZapLoggerEntry   `json:"-" yaml:"-"`
 }
 
 // Common service entry option.

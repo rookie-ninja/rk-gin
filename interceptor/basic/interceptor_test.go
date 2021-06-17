@@ -1,3 +1,7 @@
+// Copyright (c) 2021 rookie-ninja
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
 package rkginbasic
 
 import (
@@ -18,12 +22,12 @@ func TestWithEntryNameAndType_HappyCase(t *testing.T) {
 }
 
 func TestGetOptionSet_WithNilContext(t *testing.T) {
-	assert.Nil(t, getOptionSet(nil))
+	assert.Nil(t, GetOptionSet(nil))
 }
 
 func TestGetOptionSet_WithEmptyEntryNameInContext(t *testing.T) {
 	BasicInterceptor(WithEntryNameAndType("ut-name", "ut-type"))
-	assert.Nil(t, getOptionSet(&gin.Context{}))
+	assert.Nil(t, GetOptionSet(&gin.Context{}))
 }
 
 func TestGetOptionSet_HappyCase(t *testing.T) {
@@ -34,7 +38,7 @@ func TestGetOptionSet_HappyCase(t *testing.T) {
 		},
 	}
 
-	assert.NotNil(t, getOptionSet(ctx))
+	assert.NotNil(t, GetOptionSet(ctx))
 }
 
 func TestBasicInterceptor_WithoutOption(t *testing.T) {

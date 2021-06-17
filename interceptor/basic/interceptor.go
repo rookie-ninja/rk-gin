@@ -1,3 +1,7 @@
+// Copyright (c) 2021 rookie-ninja
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
 package rkginbasic
 
 import (
@@ -27,6 +31,10 @@ const (
 	RkEntryTypeValue    = "gin"
 )
 
+// Inject entry name into context, we suggest add this interceptor before using any other RK style interceptors.
+// Why we need this?
+// It is because RK could start multiple GIN entries with different name and port. As a result, we need to make sure
+// interceptors could be distinguished with entry name.
 func BasicInterceptor(opts ...Option) gin.HandlerFunc {
 	set := &optionSet{
 		EntryName: RkEntryNameValue,
@@ -50,7 +58,8 @@ func BasicInterceptor(opts ...Option) gin.HandlerFunc {
 	}
 }
 
-func getOptionSet(ctx *gin.Context) *optionSet {
+// Return option set with gin.Context
+func GetOptionSet(ctx *gin.Context) *optionSet {
 	if ctx == nil {
 		return nil
 	}
@@ -69,6 +78,7 @@ type optionSet struct {
 
 type Option func(*optionSet)
 
+// Provide entry name and type
 func WithEntryNameAndType(entryName, entryType string) Option {
 	return func(opt *optionSet) {
 		opt.EntryName = entryName

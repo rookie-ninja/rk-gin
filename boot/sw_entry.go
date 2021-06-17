@@ -273,6 +273,7 @@ func (entry *SwEntry) logBasicInfo(event rkquery.Event) {
 	)
 }
 
+// Handler for swagger assets files.
 func (entry *SwEntry) AssetsFileHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		w := ctx.Writer
@@ -288,6 +289,7 @@ func (entry *SwEntry) AssetsFileHandler() gin.HandlerFunc {
 	}
 }
 
+// handler for swagger config files.
 func (entry *SwEntry) ConfigFileHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		w := ctx.Writer

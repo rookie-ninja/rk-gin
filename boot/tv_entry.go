@@ -1,3 +1,7 @@
+// Copyright (c) 2021 rookie-ninja
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
 package rkgin
 
 import (
@@ -30,6 +34,7 @@ const (
 	TvEntryDescription = "Internal RK entry which implements tv web with Gin framework."
 )
 
+// Read go TV related template files into memory.
 func init() {
 	Templates["header"] = readFileFromPkger("/assets/tv/header.tmpl")
 	Templates["footer"] = readFileFromPkger("/assets/tv/footer.tmpl")
@@ -322,6 +327,7 @@ func (entry *TvEntry) TV(ctx *gin.Context) {
 	}
 }
 
+// Execute go template into buffer.
 func (entry *TvEntry) doExecuteTemplate(templateName string, data interface{}, logger *zap.Logger) *bytes.Buffer {
 	buf := new(bytes.Buffer)
 	if err := entry.Template.ExecuteTemplate(buf, templateName, data); err != nil {

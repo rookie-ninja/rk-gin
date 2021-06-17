@@ -1,3 +1,7 @@
+// Copyright (c) 2021 rookie-ninja
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
 package rkgintrace
 
 import (
@@ -22,6 +26,10 @@ import (
 	"path"
 )
 
+// Create file exporter with tracing.
+// OutputPath options:
+// 1: stdout
+// 2: file path
 func CreateFileExporter(outputPath string, opts ...stdout.Option) sdktrace.SpanExporter {
 	if opts == nil {
 		opts = make([]stdout.Option, 0)
@@ -73,6 +81,7 @@ func CreateJaegerExporter(host, port string) sdktrace.SpanExporter {
 	return exporter
 }
 
+// Create a interceptor with opentelemetry.
 func TelemetryInterceptor(opts ...Option) gin.HandlerFunc {
 	set := &optionSet{
 		EntryName: rkginbasic.RkEntryNameValue,
@@ -172,6 +181,7 @@ func TelemetryInterceptor(opts ...Option) gin.HandlerFunc {
 	}
 }
 
+// Convert locale information into attributes.
 func localeToAttributes() []attribute.KeyValue {
 	res := []attribute.KeyValue{
 		attribute.String(rkginbasic.Realm.Key, rkginbasic.Realm.String),
@@ -198,6 +208,7 @@ type optionSet struct {
 
 type Option func(*optionSet)
 
+// Provide trace.SpanExporter.
 func WithExporter(exporter sdktrace.SpanExporter) Option {
 	return func(opt *optionSet) {
 		if exporter != nil {
@@ -206,6 +217,7 @@ func WithExporter(exporter sdktrace.SpanExporter) Option {
 	}
 }
 
+// Provide trace.SpanProcessor.
 func WithSpanProcessor(processor sdktrace.SpanProcessor) Option {
 	return func(opt *optionSet) {
 		if processor != nil {
@@ -214,6 +226,7 @@ func WithSpanProcessor(processor sdktrace.SpanProcessor) Option {
 	}
 }
 
+// Provide trace.TracerProvider.
 func WithTracerProvider(provider *sdktrace.TracerProvider) Option {
 	return func(opt *optionSet) {
 		if provider != nil {
@@ -222,6 +235,7 @@ func WithTracerProvider(provider *sdktrace.TracerProvider) Option {
 	}
 }
 
+// Provide propagation.TextMapPropagator.
 func WithPropagator(propagator propagation.TextMapPropagator) Option {
 	return func(opt *optionSet) {
 		if propagator != nil {
@@ -230,6 +244,7 @@ func WithPropagator(propagator propagation.TextMapPropagator) Option {
 	}
 }
 
+// Provide entry name and entry type.
 func WithEntryNameAndType(entryName, entryType string) Option {
 	return func(opt *optionSet) {
 		opt.EntryName = entryName
@@ -237,6 +252,7 @@ func WithEntryNameAndType(entryName, entryType string) Option {
 	}
 }
 
+// Shutdown all exporters.
 func ShutdownExporters() {
 	for _, v := range optionsMap {
 		v.Exporter.Shutdown(context.Background())

@@ -1,3 +1,7 @@
+// Copyright (c) 2021 rookie-ninja
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
 package rkginextension
 
 import (
@@ -71,6 +75,7 @@ func ExtensionInterceptor(opts ...Option) gin.HandlerFunc {
 	}
 }
 
+// Get option set with gin.Context
 func GetOptionSet(ctx *gin.Context) *optionSet {
 	if ctx == nil {
 		return nil
@@ -99,6 +104,7 @@ type optionSet struct {
 
 type Option func(*optionSet)
 
+// Provide entry name and entry type.
 func WithEntryNameAndType(entryName, entryType string) Option {
 	return func(opt *optionSet) {
 		opt.EntryName = entryName
@@ -106,6 +112,8 @@ func WithEntryNameAndType(entryName, entryType string) Option {
 	}
 }
 
+// Provide prefix of response header as bellow:
+// X-<Prefix>-XXX
 func WithPrefix(prefix string) Option {
 	return func(opt *optionSet) {
 		opt.Prefix = prefix
