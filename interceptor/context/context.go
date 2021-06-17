@@ -1,4 +1,4 @@
-// Copyright (c) 2020 rookie-ninja
+// Copyright (c) 2021 rookie-ninja
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
@@ -143,6 +143,7 @@ func GetTracer(ctx *gin.Context) trace.Tracer {
 	return tracer.(trace.Tracer)
 }
 
+// Extract takes the call-scoped traceId from middleware.
 func GetTraceId(ctx *gin.Context) string {
 	if ctx == nil {
 		return ""
@@ -168,6 +169,7 @@ func NewSpan(ctx *gin.Context, name string) trace.Span {
 	return span
 }
 
+// End span
 func EndSpan(ctx *gin.Context, span trace.Span, success bool) {
 	if success {
 		span.SetStatus(otelcodes.Ok, otelcodes.Ok.String())
@@ -179,6 +181,7 @@ func EndSpan(ctx *gin.Context, span trace.Span, success bool) {
 	span.End()
 }
 
+// Inject tracer information into http.Header
 func InjectTracerIntoHeader(ctx *gin.Context, header *http.Header) {
 	propagator := GetTracerPropagator(ctx)
 
