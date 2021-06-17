@@ -106,10 +106,10 @@ User can start multiple servers at the same time
 | gin.interceptors.extension.enabled | Enable extension interceptor | boolean | false |
 | gin.interceptors.extension.prefix | Prefix of extension header key | string | rk |
 | gin.interceptors.tracingTelemetry.enabled | Enable tracing interceptor with opentelemetry | bool | false |
-| gin.interceptors.extension.exporter.file.enabled | Enable exporter which will write tracing info to file or stdout | string | stdout |
-| gin.interceptors.extension.exporter.file.outputPath | Output path of tracing log | string | stdout |
-| gin.interceptors.extension.exporter.jaeger.enabled | Enable exporter which will write tracing info to jaeger agent | bool | false |
-| gin.interceptors.extension.exporter.jaeger.agentEndpoint | Jaeger agent endpoint | string | "localhost:6832" |
+| gin.interceptors.tracingTelemetry.exporter.file.enabled | Enable exporter which will write tracing info to file or stdout | string | stdout |
+| gin.interceptors.tracingTelemetry.exporter.file.outputPath | Output path of tracing log | string | stdout |
+| gin.interceptors.tracingTelemetry.exporter.jaeger.enabled | Enable exporter which will write tracing info to jaeger agent | bool | false |
+| gin.interceptors.tracingTelemetry.exporter.jaeger.agentEndpoint | Jaeger agent endpoint | string | "localhost:6832" |
 
 Interceptors can be used with chain.
 
@@ -512,11 +512,14 @@ func main() {
 | /rk/v1/apis | List API |
 | /rk/v1/certs | List CertEntry |
 | /rk/v1/configs | List ConfigEntry |
+| /rk/v1/deps | List dependencies related application |
 | /rk/v1/entries | List all Entry |
 | /rk/v1/gc | Trigger GC |
 | /rk/v1/healthy | Get application healthy status, returns true if application is running |
 | /rk/v1/info | Get application and process info |
+| /rk/v1/license | Get license related application |
 | /rk/v1/logs | List logger related entries |
+| /rk/v1/readme | Get README file |
 | /rk/v1/req | List prometheus metrics of requests |
 | /rk/v1/sys | Get OS stat |
 | /rk/v1/tv | Get HTML page of /tv |

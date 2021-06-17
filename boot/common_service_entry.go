@@ -741,7 +741,7 @@ func doLicense(ctx *gin.Context) *rkentry.LicenseResponse {
 	return res
 }
 
-// @Summary List dependencies related application
+// @Summary Get README file.
 // @Id 13
 // @version 1.0
 // @produce application/json
