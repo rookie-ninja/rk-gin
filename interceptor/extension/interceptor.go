@@ -36,8 +36,6 @@ func ExtensionInterceptor(opts ...Option) gin.HandlerFunc {
 		EntryName:    rkginbasic.RkEntryNameValue,
 		EntryType:    rkginbasic.RkEntryTypeValue,
 		Prefix:       "RK",
-		RequestIdKey: "X-RK-Trace-Id",
-		TraceIdKey:   "X-RK-Trace-Id",
 	}
 
 	for i := range opts {
