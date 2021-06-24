@@ -10,8 +10,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-entry/entry"
-	rkginbasic "github.com/rookie-ninja/rk-gin/interceptor/basic"
-	rkginctx "github.com/rookie-ninja/rk-gin/interceptor/context"
+	"github.com/rookie-ninja/rk-gin/interceptor/context"
 	"github.com/rookie-ninja/rk-gin/interceptor/metrics/prom"
 	"github.com/rookie-ninja/rk-query"
 	"go.uber.org/zap"
@@ -127,7 +126,7 @@ func (entry *CommonServiceEntry) Bootstrap(ctx context.Context) {
 		rkquery.WithEntryName(entry.EntryName),
 		rkquery.WithEntryType(entry.EntryType))
 
-	logger := entry.ZapLoggerEntry.GetLogger().With(zap.String("eventId", event.GetEventId()))
+	logger := entry.ZapLoggerEntry.GetLogger()
 
 	if raw := ctx.Value(bootstrapEventIdKey); raw != nil {
 		event.SetEventId(raw.(string))
@@ -148,7 +147,7 @@ func (entry *CommonServiceEntry) Interrupt(ctx context.Context) {
 		rkquery.WithEntryName(entry.EntryName),
 		rkquery.WithEntryType(entry.EntryType))
 
-	logger := entry.ZapLoggerEntry.GetLogger().With(zap.String("eventId", event.GetEventId()))
+	logger := entry.ZapLoggerEntry.GetLogger()
 
 	if raw := ctx.Value(bootstrapEventIdKey); raw != nil {
 		event.SetEventId(raw.(string))
@@ -432,7 +431,7 @@ func doReq(ctx *gin.Context) *rkentry.ReqResponse {
 	// Fill missed metrics
 	apis := make([]string, 0)
 
-	ginEntry := GetGinEntry(ctx.GetString(rkginbasic.RkEntryNameKey))
+	ginEntry := GetGinEntry(rkginctx.GetEntryName(ctx))
 	if ginEntry != nil {
 		routes := ginEntry.Router.Routes()
 		for j := range routes {
@@ -668,7 +667,9 @@ func getEntry(ctx *gin.Context) *GinEntry {
 		return nil
 	}
 
-	entryRaw := rkentry.GlobalAppCtx.GetEntry(ctx.GetString(rkginbasic.RkEntryNameKey))
+	fmt.Println(rkginctx.GetEntryName(ctx))
+
+	entryRaw := rkentry.GlobalAppCtx.GetEntry(rkginctx.GetEntryName(ctx))
 	if entryRaw == nil {
 		return nil
 	}

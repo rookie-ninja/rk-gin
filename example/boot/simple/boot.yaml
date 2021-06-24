@@ -1,0 +1,21 @@
+---
+rk: # NOT required
+  appName: rk-example-entry           # Optional, default: "rkApp"
+gin:
+  - name: greeter                     # Required
+    port: 8080                        # Required
+    tv:
+      enabled: true                   # Optional, default: false
+    prom:
+      enabled: true                   # Optional, default: false
+    sw:                               # Optional
+      enabled: true                   # Optional, default: false
+    commonService:                    # Optional
+      enabled: true                   # Optional, default: false
+    interceptors:
+      loggingZap:
+        enabled: true
+      metricsProm:
+        enabled: true
+      meta:
+        enabled: true

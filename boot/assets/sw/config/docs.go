@@ -208,7 +208,7 @@ var doc = `{
                 "produces": [
                     "application/json"
                 ],
-                "summary": "List dependencies related application",
+                "summary": "Get README file.",
                 "operationId": "13",
                 "responses": {
                     "200": {

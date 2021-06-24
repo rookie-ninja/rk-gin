@@ -178,8 +178,11 @@ func (entry *TvEntry) Bootstrap(ctx context.Context) {
 		rkquery.WithEntryName(entry.EntryName),
 		rkquery.WithEntryType(entry.EntryType))
 
+	logger := entry.ZapLoggerEntry.GetLogger()
+
 	if raw := ctx.Value(bootstrapEventIdKey); raw != nil {
 		event.SetEventId(raw.(string))
+		logger = logger.With(zap.String("eventId", event.GetEventId()))
 	}
 
 	entry.logBasicInfo(event)
@@ -197,7 +200,7 @@ func (entry *TvEntry) Bootstrap(ctx context.Context) {
 		}
 	}
 
-	entry.ZapLoggerEntry.GetLogger().Info("Bootstrapping tvEntry.", event.ListPayloads()...)
+	logger.Info("Bootstrapping tvEntry.", event.ListPayloads()...)
 
 	entry.EventLoggerEntry.GetEventHelper().Finish(event)
 }

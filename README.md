@@ -1,13 +1,20 @@
 # rk-gin
-Interceptor & bootstrapper designed for gin framework.
-Currently, supports bellow interceptors
+Interceptor & bootstrapper designed for gin framework. Currently, supports bellow functionalities.
 
-- auth
-- logging
-- metrics
-- panic
-- extension
-- tracing
+| Name | Description |
+| ---- | ---- |
+| Start with YAML | Start service with YAML config. |
+| Start with code | Start service from code. |
+| Gin Service | Gin service. |
+| Swagger Service | Swagger UI. |
+| Common Service | List of common API available on Gin. |
+| TV Service | A Web UI shows application and environment information. |
+| Metrics interceptor | Collect RPC metrics and export as prometheus client. |
+| Log interceptor | Log every RPC requests as event with rk-query. |
+| Trace interceptor | Collect RPC trace and export it to stdout, file or jaeger. |
+| Panic interceptor | Recover from panic for RPC requests and log it. |
+| Meta interceptor | Send application metadata as header to client. |
+| Auth interceptor | Support [Basic Auth], [Bearer Token] and [API Key] authrization types. |
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -15,16 +22,27 @@ Currently, supports bellow interceptors
 
 - [Installation](#installation)
 - [Quick Start](#quick-start)
-  - [Start Gin server from YAML config](#start-gin-server-from-yaml-config)
-  - [Start Gin server from code](#start-gin-server-from-code)
-  - [Logging Interceptor](#logging-interceptor)
-  - [Metrics interceptor](#metrics-interceptor)
-  - [Panic interceptor](#panic-interceptor)
-  - [Auth interceptor](#auth-interceptor)
-  - [Extension interceptor](#extension-interceptor)
-  - [Tracing interceptor](#tracing-interceptor)
+  - [Start Gin Service](#start-gin-service)
+  - [Output](#output)
+    - [Gin Service](#gin-service)
+    - [Swagger Service](#swagger-service)
+    - [Swagger Service](#swagger-service-1)
+    - [TV Service](#tv-service)
+    - [Metrics](#metrics)
+    - [Logging](#logging)
+    - [Meta](#meta)
+- [YAML Config](#yaml-config)
+  - [Gin Service](#gin-service-1)
   - [Common Service](#common-service)
-  - [TV Service](#tv-service)
+  - [Swagger Service](#swagger-service-2)
+  - [Prom Client](#prom-client)
+  - [TV Service](#tv-service-1)
+  - [Interceptors](#interceptors)
+    - [Log](#log)
+    - [Metrics](#metrics-1)
+    - [Auth](#auth)
+    - [Meta](#meta-1)
+    - [Tracing](#tracing)
   - [Development Status: Stable](#development-status-stable)
   - [Contributing](#contributing)
 
@@ -34,10 +52,21 @@ Currently, supports bellow interceptors
 `go get -u github.com/rookie-ninja/rk-gin`
 
 ## Quick Start
-Bootstrapper can be used with YAML config.
+Bootstrapper can be used with YAML config. In the bellow example, we will start bellow services automatically.
+- Gin Service
+- Swagger Service
+- Common Service
+- TV Service
+- Metrics
+- Logging
+- Meta
 
-### Start Gin server from YAML config
-User can access common service with localhost:8080/sw
+Please refer example at [example/boot/simple](example/boot/simple).
+
+### Start Gin Service
+
+- [boot.yaml](example/boot/simple/boot.yaml)
+
 ```yaml
 ---
 rk: # NOT required
@@ -45,477 +74,170 @@ rk: # NOT required
 gin:
   - name: greeter                     # Required
     port: 8080                        # Required
+    tv:
+      enabled: true                   # Optional, default: false
+    prom:
+      enabled: true                   # Optional, default: false
     sw:                               # Optional
       enabled: true                   # Optional, default: false
     commonService:                    # Optional
       enabled: true                   # Optional, default: false
-    interceptors:                     
+    interceptors:
       loggingZap:
-        enabled: true                 # Optional, default: false
+        enabled: true
+      metricsProm:
+        enabled: true
+      meta:
+        enabled: true
 ```
 
-```go
-func bootFromConfig() {
-	// Bootstrap basic entries from boot config.
-	rkentry.RegisterInternalEntriesFromConfig("example/boot/boot.yaml")
+- [main.go](example/boot/simple/main.go)
 
-	// Bootstrap gin entry from boot config
-	res := rkgin.RegisterGinEntriesWithConfig("example/boot/boot.yaml")
-
-	// Bootstrap gin entry
-	go res["greeter"].Bootstrap(context.Background())
-
-	// Wait for shutdown signal
-	rkentry.GlobalAppCtx.WaitForShutdownSig()
-
-	// Interrupt gin entry
-	res["greeter"].Interrupt(context.Background())
-}
-```
-
-Available configuration
-User can start multiple servers at the same time
-
-| name | description | type | default value |
-| ------ | ------ | ------ | ------ |
-| gin.name | Name of gin server entry | string | N/A |
-| gin.port | Port of server | integer | nil, server won't start |
-| gin.description | Description of server | string | "" |
-| gin.cert.ref | Reference of cert entry declared in cert section | string | "" |
-| gin.sw.enabled | Enable swagger | boolean | false | 
-| gin.sw.path | Swagger path | string | / |
-| gin.sw.jsonPath | Swagger json file path | string | / |
-| gin.sw.headers | Headers will send with swagger response | array | [] |
-| gin.commonService.enabled | Enable common service | boolean | false |
-| gin.tv.enabled | Enable RK TV whose path is /rk/v1/tv | boolean | false |
-| gin.prom.enabled | Enable prometheus | boolean | false |
-| gin.prom.path | Path of prometheus | string | metrics |
-| gin.prom.cert.ref |  Reference of cert entry declared in cert section | string | "" |
-| gin.prom.pusher.enabled | Enable prometheus pusher | bool | false |
-| gin.prom.pusher.jobName | Job name would be attached as label while pushing to remote pushgateway | string | "" |
-| gin.prom.pusher.remoteAddress | PushGateWay address, could be form of http://x.x.x.x or x.x.x.x | string | "" |
-| gin.prom.pusher.intervalMs | Push interval in milliseconds | string | 1000 |
-| gin.prom.pusher.basicAuth | Basic auth used to interact with remote pushgateway, form of \<user:pass\> | string | "" |
-| gin.prom.pusher.cert.ref | Reference of rkentry.CertEntry | string | "" |
-| gin.logger.zapLogger.ref | Reference of logger entry declared above | string | "" |
-| gin.logger.eventLogger.ref | Reference of logger entry declared above | string | "" |
-| gin.interceptors.loggingZap.enabled | Enable logging interceptor | boolean | false |
-| gin.interceptors.metricsProm.enabled | Enable prometheus metrics for every request | boolean | false |
-| gin.interceptors.basicAuth.enabled | Enable auth interceptor | boolean | false |
-| gin.interceptors.basicAuth.credentials | Provide basic auth credentials, form of \<user:pass\> | string | false |
-| gin.interceptors.extension.enabled | Enable extension interceptor | boolean | false |
-| gin.interceptors.extension.prefix | Prefix of extension header key | string | rk |
-| gin.interceptors.tracingTelemetry.enabled | Enable tracing interceptor with opentelemetry | bool | false |
-| gin.interceptors.tracingTelemetry.exporter.file.enabled | Enable exporter which will write tracing info to file or stdout | string | stdout |
-| gin.interceptors.tracingTelemetry.exporter.file.outputPath | Output path of tracing log | string | stdout |
-| gin.interceptors.tracingTelemetry.exporter.jaeger.enabled | Enable exporter which will write tracing info to jaeger agent | bool | false |
-| gin.interceptors.tracingTelemetry.exporter.jaeger.agentEndpoint | Jaeger agent endpoint | string | "localhost:6832" |
-
-Interceptors can be used with chain.
-
-### Start Gin server from code
-
-```go
-func bootFromCode() {
-	// Create gin entry
-	entry := rkgin.RegisterGinEntry(
-		rkgin.WithNameGin("greeter"),
-		rkgin.WithPortGin(8080),
-		rkgin.WithCommonServiceEntryGin(rkgin.NewCommonServiceEntry()),
-		rkgin.WithInterceptorsGin(rkginlog.LoggingZapInterceptor([]rkginlog.Option{}...)))
-
-	// Start server
-	go entry.Bootstrap(context.Background())
-
-	// Wait for shutdown sig
-	rkentry.GlobalAppCtx.WaitForShutdownSig()
-
-	// Interrupt server
-	entry.Interrupt(context.Background())
-}
-```
-
-### Logging Interceptor
-Logging interceptor uses [zap logger](https://github.com/uber-go/zap) and [rk-query](https://github.com/rookie-ninja/rk-query) logs every request.
-[rk-prom](https://github.com/rookie-ninja/rk-prom) also used for prometheus metrics.
-
-```go
-	gin.SetMode(gin.ReleaseMode)
-
-	router := gin.New()
-	router.Use(
-		rkginbasic.BasicInterceptor(),
-		rkginlog.LoggingZapInterceptor(
-			rkginlog.WithEventFactory(rkquery.NewEventFactory()),
-			rkginlog.WithLogger(rklogger.StdoutLogger)),
-		rkginpanic.PanicInterceptor(),
-	)
-
-	router.GET("/hello", func(ctx *gin.Context) {
-		ctx.String(http.StatusOK, "Hello world")
-	})
-	router.Run(":8080")
-```
-
-Output: 
-```log
-------------------------------------------------------------------------
-endTime=2021-06-15T02:46:00.256757+08:00
-startTime=2021-06-15T02:46:00.256704+08:00
-elapsedNano=53081
-timezone=CST
-ids={"eventId":"ab6695d3-e698-4434-8121-c0c21e4451b4"}
-app={"appName":"unknown","appVersion":"unknown","entryName":"rkEntry","entryType":"gin"}
-env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.2","os":"darwin","realm":"*","region":"*"}
-payloads={"apiMethod":"GET","apiPath":"/hello","apiProtocol":"HTTP/1.1","apiQuery":"","userAgent":"curl/7.64.1"}
-error={}
-counters={}
-pairs={}
-timing={}
-remoteAddr=localhost:61435
-operation=/hello
-resCode=200
-eventStatus=Ended
-EOE
-```
-
-### Metrics interceptor
-```go
-	gin.SetMode(gin.ReleaseMode)
-
-	router := gin.New()
-	router.Use(
-		rkginbasic.BasicInterceptor(),
-        rkginmetrics.MetricsPromInterceptor(),
-		rkginpanic.PanicInterceptor(),
-	)
-
-	router.GET("/hello", func(ctx *gin.Context) {
-		ctx.String(http.StatusOK, "Hello world")
-	})
-	router.Run(":8080")
-```
-
-
-### Panic interceptor
 ```go
 func main() {
-	gin.SetMode(gin.ReleaseMode)
+    // Bootstrap basic entries from boot config.
+    rkentry.RegisterInternalEntriesFromConfig("example/boot/simple/boot.yaml")
 
-	router := gin.New()
-	router.Use(
-		rkginlog.LoggingZapInterceptor(
-			rkginlog.WithEventFactory(rkquery.NewEventFactory()),
-			rkginlog.WithLogger(rklogger.StdoutLogger)),
-		rkginpanic.PanicInterceptor())
+    // Bootstrap gin entry from boot config
+    res := rkgin.RegisterGinEntriesWithConfig("example/boot/simple/boot.yaml")
 
-	router.GET("/hello", func(ctx *gin.Context) {
-		panic(errors.New(""))
-	})
-	router.Run(":8080")
+    // Bootstrap gin entry
+    res["greeter"].Bootstrap(context.Background())
+
+    // Wait for shutdown signal
+    rkentry.GlobalAppCtx.WaitForShutdownSig()
+
+    // Interrupt gin entry
+    res["greeter"].Interrupt(context.Background())
 }
 ```
-Output
-```log
-------------------------------------------------------------------------
-endTime=2021-06-15T02:47:10.368031+08:00
-startTime=2021-06-15T02:47:10.367417+08:00
-elapsedNano=614458
-timezone=CST
-ids={"eventId":"310a4255-1de4-4607-9eed-67c0e858864f"}
-app={"appName":"unknown","appVersion":"unknown","entryName":"rkEntry","entryType":"gin"}
-env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.2","os":"darwin","realm":"*","region":"*"}
-payloads={"apiMethod":"GET","apiPath":"/hello","apiProtocol":"HTTP/1.1","apiQuery":"","userAgent":"curl/7.64.1"}
-error={}
-counters={}
-pairs={}
-timing={}
-remoteAddr=localhost:61440
-operation=/hello
-resCode=500
-eventStatus=Ended
-EOE
-```
 
-### Auth interceptor
 ```go
-func main() {
-	gin.SetMode(gin.ReleaseMode)
-
-	router := gin.New()
-	router.Use(
-		rkginlog.LoggingZapInterceptor(
-			rkginlog.WithEventFactory(rkquery.NewEventFactory()),
-			rkginlog.WithLogger(rklogger.StdoutLogger)),
-		rkginauth.BasicAuthInterceptor(gin.Accounts{"user": "pass"}, "realm"),
-		rkginpanic.PanicInterceptor())
-
-	router.GET("/hello", func(ctx *gin.Context) {
-		ctx.String(http.StatusOK, "Hello world")
-	})
-	router.Run(":8080")
-}
-```
-Output
-```log
-------------------------------------------------------------------------
-endTime=2021-06-15T02:46:00.256757+08:00
-startTime=2021-06-15T02:46:00.256704+08:00
-elapsedNano=53081
-timezone=CST
-ids={"eventId":"ab6695d3-e698-4434-8121-c0c21e4451b4"}
-app={"appName":"unknown","appVersion":"unknown","entryName":"rkEntry","entryType":"gin"}
-env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.2","os":"darwin","realm":"*","region":"*"}
-payloads={"apiMethod":"GET","apiPath":"/hello","apiProtocol":"HTTP/1.1","apiQuery":"","userAgent":"curl/7.64.1"}
-error={}
-counters={}
-pairs={}
-timing={}
-remoteAddr=localhost:61435
-operation=/hello
-resCode=200
-eventStatus=Ended
-EOE
+$ go run main.go
 ```
 
-### Extension interceptor
-This interceptor will add bellow headers as extension in response.
-
-- X-Request-Id: Request id generated by the interceptor.
-- X-Trace-Id: Trace id generated by the interceptor.
-- X-[Prefix]-Location: A valid URI.
-- X-[Prefix]-App-Name: Application name.
-- X-[Prefix]-App-Version: Version of application.
-- X-[Prefix]-App-Unix-Time: Unix time of current application.
-- X-[Prefix]-Received-Time: Time of current request received by application.
-
+### Output
+#### Gin Service
+Try to test Gin Service with [curl](https://curl.se/)
 ```shell script
-$ curl -vs -X GET "http://localhost:8080/rk/v1/configs" -H  "accept: application/json"
-*   Trying ::1...
-* TCP_NODELAY set
-* Connected to localhost (::1) port 8080 (#0)
-> GET /rk/v1/configs HTTP/1.1
-> Host: localhost:8080
-> User-Agent: curl/7.64.1
-> accept: application/json
->
+# Curl to common service
+$ curl localhost:8080/rk/v1/healthy
+{"healthy":true}
+```
+
+#### Swagger Service
+By default, we could access swagger UI at [/sw].
+- http://localhost:8080/sw
+
+![sw](docs/img/simple-sw.png)
+
+#### Swagger Service
+By default, we could access swagger UI at [/sw].
+- http://localhost:8080/sw
+
+![sw](docs/img/simple-sw.png)
+
+#### TV Service
+By default, we could access TV at [/tv].
+
+![tv](docs/img/simple-tv.png)
+
+#### Metrics
+By default, we could access prometheus client at [/metrics]
+- http://localhost:8080/metrics
+
+![prom](docs/img/simple-prom.png)
+
+#### Logging
+By default, we enable zap logger and event logger with console encoding type.
+```shell script
+2021-06-25T01:22:23.907+0800    INFO    Bootstrapping SwEntry.  {"eventId": "0f056bf9-0811-4fdb-b1eb-8d01b3b2a576", "entryName": "greeter-sw", "entryType": "GinSwEntry", "jsonPath": "", "path": "/sw/", "port": 8080}
+2021-06-25T01:22:23.907+0800    INFO    Bootstrapping promEntry.        {"eventId": "0f056bf9-0811-4fdb-b1eb-8d01b3b2a576", "entryName": "greeter-prom", "entryType": "GinPromEntry", "entryDescription": "Internal RK entry which implements prometheus client with Gin framework.", "path": "/metrics", "port": 8080}
+2021-06-25T01:22:23.907+0800    INFO    Bootstrapping CommonServiceEntry.       {"eventId": "0f056bf9-0811-4fdb-b1eb-8d01b3b2a576", "entryName": "greeter-commonService", "entryType": "GinCommonServiceEntry"}
+2021-06-25T01:22:23.909+0800    INFO    Bootstrapping tvEntry.  {"eventId": "0f056bf9-0811-4fdb-b1eb-8d01b3b2a576", "entryName": "greeter-tv", "entryType": "GinTvEntry", "path": "/rk/v1/tv/*item"}
+2021-06-25T01:22:23.909+0800    INFO    Bootstrapping GinEntry. {"eventId": "0f056bf9-0811-4fdb-b1eb-8d01b3b2a576", "entryName": "greeter", "entryType": "GinEntry", "port": 8080, "interceptorsCount": 6, "swEnabled": true, "tlsEnabled": false, "commonServiceEnabled": true, "tvEnabled": true, "swPath": "/sw/", "promPath": "/metrics", "promPort": 8080}
+```
+```shell script
+------------------------------------------------------------------------
+endTime=2021-06-25T01:22:23.90783+08:00
+startTime=2021-06-25T01:22:23.90781+08:00
+elapsedNano=20378
+timezone=CST
+ids={"eventId":"0f056bf9-0811-4fdb-b1eb-8d01b3b2a576"}
+app={"appName":"myapp","appVersion":"v0.0.1","entryName":"greeter-sw","entryType":"GinSwEntry"}
+env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.2","os":"darwin","realm":"*","region":"*"}
+payloads={"entryName":"greeter-sw","entryType":"GinSwEntry","jsonPath":"","path":"/sw/","port":8080}
+error={}
+counters={}
+pairs={}
+timing={}
+remoteAddr=localhost
+operation=bootstrap
+resCode=OK
+eventStatus=Ended
+EOE
+...
+------------------------------------------------------------------------
+endTime=2021-06-25T01:22:23.909337+08:00
+startTime=2021-06-25T01:22:23.907776+08:00
+elapsedNano=1560406
+timezone=CST
+ids={"eventId":"0f056bf9-0811-4fdb-b1eb-8d01b3b2a576"}
+app={"appName":"myapp","appVersion":"v0.0.1","entryName":"greeter","entryType":"GinEntry"}
+env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.2","os":"darwin","realm":"*","region":"*"}
+payloads={"commonServiceEnabled":true,"entryName":"greeter","entryType":"GinEntry","interceptorsCount":6,"port":8080,"promPath":"/metrics","promPort":8080,"swEnabled":true,"swPath":"/sw/","tlsEnabled":false,"tvEnabled":true}
+error={}
+counters={}
+pairs={}
+timing={}
+remoteAddr=localhost
+operation=bootstrap
+resCode=OK
+eventStatus=Ended
+EOE
+```
+
+#### Meta
+By default, we will send back some metadata to client including gateway with headers.
+```shell script
+$ curl -vs localhost:8080/rk/v1/healthy
+...
 < HTTP/1.1 200 OK
 < Content-Type: application/json; charset=utf-8
-< X-Rk-App-Name: rkApp
-< X-Rk-App-Unix-Time: 2021-05-31T01:38:51.368372+08:00
-< X-Rk-App-Version: v0.0.0
-< X-Rk-Locale: *::*::*::*
-< X-Rk-Location: http://localhost:8080/rk/v1/configs
-< X-Rk-Request-Id: 75b982e4-c841-4dc4-9994-e14152530311
-< X-Rk-Request-Received-Time: 2021-05-31T01:38:51.368372+08:00
-< Date: Sun, 30 May 2021 17:38:51 GMT
-< Content-Length: 14
-<
-* Connection #0 to host localhost left intact
-{"entries":[]}
+< X-Request-Id: 3332e575-43d8-4bfe-84dd-45b5fc5fb104
+< X-Rk-App-Name: myapp
+< X-Rk-App-Unix-Time: 2021-06-25T01:30:45.143869+08:00
+< X-Rk-App-Version: v0.0.1
+< X-Rk-Received-Time: 2021-06-25T01:30:45.143869+08:00
+< X-Trace-Id: 65b9aa7a9705268bba492fdf4a0e5652
+< Date: Thu, 24 Jun 2021 17:30:45 GMT
+...
 ```
 
-### Tracing interceptor
-This interceptor will automatically collect tracing spans and export to specified exporter.
-- File exporter (Write trace log to files or stdout)
-- Jaeger exporter (Write to jaeger agent)
+## YAML Config
+Available configuration
+User can start multiple gin servers at the same time. Please make sure use different port and name.
 
-```go
-func main() {
-	gin.SetMode(gin.ReleaseMode)
-
-	router := gin.New()
-	router.Use(
-		rkginbasic.BasicInterceptor(),
-		rkgintrace.TelemetryInterceptor(),
-		rkginpanic.PanicInterceptor(),
-	)
-
-	router.GET("/hello", func(ctx *gin.Context) {
-		ctx.String(http.StatusOK, "Hello world")
-	})
-	router.Run(":8080")
-}
-```
-
-```json
-[
-        {
-                "SpanContext": {
-                        "TraceID": "b8af9be0722842783499a2b4756af62c",
-                        "SpanID": "0bf79b2c5e49bcb6",
-                        "TraceFlags": "01",
-                        "TraceState": null,
-                        "Remote": false
-                },
-                "Parent": {
-                        "TraceID": "00000000000000000000000000000000",
-                        "SpanID": "0000000000000000",
-                        "TraceFlags": "00",
-                        "TraceState": null,
-                        "Remote": false
-                },
-                "SpanKind": 2,
-                "Name": "/hello",
-                "StartTime": "2021-06-15T02:51:25.349015+08:00",
-                "EndTime": "2021-06-15T02:51:25.349068874+08:00",
-                "Attributes": [
-                        {
-                                "Key": "net.transport",
-                                "Value": {
-                                        "Type": "STRING",
-                                        "Value": "IP.TCP"
-                                }
-                        },
-                        {
-                                "Key": "net.peer.name",
-                                "Value": {
-                                        "Type": "STRING",
-                                        "Value": "[::1]"
-                                }
-                        },
-                        {
-                                "Key": "net.peer.port",
-                                "Value": {
-                                        "Type": "INT64",
-                                        "Value": 61452
-                                }
-                        },
-                        {
-                                "Key": "net.host.name",
-                                "Value": {
-                                        "Type": "STRING",
-                                        "Value": "localhost"
-                                }
-                        },
-                        {
-                                "Key": "net.host.port",
-                                "Value": {
-                                        "Type": "INT64",
-                                        "Value": 8080
-                                }
-                        },
-                        {
-                                "Key": "http.method",
-                                "Value": {
-                                        "Type": "STRING",
-                                        "Value": "GET"
-                                }
-                        },
-                        {
-                                "Key": "http.target",
-                                "Value": {
-                                        "Type": "STRING",
-                                        "Value": "/hello"
-                                }
-                        },
-                        {
-                                "Key": "http.server_name",
-                                "Value": {
-                                        "Type": "STRING",
-                                        "Value": "rkApp"
-                                }
-                        },
-                        {
-                                "Key": "http.route",
-                                "Value": {
-                                        "Type": "STRING",
-                                        "Value": "/hello"
-                                }
-                        },
-                        {
-                                "Key": "http.user_agent",
-                                "Value": {
-                                        "Type": "STRING",
-                                        "Value": "curl/7.64.1"
-                                }
-                        },
-                        {
-                                "Key": "http.scheme",
-                                "Value": {
-                                        "Type": "STRING",
-                                        "Value": "http"
-                                }
-                        },
-                        {
-                                "Key": "http.host",
-                                "Value": {
-                                        "Type": "STRING",
-                                        "Value": "localhost:8080"
-                                }
-                        },
-                        {
-                                "Key": "http.flavor",
-                                "Value": {
-                                        "Type": "STRING",
-                                        "Value": "1.1"
-                                }
-                        },
-                        {
-                                "Key": "http.status_code",
-                                "Value": {
-                                        "Type": "INT64",
-                                        "Value": 200
-                                }
-                        }
-                ],
-                "MessageEvents": null,
-                "Links": null,
-                "StatusCode": "Unset",
-                "StatusMessage": "",
-                "DroppedAttributeCount": 0,
-                "DroppedMessageEventCount": 0,
-                "DroppedLinkCount": 0,
-                "ChildSpanCount": 0,
-                "Resource": [
-                        {
-                                "Key": "service.entryName",
-                                "Value": {
-                                        "Type": "STRING",
-                                        "Value": "rkEntry"
-                                }
-                        },
-                        {
-                                "Key": "service.entryType",
-                                "Value": {
-                                        "Type": "STRING",
-                                        "Value": "gin"
-                                }
-                        },
-                        {
-                                "Key": "service.name",
-                                "Value": {
-                                        "Type": "STRING",
-                                        "Value": "rkApp"
-                                }
-                        },
-                        {
-                                "Key": "service.version",
-                                "Value": {
-                                        "Type": "STRING",
-                                        "Value": "v0.0.0"
-                                }
-                        }
-                ],
-                "InstrumentationLibrary": {
-                        "Name": "rkEntry",
-                        "Version": "semver:0.20.0"
-                }
-        }
-]
-```
+### Gin Service
+| name | description | type | default value |
+| ------ | ------ | ------ | ------ |
+| gin.name | The name of gin server | string | N/A |
+| gin.port | The port of gin server | integer | nil, server won't start |
+| gin.description | Description of gin entry. | string | "" |
+| gin.cert.ref | Reference of cert entry declared in [cert entry](https://github.com/rookie-ninja/rk-entry#certentry) | string | "" |
+| gin.logger.zapLogger.ref | Reference of zapLoggerEntry declared in [zapLoggerEntry](https://github.com/rookie-ninja/rk-entry#zaploggerentry) | string | "" |
+| gin.logger.eventLogger.ref | Reference of eventLoggerEntry declared in [eventLoggerEntry](https://github.com/rookie-ninja/rk-entry#eventloggerentry) | string | "" |
 
 ### Common Service
-
-| path | description |
-| ------ | ------ |
-| /rk/v1/apis | List API |
+| Path | Description |
+| ---- | ---- |
+| /rk/v1/apis | /rk/v1/apis |
 | /rk/v1/certs | List CertEntry |
 | /rk/v1/configs | List ConfigEntry |
 | /rk/v1/deps | List dependencies related application |
 | /rk/v1/entries | List all Entry |
-| /rk/v1/gc | Trigger GC |
-| /rk/v1/healthy | Get application healthy status, returns true if application is running |
+| /rk/v1/gc | Trigger Gc |
+| /rk/v1/healthy | Get application healthy status |
 | /rk/v1/info | Get application and process info |
 | /rk/v1/license | Get license related application |
 | /rk/v1/logs | List logger related entries |
@@ -524,20 +246,125 @@ func main() {
 | /rk/v1/sys | Get OS stat |
 | /rk/v1/tv | Get HTML page of /tv |
 
-### TV Service
+| name | description | type | default value |
+| ------ | ------ | ------ | ------ |
+| gin.commonService.enabled | Enable embedded common service | boolean | false |
 
-| path | description |
-| ------ | ------ |
-| /rk/v1/tv or /rk/v1/tv/overview | Get application and process info of HTML page |
-| /rk/v1/tv/api | Get API of HTML page |
-| /rk/v1/tv/entry | Get entry of HTML page |
-| /rk/v1/tv/config | Get config of HTML page |
-| /rk/v1/tv/cert | Get cert of HTML page |
-| /rk/v1/tv/os | Get OS of HTML page |
-| /rk/v1/tv/env | Get Go environment of HTML page |
-| /rk/v1/tv/prometheus | Get metrics of HTML page |
-| /rk/v1/log | Get log of HTML page |
-| /rk/v1/dep | Get dependency of HTML page |
+### Swagger Service
+| name | description | type | default value |
+| ------ | ------ | ------ | ------ |
+| gin.sw.enabled | Enable swagger service over gin server | boolean | false |
+| gin.sw.path | The path access swagger service from web | string | /sw |
+| gin.sw.jsonPath | Where the swagger.json files are stored locally | string | "" |
+| gin.sw.headers | Headers would be sent to caller as scheme of [key:value] | []string | [] |
+
+### Prom Client
+| name | description | type | default value |
+| ------ | ------ | ------ | ------ |
+| gin.prom.enabled | Enable prometheus | boolean | false |
+| gin.prom.path | Path of prometheus | string | /metrics |
+| gin.prom.pusher.enabled | Enable prometheus pusher | bool | false |
+| gin.prom.pusher.jobName | Job name would be attached as label while pushing to remote pushgateway | string | "" |
+| gin.prom.pusher.remoteAddress | PushGateWay address, could be form of http://x.x.x.x or x.x.x.x | string | "" |
+| gin.prom.pusher.intervalMs | Push interval in milliseconds | string | 1000 |
+| gin.prom.pusher.basicAuth | Basic auth used to interact with remote pushgateway, form of [user:pass] | string | "" |
+| gin.prom.pusher.cert.ref | Reference of rkentry.CertEntry | string | "" |
+
+### TV Service
+| name | description | type | default value |
+| ------ | ------ | ------ | ------ |
+| gin.tv.enabled | Enable RK TV | boolean | false |
+
+### Interceptors
+#### Log
+| name | description | type | default value |
+| ------ | ------ | ------ | ------ |
+| gin.interceptors.loggingZap.enabled | Enable log interceptor | boolean | false |
+
+We will log two types of log for every RPC call.
+- zapLogger
+
+Contains user printed logging with requestId or traceId.
+
+- eventLogger
+
+Contains per RPC metadata, response information, environment information and etc.
+
+| Field | Description |
+| ---- | ---- |
+| endTime | As name described |
+| startTime | As name described |
+| elapsedNano | Elapsed time for RPC in nanoseconds |
+| timezone | As name described |
+| ids | Contains three different ids(eventId, requestId and traceId). If meta interceptor was enabled or event.SetRequestId() was called by user, then requestId would be attached. eventId would be the same as requestId if meta interceptor was enabled. If trace interceptor was enabled, then traceId would be attached. |
+| app | Contains [appName, appVersion](https://github.com/rookie-ninja/rk-entry#appinfoentry), entryName, entryType. |
+| env | Contains arch, az, domain, hostname, localIP, os, realm, region. realm, region, az, domain were retrieved from environment variable named as REALM, REGION, AZ and DOMAIN. "*" means empty environment variable.|
+| payloads | Contains RPC related metadata |
+| error | Contains errors if occur |
+| counters | Set by calling event.SetCounter() by user. |
+| pairs | Set by calling event.AddPair() by user. |
+| timing | Set by calling event.StartTimer() and event.EndTimer() by user. |
+| remoteAddr |  As name described |
+| operation | RPC method name |
+| resCode | Response code of RPC |
+| eventStatus | Ended or InProgress |
+
+- example
+
+```shell script
+------------------------------------------------------------------------
+endTime=2021-06-25T01:30:45.144023+08:00
+startTime=2021-06-25T01:30:45.143767+08:00
+elapsedNano=255948
+timezone=CST
+ids={"eventId":"3332e575-43d8-4bfe-84dd-45b5fc5fb104","requestId":"3332e575-43d8-4bfe-84dd-45b5fc5fb104","traceId":"65b9aa7a9705268bba492fdf4a0e5652"}
+app={"appName":"myapp","appVersion":"v0.0.1","entryName":"greeter","entryType":"GinEntry"}
+env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.2","os":"darwin","realm":"*","region":"*"}
+payloads={"apiMethod":"GET","apiPath":"/rk/v1/healthy","apiProtocol":"HTTP/1.1","apiQuery":"","userAgent":"curl/7.64.1"}
+error={}
+counters={}
+pairs={}
+timing={}
+remoteAddr=localhost:60718
+operation=/rk/v1/healthy
+resCode=200
+eventStatus=Ended
+EOE
+```
+
+#### Metrics
+| name | description | type | default value |
+| ------ | ------ | ------ | ------ |
+| gin.interceptors.metricsProm.enabled | Enable metrics interceptor | boolean | false |
+
+#### Auth
+Enable the server side auth. codes.Unauthenticated would be returned to client if not authorized with user defined credential.
+
+| name | description | type | default value |
+| ------ | ------ | ------ | ------ |
+| gin.interceptors.auth.enabled | Enable auth interceptor | boolean | false |
+| gin.interceptors.auth.basic | Basic auth credentials as scheme of <user:pass> | []string | [] |
+| gin.interceptors.auth.bearer | Bearer auth tokens | []string | [] |
+| gin.interceptors.auth.api | API key | []string | [] |
+
+#### Meta
+Send application metadata as header to client.
+
+| name | description | type | default value |
+| ------ | ------ | ------ | ------ |
+| gin.interceptors.meta.enabled | Enable meta interceptor | boolean | false |
+| gin.interceptors.meta.prefix | Header key was formed as X-<Prefix>-XXX | string | RK |
+
+#### Tracing
+| name | description | type | default value |
+| ------ | ------ | ------ | ------ |
+| gin.interceptors.tracingTelemetry.enabled | Enable tracing interceptor | boolean | false |
+| gin.interceptors.exporter.file.enabled | Enable file exporter | boolean | RK |
+| gin.interceptors.exporter.file.outputPath | Export tracing info to files | string | stdout |
+| gin.interceptors.exporter.jaeger.enabled | Export tracing info jaeger | boolean | false |
+| gin.interceptors.exporter.jaeger.collectorEndpoint | As name described | string | localhost:16368/api/trace |
+| gin.interceptors.exporter.jaeger.collectorUsername | As name described | string | "" |
+| gin.interceptors.exporter.jaeger.collectorPassword | As name described | string | "" |
 
 ### Development Status: Stable
 

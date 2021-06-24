@@ -182,7 +182,7 @@ func (entry *SwEntry) Bootstrap(ctx context.Context) {
 		rkquery.WithEntryName(entry.EntryName),
 		rkquery.WithEntryType(entry.EntryType))
 
-	logger := entry.ZapLoggerEntry.GetLogger().With(zap.String("eventId", event.GetEventId()))
+	logger := entry.ZapLoggerEntry.GetLogger()
 
 	if raw := ctx.Value(bootstrapEventIdKey); raw != nil {
 		event.SetEventId(raw.(string))
@@ -204,7 +204,7 @@ func (entry *SwEntry) Interrupt(ctx context.Context) {
 		rkquery.WithEntryName(entry.EntryName),
 		rkquery.WithEntryType(entry.EntryType))
 
-	logger := entry.ZapLoggerEntry.GetLogger().With(zap.String("eventId", event.GetEventId()))
+	logger := entry.ZapLoggerEntry.GetLogger()
 
 	if raw := ctx.Value(bootstrapEventIdKey); raw != nil {
 		event.SetEventId(raw.(string))

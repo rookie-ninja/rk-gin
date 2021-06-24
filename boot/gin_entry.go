@@ -10,21 +10,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rookie-ninja/rk-common/common"
 	"github.com/rookie-ninja/rk-entry/entry"
 	"github.com/rookie-ninja/rk-gin/interceptor/auth"
-	"github.com/rookie-ninja/rk-gin/interceptor/basic"
-	"github.com/rookie-ninja/rk-gin/interceptor/extension"
 	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
+	"github.com/rookie-ninja/rk-gin/interceptor/meta"
 	"github.com/rookie-ninja/rk-gin/interceptor/metrics/prom"
-	"github.com/rookie-ninja/rk-gin/interceptor/panic/zap"
-	"github.com/rookie-ninja/rk-gin/interceptor/tracing/open-telemetry"
+	rkginpanic "github.com/rookie-ninja/rk-gin/interceptor/panic"
+	"github.com/rookie-ninja/rk-gin/interceptor/tracing/telemetry"
 	"github.com/rookie-ninja/rk-prom"
 	"github.com/rookie-ninja/rk-query"
-	"go.opencensus.io/plugin/ochttp"
 	"go.opentelemetry.io/otel/sdk/trace"
-	"net"
 	"reflect"
 	"runtime"
 
@@ -89,14 +87,16 @@ type BootConfigGin struct {
 			MetricsProm struct {
 				Enabled bool `yaml:"enabled" json:"enabled"`
 			} `yaml:"metricsProm" json:"metricsProm"`
-			BasicAuth struct {
-				Enabled     bool     `yaml:"enabled" json:"enabled"`
-				Credentials []string `yaml:"credentials" json:"credentials"`
-			} `yaml:"basicAuth" json:"basicAuth"`
-			Extension struct {
+			Auth struct {
+				Enabled bool     `yaml:"enabled" json:"enabled"`
+				Basic   []string `yaml:"basic" json:"basic"`
+				Bearer  []string `yaml:"bearer" json:"bearer"`
+				API     []string `yaml:"api" json:"api"`
+			} `yaml:"auth" json:"auth"`
+			Meta struct {
 				Enabled bool   `yaml:"enabled" json:"enabled"`
 				Prefix  string `yaml:"prefix" json:"prefix"`
-			} `yaml:"extension" json:"extension"`
+			} `yaml:"meta" json:"meta"`
 			TracingTelemetry struct {
 				Enabled  bool `yaml:"enabled" json:"enabled"`
 				Exporter struct {
@@ -105,8 +105,10 @@ type BootConfigGin struct {
 						OutputPath string `yaml:"outputPath" json:"outputPath"`
 					} `yaml:"file" json:"file"`
 					Jaeger struct {
-						Enabled       bool   `yaml:"enabled" json:"enabled"`
-						AgentEndpoint string `yaml:"agentEndpoint" json:"agentEndpoint"`
+						Enabled           bool   `yaml:"enabled" json:"enabled"`
+						CollectorEndpoint string `yaml:"collectorEndpoint" json:"collectorEndpoint"`
+						CollectorUsername string `yaml:"collectorUsername" json:"collectorUsername"`
+						CollectorPassword string `yaml:"collectorPassword" json:"collectorPassword"`
 					} `yaml:"jaeger" json:"jaeger"`
 				} `yaml:"exporter" json:"exporter"`
 			} `yaml:"tracingTelemetry" json:"tracingTelemetry"`
@@ -287,6 +289,7 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 			eventLoggerEntry = rkentry.GlobalAppCtx.GetEventLoggerEntryDefault()
 		}
 
+		promRegistry := prometheus.NewRegistry()
 		// Did we enabled swagger?
 		var swEntry *SwEntry
 		if element.SW.Enabled {
@@ -333,11 +336,13 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 					rkprom.WithCertStorePusher(certStore))
 			}
 
+			promRegistry.Register(prometheus.NewGoCollector())
 			promEntry = NewPromEntry(
 				WithNameProm(fmt.Sprintf("%s-prom", element.Name)),
 				WithPortProm(element.Port),
 				WithPathProm(element.Prom.Path),
 				WithZapLoggerEntryProm(zapLoggerEntry),
+				WithPromRegistryProm(promRegistry),
 				WithEventLoggerEntryProm(eventLoggerEntry),
 				WithPusherProm(pusher))
 
@@ -351,48 +356,22 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 		// Did we enabled logging interceptor?
 		if element.Interceptors.LoggingZap.Enabled {
 			opts := []rkginlog.Option{
-				rkginlog.WithEntryNameAndType(element.Name, "gin"),
-				rkginlog.WithEventFactory(eventLoggerEntry.GetEventFactory()),
-				rkginlog.WithLogger(zapLoggerEntry.GetLogger()),
+				rkginlog.WithEntryNameAndType(element.Name, GinEntryType),
+				rkginlog.WithEventLoggerEntry(eventLoggerEntry),
+				rkginlog.WithZapLoggerEntry(zapLoggerEntry),
 			}
 
-			inters = append(inters, rkginlog.LoggingZapInterceptor(opts...))
+			inters = append(inters, rkginlog.Interceptor(opts...))
 		}
 
 		// Did we enabled metrics interceptor?
 		if element.Interceptors.MetricsProm.Enabled {
 			opts := []rkginmetrics.Option{
+				rkginmetrics.WithRegisterer(promRegistry),
 				rkginmetrics.WithEntryNameAndType(element.Name, GinEntryType),
 			}
 
-			if promEntry != nil {
-				opts = append(opts, rkginmetrics.WithRegisterer(promEntry.Registerer))
-			}
-
-			inters = append(inters, rkginmetrics.MetricsPromInterceptor(opts...))
-		}
-
-		// Did we enabled auth interceptor?
-		if element.Interceptors.BasicAuth.Enabled {
-			accounts := gin.Accounts{}
-			for i := range element.Interceptors.BasicAuth.Credentials {
-				cred := element.Interceptors.BasicAuth.Credentials[i]
-				tokens := strings.Split(cred, ":")
-				if len(tokens) == 2 {
-					accounts[tokens[0]] = tokens[1]
-				}
-			}
-			inters = append(inters, rkginauth.BasicAuthInterceptor(accounts, element.Name))
-		}
-
-		// Did we enabled extension interceptor?
-		if element.Interceptors.Extension.Enabled {
-			opts := []rkginextension.Option{
-				rkginextension.WithEntryNameAndType(element.Name, GinEntryType),
-				rkginextension.WithPrefix(element.Interceptors.Extension.Prefix),
-			}
-
-			inters = append(inters, rkginextension.ExtensionInterceptor(opts...))
+			inters = append(inters, rkginmetrics.Interceptor(opts...))
 		}
 
 		// Did we enabled tracing interceptor?
@@ -404,8 +383,10 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 			}
 
 			if element.Interceptors.TracingTelemetry.Exporter.Jaeger.Enabled {
-				host, port, _ := net.SplitHostPort(element.Interceptors.TracingTelemetry.Exporter.Jaeger.AgentEndpoint)
-				exporter = rkgintrace.CreateJaegerExporter(host, port)
+				exporter = rkgintrace.CreateJaegerExporter(
+					element.Interceptors.TracingTelemetry.Exporter.Jaeger.CollectorEndpoint,
+					element.Interceptors.TracingTelemetry.Exporter.Jaeger.CollectorUsername,
+					element.Interceptors.TracingTelemetry.Exporter.Jaeger.CollectorPassword)
 			}
 
 			opts := []rkgintrace.Option{
@@ -413,8 +394,30 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 				rkgintrace.WithExporter(exporter),
 			}
 
-			inters = append(inters, rkgintrace.TelemetryInterceptor(opts...))
+			inters = append(inters, rkgintrace.Interceptor(opts...))
 			rkentry.GlobalAppCtx.AddShutdownHook("tracing exporter", rkgintrace.ShutdownExporters)
+		}
+
+		// Did we enabled extension interceptor?
+		if element.Interceptors.Meta.Enabled {
+			opts := []rkginmeta.Option{
+				rkginmeta.WithEntryNameAndType(element.Name, GinEntryType),
+				rkginmeta.WithPrefix(element.Interceptors.Meta.Prefix),
+			}
+
+			inters = append(inters, rkginmeta.Interceptor(opts...))
+		}
+
+		// Did we enabled auth interceptor?
+		if element.Interceptors.Auth.Enabled {
+			opts := make([]rkginauth.Option, 0)
+			opts = append(opts,
+				rkginauth.WithEntryNameAndType(element.Name, GinEntryType),
+				rkginauth.WithBasicAuth("", element.Interceptors.Auth.Basic...),
+				rkginauth.WithBearerAuth(element.Interceptors.Auth.Bearer...),
+				rkginauth.WithApiKeyAuth(element.Interceptors.Auth.API...))
+
+			inters = append(inters, rkginauth.Interceptor(opts...))
 		}
 
 		// Did we enabled common service?
@@ -470,12 +473,8 @@ func RegisterGinEntry(opts ...GinEntryOption) *GinEntry {
 		opts[i](entry)
 	}
 
-	entry.Interceptors = append([]gin.HandlerFunc{
-		rkginbasic.BasicInterceptor(rkginbasic.WithEntryNameAndType(entry.EntryName, entry.EntryType)),
-	}, entry.Interceptors...)
-
 	// insert panic interceptor
-	entry.Interceptors = append(entry.Interceptors, rkginpanic.PanicInterceptor())
+	entry.Interceptors = append(entry.Interceptors, rkginpanic.Interceptor())
 
 	if entry.ZapLoggerEntry == nil {
 		entry.ZapLoggerEntry = rkentry.GlobalAppCtx.GetZapLoggerEntryDefault()
@@ -496,10 +495,8 @@ func RegisterGinEntry(opts ...GinEntryOption) *GinEntry {
 
 	if entry.Port != 0 {
 		entry.Server = &http.Server{
-			Addr: "0.0.0.0:" + strconv.FormatUint(entry.Port, 10),
-			Handler: &ochttp.Handler{
-				Handler: entry.Router,
-			},
+			Addr:    "0.0.0.0:" + strconv.FormatUint(entry.Port, 10),
+			Handler: entry.Router,
 		}
 	}
 
@@ -543,6 +540,7 @@ func (entry *GinEntry) logBasicInfo(event rkquery.Event) {
 	)
 
 	if entry.IsSwEnabled() {
+		event.AddPayloads()
 		event.AddPayloads(zap.String("swPath", entry.SwEntry.Path))
 	}
 

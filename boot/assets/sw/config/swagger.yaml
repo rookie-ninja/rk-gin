@@ -495,7 +495,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/rkentry.ReadmeResponse'
-      summary: List dependencies related application
+      summary: Get README file.
   /rk/v1/req:
     get:
       operationId: "7"

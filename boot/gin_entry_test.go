@@ -127,8 +127,8 @@ func TestWithInterceptorsGin_WithNilInterceptorList(t *testing.T) {
 func TestWithInterceptorsGin_HappyCase(t *testing.T) {
 	entry := RegisterGinEntry()
 
-	loggingInterceptor := rkginlog.LoggingZapInterceptor()
-	metricsInterceptor := rkginmetrics.MetricsPromInterceptor()
+	loggingInterceptor := rkginlog.Interceptor()
+	metricsInterceptor := rkginmetrics.Interceptor()
 
 	interceptors := []gin.HandlerFunc{
 		loggingInterceptor,
@@ -141,7 +141,7 @@ func TestWithInterceptorsGin_HappyCase(t *testing.T) {
 	assert.NotNil(t, entry.Interceptors)
 	// should contains logging, metrics and panic interceptor
 	// where panic interceptor is inject by default
-	assert.Len(t, entry.Interceptors, 4)
+	assert.Len(t, entry.Interceptors, 3)
 }
 
 func TestWithCommonServiceEntryGin_WithEntry(t *testing.T) {
@@ -273,7 +273,7 @@ func TestRegisterGinEntriesWithConfig_HappyCase(t *testing.T) {
 	assert.NotNil(t, greeter.CommonServiceEntry)
 	assert.NotNil(t, greeter.TvEntry)
 	// logging, metrics, auth and panic interceptor should be included
-	assert.Len(t, greeter.Interceptors, 5)
+	assert.Len(t, greeter.Interceptors, 3)
 
 	greeter2 := entries["greeter2"].(*GinEntry)
 	assert.NotNil(t, greeter2)
@@ -282,7 +282,7 @@ func TestRegisterGinEntriesWithConfig_HappyCase(t *testing.T) {
 	assert.NotNil(t, greeter2.CommonServiceEntry)
 	assert.NotNil(t, greeter2.TvEntry)
 	// logging, metrics, auth and panic interceptor should be included
-	assert.Len(t, greeter2.Interceptors, 5)
+	assert.Len(t, greeter2.Interceptors, 3)
 }
 
 func TestRegisterGinEntry_WithZapLoggerEntry(t *testing.T) {
@@ -299,9 +299,9 @@ func TestRegisterGinEntry_WithEventLoggerEntry(t *testing.T) {
 }
 
 func TestNewGinEntry_WithInterceptors(t *testing.T) {
-	loggingInterceptor := rkginlog.LoggingZapInterceptor()
+	loggingInterceptor := rkginlog.Interceptor()
 	entry := RegisterGinEntry(WithInterceptorsGin(loggingInterceptor))
-	assert.Len(t, entry.Interceptors, 3)
+	assert.Len(t, entry.Interceptors, 2)
 }
 
 func TestNewGinEntry_WithCommonServiceEntry(t *testing.T) {
@@ -342,7 +342,7 @@ func TestNewGinEntry_WithDefaultValue(t *testing.T) {
 	assert.True(t, strings.HasPrefix(entry.GetName(), "GinServer-"))
 	assert.NotNil(t, entry.ZapLoggerEntry)
 	assert.NotNil(t, entry.EventLoggerEntry)
-	assert.Len(t, entry.Interceptors, 2)
+	assert.Len(t, entry.Interceptors, 1)
 	assert.NotNil(t, entry.Router)
 	assert.Nil(t, entry.SwEntry)
 	assert.Nil(t, entry.CertEntry)
@@ -425,9 +425,9 @@ func TestGinEntry_RegisterInterceptor_HappyCase(t *testing.T) {
 	}()
 
 	entry := RegisterGinEntry()
-	loggingInterceptor := rkginlog.LoggingZapInterceptor()
+	loggingInterceptor := rkginlog.Interceptor()
 	entry.RegisterInterceptor(loggingInterceptor)
-	assert.Len(t, entry.Interceptors, 3)
+	assert.Len(t, entry.Interceptors, 2)
 }
 
 func TestGinEntry_Bootstrap_WithSwagger(t *testing.T) {

@@ -6,234 +6,92 @@ package rkginlog
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-gin/interceptor/basic"
-	"github.com/rookie-ninja/rk-gin/interceptor/extension"
-	"github.com/rookie-ninja/rk-logger"
+	rkentry "github.com/rookie-ninja/rk-entry/entry"
+	rkgininter "github.com/rookie-ninja/rk-gin/interceptor"
+	rkginctx "github.com/rookie-ninja/rk-gin/interceptor/context"
 	"github.com/rookie-ninja/rk-query"
 	"go.uber.org/zap"
-	"net"
 	"strconv"
-	"strings"
 	"time"
 )
 
-// LoggingZapInterceptor returns a gin.HandlerFunc (middleware) that logs requests using uber-go/zap.
-func LoggingZapInterceptor(opts ...Option) gin.HandlerFunc {
-	set := &optionSet{
-		EntryName:    rkginbasic.RkEntryNameValue,
-		EntryType:    rkginbasic.RkEntryTypeValue,
-		EventFactory: rkquery.NewEventFactory(),
-		Logger:       rklogger.StdoutLogger,
-		BasicFields:  make(map[string]zap.Field),
-	}
+const (
+	ENCODING_CONSOLE int = 0
+	ENCODING_JSON    int = 1
+)
 
-	for i := range opts {
-		opts[i](set)
-	}
-
-	if _, ok := optionsMap[set.EntryName]; !ok {
-		optionsMap[set.EntryName] = set
-	}
+// Interceptor returns a gin.HandlerFunc (middleware) that logs requests using uber-go/zap.
+func Interceptor(opts ...Option) gin.HandlerFunc {
+	set := newOptionSet(opts...)
 
 	return func(ctx *gin.Context) {
-		// start timer
-		event := set.EventFactory.CreateEvent(
-			rkquery.WithEntryName(set.EntryName),
-			rkquery.WithEntryType(set.EntryType))
+		ctx.Set(rkgininter.RpcEntryNameKey, set.EntryName)
 
-		event.SetStartTime(time.Now())
-		// insert event data into context
-		ctx.Set(rkginbasic.RkEventKey, event)
+		before(ctx, set)
 
-		// insert logger into context
-		ctx.Set(rkginbasic.RkLoggerKey, set.Logger)
-
-		payloads := []zap.Field{
-			zap.String("apiPath", ctx.Request.URL.Path),
-			zap.String("apiMethod", ctx.Request.Method),
-			zap.String("apiQuery", ctx.Request.URL.RawQuery),
-			zap.String("apiProtocol", ctx.Request.Proto),
-			zap.String("userAgent", ctx.Request.UserAgent()),
-		}
-
-		// handle payloads
-		event.AddPayloads(payloads...)
-
-		// handle remote address
-		remoteAddressSet := getRemoteAddressSet(ctx)
-		event.SetRemoteAddr(remoteAddressSet[0].String + ":" + remoteAddressSet[1].String)
-
-		// handle operation
-		event.SetOperation(ctx.Request.URL.Path)
-
-		// handle rest of interceptors
 		ctx.Next()
 
-		event.SetEndTime(time.Now())
-
-		// handle errors
-		if len(ctx.Errors) > 0 {
-			for i := range ctx.Errors {
-				event.AddErr(ctx.Errors[i])
-			}
-		}
-
-		// handle resCode
-		event.SetResCode(strconv.Itoa(ctx.Writer.Status()))
-
-		// handle requestId and eventId
-		requestId := getRequestIdsFromOutgoingHeader(ctx)
-		if len(requestId) > 0 {
-			event.SetEventId(requestId)
-			event.SetRequestId(requestId)
-		}
-
-		// ignoring /rk/v1/assets, /rk/v1/tv and /sw/ path while logging since these are internal APIs.
-		if !strings.HasPrefix(ctx.Request.RequestURI, "/rk/v1/assets") &&
-			!strings.HasPrefix(ctx.Request.RequestURI, "/rk/v1/tv") &&
-			!strings.HasPrefix(ctx.Request.RequestURI, "/sw/") {
-			event.Finish()
-		}
+		after(ctx)
 	}
 }
 
-// Extract request id from outgoing header with bellow keys from rkginextension optionset.
-// If rkginextension middleware is not enabled, we will use X-RK-RequestId as default key.
-func getRequestIdsFromOutgoingHeader(ctx *gin.Context) string {
-	if ctx == nil || ctx.Writer == nil {
-		return ""
-	}
-
-	return ctx.Writer.Header().Get(rkginextension.RequestIdHeaderKeyDefault)
-}
-
-// Get remote endpoint information set including IP, Port, NetworkType
-// We will do as best as we can to determine it
-// If fails, then just return default ones
-func getRemoteAddressSet(ctx *gin.Context) []zap.Field {
-	remoteIP := "0.0.0.0"
-	remotePort := "0"
-
-	if ctx == nil || ctx.Request == nil {
-		return []zap.Field{
-			zap.String("remoteIp", remoteIP),
-			zap.String("remotePort", remotePort),
-		}
-	}
-
-	var err error
-	if remoteIP, remotePort, err = net.SplitHostPort(ctx.Request.RemoteAddr); err != nil {
-		return []zap.Field{
-			zap.String("remoteIp", "0.0.0.0"),
-			zap.String("remotePort", "0"),
-		}
-	}
-
-	forwardedRemoteIP := ctx.GetHeader("x-forwarded-for")
-
-	// Deal with forwarded remote ip
-	if len(forwardedRemoteIP) > 0 {
-		if forwardedRemoteIP == "::1" {
-			forwardedRemoteIP = "localhost"
-		}
-
-		remoteIP = forwardedRemoteIP
-	}
-
-	if remoteIP == "::1" {
-		remoteIP = "localhost"
-	}
-
-	return []zap.Field{
-		zap.String("remoteIp", remoteIP),
-		zap.String("remotePort", remotePort),
-	}
-}
-
-// Get rkquery.EventFactory with this interceptor with gin.Context
-func GetEventFactory(ctx *gin.Context) *rkquery.EventFactory {
-	if set := GetOptionSet(ctx); set != nil {
-		return set.EventFactory
-	}
-
-	return nil
-}
-
-// Get rkquery.EventFactory with this interceptor with gin.Context
-func GetLogger(ctx *gin.Context) *zap.Logger {
-	if set := GetOptionSet(ctx); set != nil {
-		return set.Logger
-	}
-
-	return rklogger.NoopLogger
-}
-
-// Get rkquery.Event with this interceptor with gin.Context
-func GetEvent(ctx *gin.Context) rkquery.Event {
-	if v, ok := ctx.Get(rkginbasic.RkEventKey); !ok {
-		return rkquery.NewEventFactory().CreateEventNoop()
+func before(ctx *gin.Context, set *optionSet) {
+	var event rkquery.Event
+	if rkgininter.ShouldLog(ctx) {
+		event = set.eventLoggerEntry.GetEventFactory().CreateEvent(
+			rkquery.WithZapLogger(set.eventLoggerOverride),
+			rkquery.WithEncoding(set.eventLoggerEncoding),
+			rkquery.WithAppName(rkentry.GlobalAppCtx.GetAppInfoEntry().AppName),
+			rkquery.WithAppVersion(rkentry.GlobalAppCtx.GetAppInfoEntry().Version),
+			rkquery.WithEntryName(set.EntryName),
+			rkquery.WithEntryType(set.EntryType))
 	} else {
-		return v.(rkquery.Event)
-	}
-}
-
-// Get rkquery.Event with this interceptor with gin.Context
-func SetLogger(ctx *gin.Context, logger *zap.Logger) bool {
-	if set := GetOptionSet(ctx); set != nil {
-		set.Logger = logger
-		return true
+		event = set.eventLoggerEntry.GetEventFactory().CreateEventNoop()
 	}
 
-	return false
-}
+	event.SetStartTime(time.Now())
 
-// Get optionSet with gin.Context
-func GetOptionSet(ctx *gin.Context) *optionSet {
-	if ctx == nil {
-		return nil
+	remoteIp, remotePort := rkgininter.GetRemoteAddressSet(ctx)
+	// handle remote address
+	event.SetRemoteAddr(remoteIp + ":" + remotePort)
+
+	payloads := []zap.Field{
+		zap.String("apiPath", ctx.Request.URL.Path),
+		zap.String("apiMethod", ctx.Request.Method),
+		zap.String("apiQuery", ctx.Request.URL.RawQuery),
+		zap.String("apiProtocol", ctx.Request.Proto),
+		zap.String("userAgent", ctx.Request.UserAgent()),
 	}
+	// handle payloads
+	event.AddPayloads(payloads...)
 
-	entryName := ctx.GetString(rkginbasic.RkEntryNameKey)
-	return optionsMap[entryName]
+	// handle operation
+	event.SetOperation(ctx.Request.URL.Path)
+
+	ctx.Set(rkgininter.RpcEventKey, event)
+	ctx.Set(rkgininter.RpcLoggerKey, set.ZapLogger)
 }
 
-var optionsMap = make(map[string]*optionSet)
+func after(ctx *gin.Context) {
+	event := rkginctx.GetEvent(ctx)
 
-// options which is used while initializing logging interceptor
-type optionSet struct {
-	EntryName    string
-	EntryType    string
-	EventFactory *rkquery.EventFactory
-	Logger       *zap.Logger
-	BasicFields  map[string]zap.Field
-}
-
-type Option func(*optionSet)
-
-// Provide rkquery.EventFactory.
-func WithEventFactory(factory *rkquery.EventFactory) Option {
-	return func(opt *optionSet) {
-		if factory == nil {
-			factory = rkquery.NewEventFactory()
+	// handle errors
+	if len(ctx.Errors) > 0 {
+		for i := range ctx.Errors {
+			event.AddErr(ctx.Errors[i])
 		}
-		opt.EventFactory = factory
 	}
-}
 
-// Provide zap.Logger.
-func WithLogger(logger *zap.Logger) Option {
-	return func(opt *optionSet) {
-		if logger == nil {
-			logger = rklogger.NoopLogger
-		}
-		opt.Logger = logger
+	if requestId := rkginctx.GetRequestId(ctx); len(requestId) > 0 {
+		event.SetEventId(requestId)
+		event.SetRequestId(requestId)
 	}
-}
 
-// Provide entry name and entry type.
-func WithEntryNameAndType(entryName, entryType string) Option {
-	return func(opt *optionSet) {
-		opt.EntryName = entryName
-		opt.EntryType = entryType
+	if traceId := rkginctx.GetTraceId(ctx); len(traceId) > 0 {
+		event.SetTraceId(traceId)
 	}
+
+	event.SetResCode(strconv.Itoa(ctx.Writer.Status()))
+	event.SetEndTime(time.Now())
+	event.Finish()
 }
