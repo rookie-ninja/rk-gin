@@ -62,6 +62,7 @@ func before(ctx *gin.Context, set *optionSet) {
 		zap.String("apiProtocol", ctx.Request.Proto),
 		zap.String("userAgent", ctx.Request.UserAgent()),
 	}
+
 	// handle payloads
 	event.AddPayloads(payloads...)
 

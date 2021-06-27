@@ -667,8 +667,6 @@ func getEntry(ctx *gin.Context) *GinEntry {
 		return nil
 	}
 
-	fmt.Println(rkginctx.GetEntryName(ctx))
-
 	entryRaw := rkentry.GlobalAppCtx.GetEntry(rkginctx.GetEntryName(ctx))
 	if entryRaw == nil {
 		return nil

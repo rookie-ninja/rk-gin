@@ -500,6 +500,9 @@ func RegisterGinEntry(opts ...GinEntryOption) *GinEntry {
 		}
 	}
 
+	// Default interceptor should be at front
+	entry.Router.Use(entry.Interceptors...)
+
 	rkentry.GlobalAppCtx.AddEntry(entry)
 
 	return entry
@@ -572,9 +575,6 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 
 	ctx = context.WithValue(context.Background(), bootstrapEventIdKey, event.GetEventId())
 	logger := entry.ZapLoggerEntry.GetLogger().With(zap.String("eventId", event.GetEventId()))
-
-	// Default interceptor should be at front
-	entry.Router.Use(entry.Interceptors...)
 
 	// Is swagger enabled?
 	if entry.IsSwEnabled() {
