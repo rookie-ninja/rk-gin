@@ -60,6 +60,7 @@ func init() {
 // Read go template files with Pkger.
 func readFileFromPkger(filePath string) []byte {
 	if file, err := pkger.Open(path.Join("github.com/rookie-ninja/rk-gin:/boot", filePath)); err != nil {
+		fmt.Println(err)
 		return []byte{}
 	} else {
 		if bytes, err := ioutil.ReadAll(file); err != nil {
@@ -68,6 +69,8 @@ func readFileFromPkger(filePath string) []byte {
 			return bytes
 		}
 	}
+
+	return []byte{}
 }
 
 // Bootstrap config of tv.
@@ -333,6 +336,7 @@ func (entry *TvEntry) TV(ctx *gin.Context) {
 // Execute go template into buffer.
 func (entry *TvEntry) doExecuteTemplate(templateName string, data interface{}, logger *zap.Logger) *bytes.Buffer {
 	buf := new(bytes.Buffer)
+
 	if err := entry.Template.ExecuteTemplate(buf, templateName, data); err != nil {
 		logger.Warn("Failed to execute template", zap.Error(err))
 		buf.Reset()

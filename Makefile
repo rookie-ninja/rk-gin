@@ -29,7 +29,7 @@ swag:
 .PHONY: pkger
 pkger:
 	@echo "running pkger..."
-	@pkger -o boot/assets
+	@pkger -o boot
 
 .PHONY: gomod
 gomod:
