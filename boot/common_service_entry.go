@@ -771,3 +771,44 @@ func doReadme(ctx *gin.Context) *rkentry.ReadmeResponse {
 
 	return res
 }
+
+// @Summary Get Git information.
+// @Id 14
+// @version 1.0
+// @produce application/json
+// @Success 200 {object} rkentry.GitResponse
+// @Router /rk/v1/git [get]
+func (entry *CommonServiceEntry) Git(ctx *gin.Context) {
+	if ctx == nil {
+		return
+	}
+
+	ctx.JSON(http.StatusOK, doGit(ctx))
+}
+
+// Extract Gin entry from gin_zap middleware
+func doGit(ctx *gin.Context) *rkentry.GitResponse {
+	res := &rkentry.GitResponse{}
+
+	if ctx == nil {
+		return res
+	}
+
+	gitInfoEntry := rkentry.GlobalAppCtx.GetGitInfoEntry()
+	if gitInfoEntry == nil {
+		return res
+	}
+
+	res.Package = gitInfoEntry.Package
+	res.Branch = gitInfoEntry.Branch
+	res.Tag = gitInfoEntry.Tag
+	res.Url = gitInfoEntry.Url
+	res.CommitId = gitInfoEntry.CommitId
+	res.CommitIdAbbr = gitInfoEntry.CommitIdAbbr
+	res.CommitSub = gitInfoEntry.CommitSub
+	res.CommitterName = gitInfoEntry.CommitterName
+	res.CommitterEmail = gitInfoEntry.CommitterEmail
+	res.CommitDate = gitInfoEntry.CommitDate
+
+	return res
+}

@@ -135,6 +135,23 @@ var doc = `{
                 }
             }
         },
+        "/rk/v1/git": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get Git information.",
+                "operationId": "14",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/rkentry.GitResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/rk/v1/healthy": {
             "get": {
                 "produces": [
@@ -260,7 +277,7 @@ var doc = `{
                     "text/html"
                 ],
                 "summary": "Get HTML page of /tv",
-                "operationId": "14",
+                "operationId": "15",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -495,6 +512,41 @@ var doc = `{
                 },
                 "memStatBeforeGc": {
                     "$ref": "#/definitions/rkentry.MemInfo"
+                }
+            }
+        },
+        "rkentry.GitResponse": {
+            "type": "object",
+            "properties": {
+                "branch": {
+                    "type": "string"
+                },
+                "commitDate": {
+                    "type": "string"
+                },
+                "commitId": {
+                    "type": "string"
+                },
+                "commitIdAbbr": {
+                    "type": "string"
+                },
+                "commitSub": {
+                    "type": "string"
+                },
+                "committerEmail": {
+                    "type": "string"
+                },
+                "committerName": {
+                    "type": "string"
+                },
+                "package": {
+                    "type": "string"
+                },
+                "tag": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
                 }
             }
         },

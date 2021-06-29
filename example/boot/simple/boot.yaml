@@ -1,6 +1,4 @@
 ---
-rk: # NOT required
-  appName: rk-example-entry           # Optional, default: "rkApp"
 gin:
   - name: greeter                     # Required
     port: 8080                        # Required

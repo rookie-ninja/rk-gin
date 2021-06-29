@@ -55,6 +55,7 @@ func init() {
 	Templates["license"] = readFileFromPkger("/assets/tv/license.tmpl")
 	Templates["info"] = readFileFromPkger("/assets/tv/info.tmpl")
 	Templates["logs"] = readFileFromPkger("/assets/tv/logs.tmpl")
+	Templates["git"] = readFileFromPkger("/assets/tv/git.tmpl")
 }
 
 // Read go template files with Pkger.
@@ -276,7 +277,7 @@ func (entry *TvEntry) logBasicInfo(event rkquery.Event) {
 }
 
 // @Summary Get HTML page of /tv
-// @Id 14
+// @Id 15
 // @version 1.0
 // @produce text/html
 // @Success 200 string HTML
@@ -326,6 +327,9 @@ func (entry *TvEntry) TV(ctx *gin.Context) {
 		ctx.Data(http.StatusOK, contentType, buf.Bytes())
 	case "/info":
 		buf := entry.doExecuteTemplate("info", doInfo(ctx), logger)
+		ctx.Data(http.StatusOK, contentType, buf.Bytes())
+	case "/git":
+		buf := entry.doExecuteTemplate("git", doGit(ctx), logger)
 		ctx.Data(http.StatusOK, contentType, buf.Bytes())
 	default:
 		buf := entry.doExecuteTemplate("not-found", nil, logger)

@@ -69,8 +69,6 @@ Please refer example at [example/boot/simple](example/boot/simple).
 
 ```yaml
 ---
-rk: # NOT required
-  appName: rk-example-entry           # Optional, default: "rkApp"
 gin:
   - name: greeter                     # Required
     port: 8080                        # Required
@@ -164,7 +162,7 @@ startTime=2021-06-25T01:22:23.90781+08:00
 elapsedNano=20378
 timezone=CST
 ids={"eventId":"0f056bf9-0811-4fdb-b1eb-8d01b3b2a576"}
-app={"appName":"myapp","appVersion":"v0.0.1","entryName":"greeter-sw","entryType":"GinSwEntry"}
+app={"appName":"rk-gin","appVersion":"master-xxx","entryName":"greeter-sw","entryType":"GinSwEntry"}
 env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.2","os":"darwin","realm":"*","region":"*"}
 payloads={"entryName":"greeter-sw","entryType":"GinSwEntry","jsonPath":"","path":"/sw/","port":8080}
 error={}
@@ -183,7 +181,7 @@ startTime=2021-06-25T01:22:23.907776+08:00
 elapsedNano=1560406
 timezone=CST
 ids={"eventId":"0f056bf9-0811-4fdb-b1eb-8d01b3b2a576"}
-app={"appName":"myapp","appVersion":"v0.0.1","entryName":"greeter","entryType":"GinEntry"}
+app={"appName":"rk-gin","appVersion":"master-xxx","entryName":"greeter","entryType":"GinEntry"}
 env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.2","os":"darwin","realm":"*","region":"*"}
 payloads={"commonServiceEnabled":true,"entryName":"greeter","entryType":"GinEntry","interceptorsCount":6,"port":8080,"promPath":"/metrics","promPort":8080,"swEnabled":true,"swPath":"/sw/","tlsEnabled":false,"tvEnabled":true}
 error={}
@@ -205,9 +203,9 @@ $ curl -vs localhost:8080/rk/v1/healthy
 < HTTP/1.1 200 OK
 < Content-Type: application/json; charset=utf-8
 < X-Request-Id: 3332e575-43d8-4bfe-84dd-45b5fc5fb104
-< X-Rk-App-Name: myapp
+< X-Rk-App-Name: rk-gin
 < X-Rk-App-Unix-Time: 2021-06-25T01:30:45.143869+08:00
-< X-Rk-App-Version: v0.0.1
+< X-Rk-App-Version: master-xxx
 < X-Rk-Received-Time: 2021-06-25T01:30:45.143869+08:00
 < X-Trace-Id: 65b9aa7a9705268bba492fdf4a0e5652
 < Date: Thu, 24 Jun 2021 17:30:45 GMT
@@ -241,6 +239,7 @@ User can start multiple gin servers at the same time. Please make sure use diffe
 | /rk/v1/info | Get application and process info |
 | /rk/v1/license | Get license related application |
 | /rk/v1/logs | List logger related entries |
+| /rk/v1/git | Get git information |
 | /rk/v1/readme | Get README file |
 | /rk/v1/req | List prometheus metrics of requests |
 | /rk/v1/sys | Get OS stat |
@@ -318,7 +317,7 @@ startTime=2021-06-25T01:30:45.143767+08:00
 elapsedNano=255948
 timezone=CST
 ids={"eventId":"3332e575-43d8-4bfe-84dd-45b5fc5fb104","requestId":"3332e575-43d8-4bfe-84dd-45b5fc5fb104","traceId":"65b9aa7a9705268bba492fdf4a0e5652"}
-app={"appName":"myapp","appVersion":"v0.0.1","entryName":"greeter","entryType":"GinEntry"}
+app={"appName":"rk-gin","appVersion":"master-xxx","entryName":"greeter","entryType":"GinEntry"}
 env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.2","os":"darwin","realm":"*","region":"*"}
 payloads={"apiMethod":"GET","apiPath":"/rk/v1/healthy","apiProtocol":"HTTP/1.1","apiQuery":"","userAgent":"curl/7.64.1"}
 error={}

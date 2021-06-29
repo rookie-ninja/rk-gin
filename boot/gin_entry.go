@@ -611,6 +611,7 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 		entry.Router.GET("/rk/v1/deps", entry.CommonServiceEntry.Deps)
 		entry.Router.GET("/rk/v1/license", entry.CommonServiceEntry.License)
 		entry.Router.GET("/rk/v1/readme", entry.CommonServiceEntry.Readme)
+		entry.Router.GET("/rk/v1/git", entry.CommonServiceEntry.Git)
 
 		// Bootstrap common service entry.
 		entry.CommonServiceEntry.Bootstrap(ctx)

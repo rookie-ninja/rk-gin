@@ -145,6 +145,29 @@ definitions:
       memStatBeforeGc:
         $ref: '#/definitions/rkentry.MemInfo'
     type: object
+  rkentry.GitResponse:
+    properties:
+      branch:
+        type: string
+      commitDate:
+        type: string
+      commitId:
+        type: string
+      commitIdAbbr:
+        type: string
+      commitSub:
+        type: string
+      committerEmail:
+        type: string
+      committerName:
+        type: string
+      package:
+        type: string
+      tag:
+        type: string
+      url:
+        type: string
+    type: object
   rkentry.GoEnvInfo:
     properties:
       goArch:
@@ -441,6 +464,17 @@ paths:
           schema:
             $ref: '#/definitions/rkentry.GcResponse'
       summary: Trigger Gc
+  /rk/v1/git:
+    get:
+      operationId: "14"
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rkentry.GitResponse'
+      summary: Get Git information.
   /rk/v1/healthy:
     get:
       operationId: "1"
@@ -520,7 +554,7 @@ paths:
       summary: Get OS Stat
   /rk/v1/tv:
     get:
-      operationId: "14"
+      operationId: "15"
       produces:
       - text/html
       responses:
