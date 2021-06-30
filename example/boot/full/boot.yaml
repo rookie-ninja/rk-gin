@@ -1,6 +1,6 @@
 ---
 # Bellow sections are RK common entries which is not necessary.
-rk: # NOT required
+app: # NOT required
   description: "this is description"  # Optional, default: ""
   keywords: ["rk", "golang"]          # Optional, default: []
   homeUrl: "http://example.com"       # Optional, default: ""
@@ -32,13 +32,13 @@ gin:
   - name: greeter                             # Required
     port: 8080                                # Required
     description: "greeter server"             # Optional, default: ""
-    cert:                                     # Optional
-      ref: "local-cert"                       # Optional, default: "", reference of cert entry declared above
+#    cert:                                     # Optional
+#      ref: "local-cert"                       # Optional, default: "", reference of cert entry declared above
     sw:                                       # Optional
       enabled: true                           # Optional, default: false
-      path: "sw"                              # Optional, default: "sw"
+#      path: "sw"                              # Optional, default: "sw"
 #      jsonPath: ""                            # Optional
-      headers: ["sw:rk"]                      # Optional, default: []
+#      headers: ["sw:rk"]                      # Optional, default: []
     commonService:                            # Optional
       enabled: true                           # Optional, default: false
     tv:                                       # Optional
@@ -48,10 +48,10 @@ gin:
 #      path: ""                                # Optional, default: "metrics"
       pusher:                                 # Optional
         enabled: false                        # Optional, default: false
-        jobName: "greeter-pusher"             # Required
-        remoteAddress: "localhost:9091"       # Required
+#        jobName: "greeter-pusher"             # Required
+#        remoteAddress: "localhost:9091"       # Required
 #        basicAuth: "user:pass"                # Optional, default: ""
-        intervalMs: 10000                      # Optional, default: 1000
+#        intervalMs: 10000                      # Optional, default: 1000
 #        cert:                                 # Optional
 #          ref: "local-test"                   # Optional, default: "", reference of cert entry declared above
     logger:                                   # Optional
