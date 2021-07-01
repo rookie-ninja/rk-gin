@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-common/error"
+	rkgininter "github.com/rookie-ninja/rk-gin/interceptor"
 	"github.com/rookie-ninja/rk-gin/interceptor/context"
 	"go.uber.org/zap"
 	"net/http"
@@ -15,8 +16,12 @@ import (
 )
 
 // PanicInterceptor returns a gin.HandlerFunc (middleware)
-func Interceptor() gin.HandlerFunc {
+func Interceptor(opts ...Option) gin.HandlerFunc {
+	set := newOptionSet(opts...)
+
 	return func(ctx *gin.Context) {
+		ctx.Set(rkgininter.RpcEntryNameKey, set.EntryName)
+
 		defer func() {
 			if recv := recover(); recv != nil {
 				var res *rkerror.ErrorResp

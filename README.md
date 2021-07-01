@@ -14,7 +14,7 @@ Interceptor & bootstrapper designed for gin framework. Currently, supports bello
 | Trace interceptor | Collect RPC trace and export it to stdout, file or jaeger. |
 | Panic interceptor | Recover from panic for RPC requests and log it. |
 | Meta interceptor | Send application metadata as header to client. |
-| Auth interceptor | Support [Basic Auth], [Bearer Token] and [API Key] authrization types. |
+| Auth interceptor | Support [Basic Auth], [Bearer Token] and [API Key] authorization types. |
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->

@@ -474,7 +474,8 @@ func RegisterGinEntry(opts ...GinEntryOption) *GinEntry {
 	}
 
 	// insert panic interceptor
-	entry.Interceptors = append(entry.Interceptors, rkginpanic.Interceptor())
+	entry.Interceptors = append(entry.Interceptors, rkginpanic.Interceptor(
+		rkginpanic.WithEntryNameAndType(entry.EntryName, entry.EntryType)))
 
 	if entry.ZapLoggerEntry == nil {
 		entry.ZapLoggerEntry = rkentry.GlobalAppCtx.GetZapLoggerEntryDefault()
