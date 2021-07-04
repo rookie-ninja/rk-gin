@@ -2,7 +2,9 @@ package rkginauth
 
 import (
 	"encoding/base64"
+	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-gin/interceptor"
+	"strings"
 )
 
 // Interceptor would distinguish auth set based on.
@@ -15,8 +17,8 @@ func newOptionSet(opts ...Option) *optionSet {
 		EntryType:     rkgininter.RpcEntryTypeValue,
 		BasicRealm:    "",
 		BasicAccounts: make(map[string]bool),
-		BearerToken:   make(map[string]bool),
 		ApiKey:        make(map[string]bool),
+		IgnorePrefix:  make([]string, 0),
 	}
 
 	for i := range opts {
@@ -36,8 +38,8 @@ type optionSet struct {
 	EntryType     string
 	BasicRealm    string
 	BasicAccounts map[string]bool
-	BearerToken   map[string]bool
 	ApiKey        map[string]bool
+	IgnorePrefix  []string
 }
 
 // Check permission with username and password.
@@ -46,15 +48,28 @@ func (set *optionSet) Authorized(authType, cred string) bool {
 	case typeBasic:
 		_, ok := set.BasicAccounts[cred]
 		return ok
-	case typeBearer:
-		_, ok := set.BearerToken[cred]
-		return ok
 	case typeApiKey:
 		_, ok := set.ApiKey[cred]
 		return ok
 	}
 
 	return false
+}
+
+func (set *optionSet) ShouldAuth(ctx *gin.Context) bool {
+	if ctx == nil || ctx.Request == nil || (len(set.BasicAccounts) < 1 && len(set.ApiKey) < 1) {
+		return false
+	}
+
+	urlPath := ctx.Request.URL.Path
+
+	for i := range set.IgnorePrefix {
+		if strings.HasPrefix(urlPath, set.IgnorePrefix[i]) {
+			return false
+		}
+	}
+
+	return true
 }
 
 type Option func(*optionSet)
@@ -74,15 +89,8 @@ func WithBasicAuth(realm string, cred ...string) Option {
 		for i := range cred {
 			set.BasicAccounts[base64.StdEncoding.EncodeToString([]byte(cred[i]))] = true
 		}
-	}
-}
 
-// Provide bearer auth credentials.
-func WithBearerAuth(token ...string) Option {
-	return func(set *optionSet) {
-		for i := range token {
-			set.BearerToken[token[i]] = true
-		}
+		set.BasicRealm = realm
 	}
 }
 
@@ -97,5 +105,13 @@ func WithApiKeyAuth(key ...string) Option {
 		for i := range key {
 			set.ApiKey[key[i]] = true
 		}
+	}
+}
+
+// Provide paths prefix that will ignore.
+// Mainly used for swagger main page and RK TV entry.
+func WithIgnorePrefix(paths ...string) Option {
+	return func(set *optionSet) {
+		set.IgnorePrefix = append(set.IgnorePrefix, paths...)
 	}
 }

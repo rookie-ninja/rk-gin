@@ -21,7 +21,6 @@ func main() {
 		rkginlog.Interceptor(),
 		rkginauth.Interceptor(
 			rkginauth.WithBasicAuth("", "rk-user:rk-pass"),
-			rkginauth.WithBearerAuth("rk-token"),
 			rkginauth.WithApiKeyAuth("rk-api-key"),
 		),
 	}

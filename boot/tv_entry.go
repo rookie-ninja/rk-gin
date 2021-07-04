@@ -279,6 +279,8 @@ func (entry *TvEntry) logBasicInfo(event rkquery.Event) {
 // @Summary Get HTML page of /tv
 // @Id 15
 // @version 1.0
+// @Security ApiKeyAuth
+// @Security BasicAuth
 // @produce text/html
 // @Success 200 string HTML
 // @Router /rk/v1/tv [get]

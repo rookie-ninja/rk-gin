@@ -64,13 +64,13 @@ gin:
         enabled: true                         # Optional, default: false
       metricsProm:
         enabled: true                        # Optional, default: false
-      auth:
-        enabled: true                               # Optional, default: false
-        basic:
-          - "user:pass"                              # Optional, default: []
-#        bearer:
-#          - "tokens"                                 # Optional, default: []
-#        api:
+#      auth:
+#        enabled: true                         # Optional, default: false
+#        basic:
+#          - "user:pass"                       # Optional, default: []
+#        ignorePrefix:
+#          - "/rk/v1"
+#        apiKey:
 #          - "keys"                                   # Optional, default: []
       meta:
         enabled: true                                # Optional, default: false

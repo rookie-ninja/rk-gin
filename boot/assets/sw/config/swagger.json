@@ -5,23 +5,30 @@
     ],
     "swagger": "2.0",
     "info": {
-        "description": "This is a common service with rk-gin.",
-        "title": "RK Swagger for Gin",
-        "termsOfService": "http://swagger.io/terms/",
+        "description": "This is builtin RK common service.",
+        "title": "RK Common Service",
         "contact": {
-            "name": "API Support",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
+            "name": "rk-dev",
+            "url": "https://github.com/rookie-ninja/rk-gin",
+            "email": "dongxuny@gmail.com"
         },
         "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+            "name": "MIT License",
+            "url": "https://github.com/rookie-ninja/rk-gin/blob/master/LICENSE.txt"
         },
         "version": "1.0"
     },
     "paths": {
         "/rk/v1/apis": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -39,6 +46,14 @@
         },
         "/rk/v1/certs": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -56,6 +71,14 @@
         },
         "/rk/v1/configs": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -73,6 +96,14 @@
         },
         "/rk/v1/deps": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -90,6 +121,14 @@
         },
         "/rk/v1/entries": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -107,6 +146,14 @@
         },
         "/rk/v1/gc": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -124,6 +171,14 @@
         },
         "/rk/v1/git": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -141,6 +196,14 @@
         },
         "/rk/v1/healthy": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -158,6 +221,14 @@
         },
         "/rk/v1/info": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -175,6 +246,14 @@
         },
         "/rk/v1/license": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -192,6 +271,14 @@
         },
         "/rk/v1/logs": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -209,6 +296,14 @@
         },
         "/rk/v1/readme": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -226,6 +321,14 @@
         },
         "/rk/v1/req": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -243,6 +346,14 @@
         },
         "/rk/v1/sys": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -260,6 +371,14 @@
         },
         "/rk/v1/tv": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "text/html"
                 ],
@@ -869,6 +988,11 @@
         }
     },
     "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "X-API-Key",
+            "in": "header"
+        },
         "BasicAuth": {
             "type": "basic"
         }

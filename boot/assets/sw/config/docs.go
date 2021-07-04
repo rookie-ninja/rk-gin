@@ -18,15 +18,14 @@ var doc = `{
     "info": {
         "description": "{{.Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "http://swagger.io/terms/",
         "contact": {
-            "name": "API Support",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
+            "name": "rk-dev",
+            "url": "https://github.com/rookie-ninja/rk-gin",
+            "email": "dongxuny@gmail.com"
         },
         "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+            "name": "MIT License",
+            "url": "https://github.com/rookie-ninja/rk-gin/blob/master/LICENSE.txt"
         },
         "version": "{{.Version}}"
     },
@@ -35,6 +34,14 @@ var doc = `{
     "paths": {
         "/rk/v1/apis": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -52,6 +59,14 @@ var doc = `{
         },
         "/rk/v1/certs": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -69,6 +84,14 @@ var doc = `{
         },
         "/rk/v1/configs": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -86,6 +109,14 @@ var doc = `{
         },
         "/rk/v1/deps": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -103,6 +134,14 @@ var doc = `{
         },
         "/rk/v1/entries": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -120,6 +159,14 @@ var doc = `{
         },
         "/rk/v1/gc": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -137,6 +184,14 @@ var doc = `{
         },
         "/rk/v1/git": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -154,6 +209,14 @@ var doc = `{
         },
         "/rk/v1/healthy": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -171,6 +234,14 @@ var doc = `{
         },
         "/rk/v1/info": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -188,6 +259,14 @@ var doc = `{
         },
         "/rk/v1/license": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -205,6 +284,14 @@ var doc = `{
         },
         "/rk/v1/logs": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -222,6 +309,14 @@ var doc = `{
         },
         "/rk/v1/readme": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -239,6 +334,14 @@ var doc = `{
         },
         "/rk/v1/req": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -256,6 +359,14 @@ var doc = `{
         },
         "/rk/v1/sys": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -273,6 +384,14 @@ var doc = `{
         },
         "/rk/v1/tv": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "produces": [
                     "text/html"
                 ],
@@ -882,6 +1001,11 @@ var doc = `{
         }
     },
     "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "X-API-Key",
+            "in": "header"
+        },
         "BasicAuth": {
             "type": "basic"
         }
@@ -903,8 +1027,8 @@ var SwaggerInfo = swaggerInfo{
 	Host:        "",
 	BasePath:    "",
 	Schemes:     []string{"http", "https"},
-	Title:       "RK Swagger for Gin",
-	Description: "This is a common service with rk-gin.",
+	Title:       "RK Common Service",
+	Description: "This is builtin RK common service.",
 }
 
 type s struct{}

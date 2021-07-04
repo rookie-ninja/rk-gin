@@ -6,7 +6,6 @@ Auth interceptor will validate bellow authorizations.
 | Type | Description | Example |
 | ---- | ---- | ---- |
 | Basic Auth | The client sends HTTP requests with the Authorization header that contains the word Basic, followed by a space and a base64-encoded(non-encrypted) string username: password. | Authorization: Basic AXVubzpwQDU1dzByYM== |
-| Bearer Token | Commonly known as token authentication. It is an HTTP authentication scheme that involves security tokens called bearer tokens. | Authorization: Bearer [token] |
 | API Key | An API key is a token that a client provides when making API calls. With API key auth, you send a key-value pair to the API in the request headers. | X-API-Key: abcdefgh123456789 | 
 
 **Please make sure panic interceptor to be added at last in chain of interceptors.**
@@ -46,7 +45,6 @@ import    "github.com/rookie-ninja/rk-gin/interceptor/auth"
         rkginlog.Interceptor(),
         rkginauth.Interceptor(
             rkginauth.WithBasicAuth("", "rk-user:rk-pass"),
-            rkginauth.WithBearerAuth("rk-token"),
             rkginauth.WithApiKeyAuth("rk-api-key"),
         ),
     }
@@ -61,9 +59,8 @@ Auth interceptor validate authorization for each request.
 | ---- | ---- | ---- |
 | WithEntryNameAndType(entryName, entryType string) | entryName=gin, entryType=gin | entryName and entryType will be used to distinguish options if there are multiple interceptors in single process. |
 | WithBasicAuth(realm string, cred ...string) | []string | Provide Basic auth credential with scheme of [user:pass]. Multiple credential are available for server. |
-| WithBearerAuth(token ...string) | []string | Provide Bearer token. Multiple tokens are available for server. |
 | WithApiKeyAuth(key ...string) | []string | Provide API key. Multiple keys are available for server. |
-
+| WithExceptionalPaths(paths ...string) | []string | Exceptional paths that interceptors will ignore. |
 ```go
     // ********************************************
     // ********** Enable interceptors *************
@@ -72,7 +69,6 @@ Auth interceptor validate authorization for each request.
         rkginlog.Interceptor(),
         rkginauth.Interceptor(
             rkginauth.WithBasicAuth("", "rk-user:rk-pass"),
-            rkginauth.WithBearerAuth("rk-token"),
             rkginauth.WithApiKeyAuth("rk-api-key"),
         ),
     }
@@ -159,10 +155,6 @@ EOE
 ```shell script
 # With basic auth
 $ curl -u "rk-user:rk-pass" "localhost:8080/rk/v1/greeter?name=rk-dev"
-{"Message":"Hello rk-dev!"}
-
-# With bearer token
-$ curl "localhost:8080/rk/v1/greeter?name=rk-dev" -H "Authorization: Bearer rk-token"
 {"Message":"Hello rk-dev!"}
 
 # With API key

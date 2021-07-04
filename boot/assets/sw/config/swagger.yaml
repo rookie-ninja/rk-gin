@@ -387,15 +387,14 @@ definitions:
     type: object
 info:
   contact:
-    email: support@swagger.io
-    name: API Support
-    url: http://www.swagger.io/support
-  description: This is a common service with rk-gin.
+    email: dongxuny@gmail.com
+    name: rk-dev
+    url: https://github.com/rookie-ninja/rk-gin
+  description: This is builtin RK common service.
   license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  termsOfService: http://swagger.io/terms/
-  title: RK Swagger for Gin
+    name: MIT License
+    url: https://github.com/rookie-ninja/rk-gin/blob/master/LICENSE.txt
+  title: RK Common Service
   version: "1.0"
 paths:
   /rk/v1/apis:
@@ -408,6 +407,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/rkentry.ApisResponse'
+      security:
+      - ApiKeyAuth: []
+      - BasicAuth: []
       summary: List API
   /rk/v1/certs:
     get:
@@ -419,6 +421,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/rkentry.CertsResponse'
+      security:
+      - ApiKeyAuth: []
+      - BasicAuth: []
       summary: List CertEntry
   /rk/v1/configs:
     get:
@@ -430,6 +435,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/rkentry.ConfigsResponse'
+      security:
+      - ApiKeyAuth: []
+      - BasicAuth: []
       summary: List ConfigEntry
   /rk/v1/deps:
     get:
@@ -441,6 +449,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/rkentry.DepResponse'
+      security:
+      - ApiKeyAuth: []
+      - BasicAuth: []
       summary: List dependencies related application
   /rk/v1/entries:
     get:
@@ -452,6 +463,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/rkentry.EntriesResponse'
+      security:
+      - ApiKeyAuth: []
+      - BasicAuth: []
       summary: List all Entry
   /rk/v1/gc:
     get:
@@ -463,6 +477,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/rkentry.GcResponse'
+      security:
+      - ApiKeyAuth: []
+      - BasicAuth: []
       summary: Trigger Gc
   /rk/v1/git:
     get:
@@ -474,6 +491,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/rkentry.GitResponse'
+      security:
+      - ApiKeyAuth: []
+      - BasicAuth: []
       summary: Get Git information.
   /rk/v1/healthy:
     get:
@@ -485,6 +505,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/rkentry.HealthyResponse'
+      security:
+      - ApiKeyAuth: []
+      - BasicAuth: []
       summary: Get application healthy status
   /rk/v1/info:
     get:
@@ -496,6 +519,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/rkentry.ProcessInfo'
+      security:
+      - ApiKeyAuth: []
+      - BasicAuth: []
       summary: Get application and process info
   /rk/v1/license:
     get:
@@ -507,6 +533,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/rkentry.LicenseResponse'
+      security:
+      - ApiKeyAuth: []
+      - BasicAuth: []
       summary: Get license related application
   /rk/v1/logs:
     get:
@@ -518,6 +547,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/rkentry.LogsResponse'
+      security:
+      - ApiKeyAuth: []
+      - BasicAuth: []
       summary: List logger related entries
   /rk/v1/readme:
     get:
@@ -529,6 +561,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/rkentry.ReadmeResponse'
+      security:
+      - ApiKeyAuth: []
+      - BasicAuth: []
       summary: Get README file.
   /rk/v1/req:
     get:
@@ -540,6 +575,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/rkentry.ReqResponse'
+      security:
+      - ApiKeyAuth: []
+      - BasicAuth: []
       summary: List prometheus metrics of requests
   /rk/v1/sys:
     get:
@@ -551,6 +589,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/rkentry.SysResponse'
+      security:
+      - ApiKeyAuth: []
+      - BasicAuth: []
       summary: Get OS Stat
   /rk/v1/tv:
     get:
@@ -562,11 +603,18 @@ paths:
           description: OK
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
+      - BasicAuth: []
       summary: Get HTML page of /tv
 schemes:
 - http
 - https
 securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: X-API-Key
+    type: apiKey
   BasicAuth:
     type: basic
 swagger: "2.0"

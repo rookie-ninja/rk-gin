@@ -5,6 +5,7 @@
 package rkginauth
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-common/error"
 	"github.com/rookie-ninja/rk-gin/interceptor"
@@ -14,7 +15,6 @@ import (
 
 const (
 	typeBasic  = "Basic"
-	typeBearer = "Bearer"
 	typeApiKey = "X-API-Key"
 )
 
@@ -36,25 +36,26 @@ func Interceptor(opts ...Option) gin.HandlerFunc {
 }
 
 func before(ctx *gin.Context, set *optionSet) {
-	if !rkgininter.ShouldAuth(ctx) {
+	if !set.ShouldAuth(ctx) {
 		return
 	}
 
 	authHeader := ctx.Request.Header.Get(rkgininter.RpcAuthorizationHeaderKey)
 	apiKeyHeader := ctx.Request.Header.Get(rkgininter.RpcApiKeyHeaderKey)
+
 	if len(authHeader) > 0 {
 		// Contains auth header
-		// Basic or Bearer auth type
+		// Basic auth type
 		tokens := strings.SplitN(authHeader, " ", 2)
 		if len(tokens) != 2 {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, rkerror.New(
 				rkerror.WithHttpCode(http.StatusUnauthorized),
-				rkerror.WithMessage("Invalid Basic Auth or Bearer Token format")))
+				rkerror.WithMessage("Invalid Basic Auth format")))
 			return
 		}
 		if !set.Authorized(tokens[0], tokens[1]) {
-			if tokens[0] == typeBasic && len(set.BasicRealm) > 0 {
-				ctx.Header("WWW-Authenticate", set.BasicRealm)
+			if tokens[0] == typeBasic {
+				ctx.Header("WWW-Authenticate", fmt.Sprintf(`%s realm="%s"`, typeBasic, set.BasicRealm))
 			}
 
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, rkerror.New(
@@ -67,13 +68,24 @@ func before(ctx *gin.Context, set *optionSet) {
 		if !set.Authorized(typeApiKey, apiKeyHeader) {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, rkerror.New(
 				rkerror.WithHttpCode(http.StatusUnauthorized),
-				rkerror.WithMessage("Invalid credential")))
+				rkerror.WithMessage("Invalid X-API-Key")))
 			return
 		}
 	} else {
+		authHeaders := []string{}
+		if len(set.BasicAccounts) > 0 {
+			ctx.Header("WWW-Authenticate", fmt.Sprintf(`%s realm="%s"`, typeBasic, set.BasicRealm))
+			authHeaders = append(authHeaders, "Basic Auth")
+		}
+		if len(set.ApiKey) > 0 {
+			authHeaders = append(authHeaders, "X-API-Key")
+		}
+
+		errMsg := fmt.Sprintf("Missing authorization, provide one of bellow auth header:[%s]", strings.Join(authHeaders, ","))
+
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, rkerror.New(
 			rkerror.WithHttpCode(http.StatusUnauthorized),
-			rkerror.WithMessage("Missing authorization")))
+			rkerror.WithMessage(errMsg)))
 		return
 	}
 }

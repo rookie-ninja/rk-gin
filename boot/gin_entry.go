@@ -57,17 +57,19 @@ func init() {
 // 7: Gin.Prom: See BootConfigProm for details.
 // 8: Gin.Interceptors.LoggingZap.Enabled: Enable zap logging interceptor.
 // 9: Gin.Interceptors.MetricsProm.Enable: Enable prometheus interceptor.
-// 10: Gin.Interceptors.BasicAuth.Enabled: Enable basic auth.
-// 11: Gin.Interceptors.BasicAuth.Credentials: Credential for basic auth, scheme: <user:pass>
-// 12: Gin.Interceptors.Extension.Enabled: Enable extension interceptor.
-// 13: Gin.Interceptors.Extension.Prefix: Prefix of extension header key.
-// 14: Gin.Interceptors.TracingTelemetry.Enabled: Enable tracing interceptor with opentelemetry.
-// 15: Gin.Interceptors.TracingTelemetry.Exporter.File.Enabled: Enable file exporter which support type of stdout and local file.
-// 16: Gin.Interceptors.TracingTelemetry.Exporter.File.OutputPath: Output path of file exporter, stdout and file path is supported.
-// 17: Gin.Interceptors.TracingTelemetry.Exporter.Jaeger.Enabled: Enable jaeger exporter.
-// 18: Gin.Interceptors.TracingTelemetry.Exporter.Jaeger.AgentEndpoint: Specify jeager agent endpoint, localhost:6832 would be used by default.
-// 19: Gin.Logger.ZapLogger.Ref: Zap logger reference, see rkentry.ZapLoggerEntry for details.
-// 20: Gin.Logger.EventLogger.Ref: Event logger reference, see rkentry.EventLoggerEntry for details.
+// 10: Gin.Interceptors.auth.Enabled: Enable basic auth.
+// 11: Gin.Interceptors.auth.Basic: Credential for basic auth, scheme: <user:pass>
+// 12: Gin.Interceptors.auth.ApiKey: Credential for X-API-Key.
+// 13: Gin.Interceptors.auth.igorePrefix: List of paths that will be ignored.
+// 14: Gin.Interceptors.Extension.Enabled: Enable extension interceptor.
+// 15: Gin.Interceptors.Extension.Prefix: Prefix of extension header key.
+// 16: Gin.Interceptors.TracingTelemetry.Enabled: Enable tracing interceptor with opentelemetry.
+// 17: Gin.Interceptors.TracingTelemetry.Exporter.File.Enabled: Enable file exporter which support type of stdout and local file.
+// 18: Gin.Interceptors.TracingTelemetry.Exporter.File.OutputPath: Output path of file exporter, stdout and file path is supported.
+// 19: Gin.Interceptors.TracingTelemetry.Exporter.Jaeger.Enabled: Enable jaeger exporter.
+// 20: Gin.Interceptors.TracingTelemetry.Exporter.Jaeger.AgentEndpoint: Specify jeager agent endpoint, localhost:6832 would be used by default.
+// 21: Gin.Logger.ZapLogger.Ref: Zap logger reference, see rkentry.ZapLoggerEntry for details.
+// 22: Gin.Logger.EventLogger.Ref: Event logger reference, see rkentry.EventLoggerEntry for details.
 type BootConfigGin struct {
 	Gin []struct {
 		Name        string `yaml:"name" json:"name"`
@@ -88,10 +90,10 @@ type BootConfigGin struct {
 				Enabled bool `yaml:"enabled" json:"enabled"`
 			} `yaml:"metricsProm" json:"metricsProm"`
 			Auth struct {
-				Enabled bool     `yaml:"enabled" json:"enabled"`
-				Basic   []string `yaml:"basic" json:"basic"`
-				Bearer  []string `yaml:"bearer" json:"bearer"`
-				API     []string `yaml:"api" json:"api"`
+				Enabled      bool     `yaml:"enabled" json:"enabled"`
+				IgnorePrefix []string `yaml:"ignorePrefix" json:"ignorePrefix"`
+				Basic        []string `yaml:"basic" json:"basic"`
+				ApiKey       []string `yaml:"apiKey" json:"apiKey"`
 			} `yaml:"auth" json:"auth"`
 			Meta struct {
 				Enabled bool   `yaml:"enabled" json:"enabled"`
@@ -413,9 +415,16 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 			opts := make([]rkginauth.Option, 0)
 			opts = append(opts,
 				rkginauth.WithEntryNameAndType(element.Name, GinEntryType),
-				rkginauth.WithBasicAuth("", element.Interceptors.Auth.Basic...),
-				rkginauth.WithBearerAuth(element.Interceptors.Auth.Bearer...),
-				rkginauth.WithApiKeyAuth(element.Interceptors.Auth.API...))
+				rkginauth.WithBasicAuth(element.Name, element.Interceptors.Auth.Basic...),
+				rkginauth.WithApiKeyAuth(element.Interceptors.Auth.ApiKey...))
+
+			// Add exceptional path
+			if swEntry != nil {
+				opts = append(opts, rkginauth.WithIgnorePrefix(strings.TrimSuffix(swEntry.Path, "/")))
+			}
+
+			opts = append(opts, rkginauth.WithIgnorePrefix("/rk/v1/assets"))
+			opts = append(opts, rkginauth.WithIgnorePrefix(element.Interceptors.Auth.IgnorePrefix...))
 
 			inters = append(inters, rkginauth.Interceptor(opts...))
 		}

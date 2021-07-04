@@ -78,19 +78,3 @@ func ShouldLog(ctx *gin.Context) bool {
 
 	return true
 }
-
-func ShouldAuth(ctx *gin.Context) bool {
-	if ctx == nil || ctx.Request == nil {
-		return false
-	}
-
-	// ignoring /rk/v1/assets, /rk/v1/tv and /sw/ path while logging since these are internal APIs.
-	if strings.HasPrefix(ctx.Request.URL.Path, "/rk/v1") ||
-		strings.HasPrefix(ctx.Request.URL.Path, "/rk/v1/tv") ||
-		strings.HasPrefix(ctx.Request.URL.Path, "/metrics") ||
-		strings.HasPrefix(ctx.Request.URL.Path, "/sw/") {
-		return false
-	}
-
-	return true
-}

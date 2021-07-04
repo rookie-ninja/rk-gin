@@ -25,17 +25,23 @@ const (
 	CommonServiceEntryDescription = "Internal RK entry which implements commonly used API with Gin framework."
 )
 
-// @title RK Swagger for Gin
+// @title RK Common Service
 // @version 1.0
-// @description This is a common service with rk-gin.
-// @termsOfService http://swagger.io/terms/
-// @contact.name API Support
-// @contact.url http://www.swagger.io/support
-// @contact.email support@swagger.io
-// @license.name Apache 2.0
-// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @description This is builtin RK common service.
+
+// @contact.name rk-dev
+// @contact.url https://github.com/rookie-ninja/rk-gin
+// @contact.email dongxuny@gmail.com
+
+// @license.name MIT License
+// @license.url https://github.com/rookie-ninja/rk-gin/blob/master/LICENSE.txt
+
 // @securityDefinitions.basic BasicAuth
-// @name Authorization
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name X-API-Key
+
 // @schemes http https
 
 // Bootstrap config of common service.
@@ -219,6 +225,8 @@ func doHealthy(*gin.Context) *rkentry.HealthyResponse {
 // @Summary Get application healthy status
 // @Id 1
 // @version 1.0
+// @Security ApiKeyAuth
+// @Security BasicAuth
 // @produce application/json
 // @Success 200 {object} rkentry.HealthyResponse
 // @Router /rk/v1/healthy [get]
@@ -245,6 +253,8 @@ func doGc(*gin.Context) *rkentry.GcResponse {
 // @Summary Trigger Gc
 // @Id 2
 // @version 1.0
+// @Security ApiKeyAuth
+// @Security BasicAuth
 // @produce application/json
 // @Success 200 {object} rkentry.GcResponse
 // @Router /rk/v1/gc [get]
@@ -267,6 +277,8 @@ func doInfo(*gin.Context) *rkentry.ProcessInfo {
 // @Summary Get application and process info
 // @Id 3
 // @version 1.0
+// @Security ApiKeyAuth
+// @Security BasicAuth
 // @produce application/json
 // @Success 200 {object} rkentry.ProcessInfo
 // @Router /rk/v1/info [get]
@@ -302,6 +314,8 @@ func doConfigs(*gin.Context) *rkentry.ConfigsResponse {
 // @Summary List ConfigEntry
 // @Id 4
 // @version 1.0
+// @Security ApiKeyAuth
+// @Security BasicAuth
 // @produce application/json
 // @Success 200 {object} rkentry.ConfigsResponse
 // @Router /rk/v1/configs [get]
@@ -368,6 +382,8 @@ func doApis(ctx *gin.Context) *rkentry.ApisResponse {
 // @Summary List API
 // @Id 5
 // @version 1.0
+// @Security ApiKeyAuth
+// @Security BasicAuth
 // @produce application/json
 // @Success 200 {object} rkentry.ApisResponse
 // @Router /rk/v1/apis [get]
@@ -395,6 +411,8 @@ func doSys(*gin.Context) *rkentry.SysResponse {
 // @Summary Get OS Stat
 // @Id 6
 // @version 1.0
+// @Security ApiKeyAuth
+// @Security BasicAuth
 // @produce application/json
 // @Success 200 {object} rkentry.SysResponse
 // @Router /rk/v1/sys [get]
@@ -459,6 +477,8 @@ func doReq(ctx *gin.Context) *rkentry.ReqResponse {
 // @Summary List prometheus metrics of requests
 // @Id 7
 // @version 1.0
+// @Security ApiKeyAuth
+// @Security BasicAuth
 // @produce application/json
 // @success 200 {object} rkentry.ReqResponse
 // @Router /rk/v1/req [get]
@@ -524,6 +544,8 @@ func doEntries(ctx *gin.Context) *rkentry.EntriesResponse {
 // @Summary List all Entry
 // @Id 8
 // @version 1.0
+// @Security ApiKeyAuth
+// @Security BasicAuth
 // @produce application/json
 // @Success 200 {object} rkentry.EntriesResponse
 // @Router /rk/v1/entries [get]
@@ -581,6 +603,8 @@ func doCerts(ctx *gin.Context) *rkentry.CertsResponse {
 // @Summary List CertEntry
 // @Id 9
 // @version 1.0
+// @Security ApiKeyAuth
+// @Security BasicAuth
 // @produce application/json
 // @Success 200 {object} rkentry.CertsResponse
 // @Router /rk/v1/certs [get]
@@ -651,6 +675,8 @@ func doLogs(ctx *gin.Context) *rkentry.LogsResponse {
 // @Summary List logger related entries
 // @Id 10
 // @version 1.0
+// @Security ApiKeyAuth
+// @Security BasicAuth
 // @produce application/json
 // @Success 200 {object} rkentry.LogsResponse
 // @Router /rk/v1/logs [get]
@@ -680,6 +706,8 @@ func getEntry(ctx *gin.Context) *GinEntry {
 // @Summary List dependencies related application
 // @Id 11
 // @version 1.0
+// @Security ApiKeyAuth
+// @Security BasicAuth
 // @produce application/json
 // @Success 200 {object} rkentry.DepResponse
 // @Router /rk/v1/deps [get]
@@ -712,6 +740,8 @@ func doDeps(ctx *gin.Context) *rkentry.DepResponse {
 // @Summary Get license related application
 // @Id 12
 // @version 1.0
+// @Security ApiKeyAuth
+// @Security BasicAuth
 // @produce application/json
 // @Success 200 {object} rkentry.LicenseResponse
 // @Router /rk/v1/license [get]
@@ -744,6 +774,8 @@ func doLicense(ctx *gin.Context) *rkentry.LicenseResponse {
 // @Summary Get README file.
 // @Id 13
 // @version 1.0
+// @Security ApiKeyAuth
+// @Security BasicAuth
 // @produce application/json
 // @Success 200 {object} rkentry.ReadmeResponse
 // @Router /rk/v1/readme [get]
@@ -776,6 +808,8 @@ func doReadme(ctx *gin.Context) *rkentry.ReadmeResponse {
 // @Summary Get Git information.
 // @Id 14
 // @version 1.0
+// @Security ApiKeyAuth
+// @Security BasicAuth
 // @produce application/json
 // @Success 200 {object} rkentry.GitResponse
 // @Router /rk/v1/git [get]

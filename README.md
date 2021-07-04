@@ -343,8 +343,8 @@ Enable the server side auth. codes.Unauthenticated would be returned to client i
 | ------ | ------ | ------ | ------ |
 | gin.interceptors.auth.enabled | Enable auth interceptor | boolean | false |
 | gin.interceptors.auth.basic | Basic auth credentials as scheme of <user:pass> | []string | [] |
-| gin.interceptors.auth.bearer | Bearer auth tokens | []string | [] |
-| gin.interceptors.auth.api | API key | []string | [] |
+| gin.interceptors.auth.apiKey | API key auth | []string | [] |
+| gin.interceptors.auth.ignorePaths | The paths that will be ignored by interceptor | []string | [] |
 
 #### Meta
 Send application metadata as header to client.

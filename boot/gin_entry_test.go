@@ -39,10 +39,10 @@ gin:
         enabled: true
       metricsProm:
         enabled: true
-      basicAuth:
+      auth:
         enabled: true
-        credentials:
-        - "user:pass"
+        basic:
+          - "user:pass"
   - name: greeter2
     port: 2008
     sw:
@@ -57,10 +57,10 @@ gin:
         enabled: true
       metricsProm:
         enabled: true
-      basicAuth:
+      auth:
         enabled: true
-        credentials:
-        - "user:pass"
+        basic:
+          - "user:pass"
 `
 
 	serverCert = `
@@ -273,7 +273,7 @@ func TestRegisterGinEntriesWithConfig_HappyCase(t *testing.T) {
 	assert.NotNil(t, greeter.CommonServiceEntry)
 	assert.NotNil(t, greeter.TvEntry)
 	// logging, metrics, auth and panic interceptor should be included
-	assert.Len(t, greeter.Interceptors, 3)
+	assert.Len(t, greeter.Interceptors, 4)
 
 	greeter2 := entries["greeter2"].(*GinEntry)
 	assert.NotNil(t, greeter2)
@@ -282,7 +282,7 @@ func TestRegisterGinEntriesWithConfig_HappyCase(t *testing.T) {
 	assert.NotNil(t, greeter2.CommonServiceEntry)
 	assert.NotNil(t, greeter2.TvEntry)
 	// logging, metrics, auth and panic interceptor should be included
-	assert.Len(t, greeter2.Interceptors, 3)
+	assert.Len(t, greeter2.Interceptors, 4)
 }
 
 func TestRegisterGinEntry_WithZapLoggerEntry(t *testing.T) {
