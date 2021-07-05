@@ -84,7 +84,11 @@ type BootConfigGin struct {
 		Prom          BootConfigProm          `yaml:"prom" json:"prom"`
 		Interceptors  struct {
 			LoggingZap struct {
-				Enabled bool `yaml:"enabled" json:"enabled"`
+				Enabled                bool     `yaml:"enabled" json:"enabled"`
+				ZapLoggerEncoding      string   `yaml:"zapLoggerEncoding" json:"zapLoggerEncoding"`
+				ZapLoggerOutputPaths   []string `yaml:"zapLoggerOutputPaths" json:"zapLoggerOutputPaths"`
+				EventLoggerEncoding    string   `yaml:"eventLoggerEncoding" json:"eventLoggerEncoding"`
+				EventLoggerOutputPaths []string `yaml:"eventLoggerOutputPaths" json:"eventLoggerOutputPaths"`
 			} `yaml:"loggingZap" json:"loggingZap"`
 			MetricsProm struct {
 				Enabled bool `yaml:"enabled" json:"enabled"`
@@ -361,6 +365,22 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 				rkginlog.WithEntryNameAndType(element.Name, GinEntryType),
 				rkginlog.WithEventLoggerEntry(eventLoggerEntry),
 				rkginlog.WithZapLoggerEntry(zapLoggerEntry),
+			}
+
+			if strings.ToLower(element.Interceptors.LoggingZap.ZapLoggerEncoding) == "json" {
+				opts = append(opts, rkginlog.WithZapLoggerEncoding(rkginlog.ENCODING_JSON))
+			}
+
+			if strings.ToLower(element.Interceptors.LoggingZap.EventLoggerEncoding) == "json" {
+				opts = append(opts, rkginlog.WithEventLoggerEncoding(rkginlog.ENCODING_JSON))
+			}
+
+			if len(element.Interceptors.LoggingZap.ZapLoggerOutputPaths) > 0 {
+				opts = append(opts, rkginlog.WithZapLoggerOutputPaths(element.Interceptors.LoggingZap.ZapLoggerOutputPaths...))
+			}
+
+			if len(element.Interceptors.LoggingZap.EventLoggerOutputPaths) > 0 {
+				opts = append(opts, rkginlog.WithEventLoggerOutputPaths(element.Interceptors.LoggingZap.EventLoggerOutputPaths...))
 			}
 
 			inters = append(inters, rkginlog.Interceptor(opts...))

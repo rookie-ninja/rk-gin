@@ -229,21 +229,21 @@ User can start multiple gin servers at the same time. Please make sure use diffe
 ### Common Service
 | Path | Description |
 | ---- | ---- |
-| /rk/v1/apis | /rk/v1/apis |
-| /rk/v1/certs | List CertEntry |
-| /rk/v1/configs | List ConfigEntry |
-| /rk/v1/deps | List dependencies related application |
-| /rk/v1/entries | List all Entry |
-| /rk/v1/gc | Trigger Gc |
-| /rk/v1/healthy | Get application healthy status |
-| /rk/v1/info | Get application and process info |
-| /rk/v1/license | Get license related application |
-| /rk/v1/logs | List logger related entries |
-| /rk/v1/git | Get git information |
-| /rk/v1/readme | Get README file |
-| /rk/v1/req | List prometheus metrics of requests |
-| /rk/v1/sys | Get OS stat |
-| /rk/v1/tv | Get HTML page of /tv |
+| /rk/v1/apis | List APIs in current GinEntry. |
+| /rk/v1/certs | List CertEntry. |
+| /rk/v1/configs | List ConfigEntry. |
+| /rk/v1/deps | List dependencies related application, entire contents of go.mod file would be returned. |
+| /rk/v1/entries | List all Entries. |
+| /rk/v1/gc | Trigger GC |
+| /rk/v1/healthy | Get application healthy status. |
+| /rk/v1/info | Get application and process info. |
+| /rk/v1/license | Get license related application, entire contents of LICENSE file would be returned. |
+| /rk/v1/logs | List logger related entries. |
+| /rk/v1/git | Get git information. |
+| /rk/v1/readme | Get contents of README file. |
+| /rk/v1/req | List prometheus metrics of requests. |
+| /rk/v1/sys | Get OS stat. |
+| /rk/v1/tv | Get HTML page of /tv. |
 
 | name | description | type | default value |
 | ------ | ------ | ------ | ------ |
@@ -279,6 +279,10 @@ User can start multiple gin servers at the same time. Please make sure use diffe
 | name | description | type | default value |
 | ------ | ------ | ------ | ------ |
 | gin.interceptors.loggingZap.enabled | Enable log interceptor | boolean | false |
+| gin.interceptors.loggingZap.zapLoggerEncoding | json or console | string | console |
+| gin.interceptors.loggingZap.zapLoggerOutputPaths | Output paths | []string | stdout |
+| gin.interceptors.loggingZap.eventLoggerEncoding | json or console | string | console |
+| gin.interceptors.loggingZap.eventLoggerOutputPaths | Output paths | []string | false |
 
 We will log two types of log for every RPC call.
 - zapLogger
