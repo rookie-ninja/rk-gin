@@ -62,10 +62,10 @@ gin:
     interceptors:                             # Optional
       loggingZap:
         enabled: true                         # Optional, default: false
-        zapLoggerEncoding: "json"
-        zapLoggerOutputPaths: ["logs/app.log"]
-        eventLoggerEncoding: "json"
-        eventLoggerOutputPaths: ["logs/event.log"]
+#        zapLoggerEncoding: "json"
+#        zapLoggerOutputPaths: ["logs/app.log"]
+#        eventLoggerEncoding: "json"
+#        eventLoggerOutputPaths: ["logs/event.log"]
       metricsProm:
         enabled: true                        # Optional, default: false
 #      auth:
@@ -81,12 +81,12 @@ gin:
         prefix: "rk"                                 # Optional, default: "rk"
       tracingTelemetry:
         enabled: true                                # Optional, default: false
-        exporter:                                    # Optional, default will create a stdout exporter
+#        exporter:                                    # Optional, default will create a stdout exporter
 #          file:
 #            enabled: true                            # Optional, default: false
 #            outputPath: "logs/trace.log"            # Optional, default: stdout
-          jaeger:
-            enabled: true                           # Optional, default: false
+#          jaeger:
+#            enabled: true                           # Optional, default: false
 #            collectorEndpoint: ""                   # Optional, default: localhost:14268
 #            collectorUsername: ""                   # Optional, default: ""
 #            collectorPassword: ""                   # Optional, default: ""

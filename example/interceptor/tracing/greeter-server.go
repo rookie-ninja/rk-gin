@@ -20,7 +20,7 @@ func main() {
 	// ****************************************
 
 	// Export trace to stdout
-	// exporter := rkgintrace.CreateFileExporter("stdout")
+	exporter := rkgintrace.CreateFileExporter("stdout")
 
 	// Export trace to local file system
 	// exporter := rkgintrace.CreateFileExporter("logs/trace.log")
@@ -38,7 +38,7 @@ func main() {
 		// rkgintrace.WithEntryNameAndType("greeter", "grpc"),
 		//
 		// Provide an exporter.
-		// rkgintrace.WithExporter(exporter),
+		rkgintrace.WithExporter(exporter),
 		//
 		// Provide propagation.TextMapPropagator
 		// rkgintrace.WithPropagator(<propagator>),
