@@ -174,6 +174,15 @@ func GetTracerPropagator(ctx *gin.Context) propagation.TextMapPropagator {
 	return nil
 }
 
+func InjectSpanToHttpRequest(ctx *gin.Context, req *http.Request) {
+	if req == nil {
+		return
+	}
+
+	newCtx := trace.ContextWithRemoteSpanContext(req.Context(), GetTraceSpan(ctx).SpanContext())
+	GetTracerPropagator(ctx).Inject(newCtx, propagation.HeaderCarrier(req.Header))
+}
+
 // Start a new span
 func NewTraceSpan(ctx *gin.Context, name string) trace.Span {
 	tracer := GetTracer(ctx)
