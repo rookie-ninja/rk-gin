@@ -362,12 +362,12 @@ Send application metadata as header to client.
 | name | description | type | default value |
 | ------ | ------ | ------ | ------ |
 | gin.interceptors.tracingTelemetry.enabled | Enable tracing interceptor | boolean | false |
-| gin.interceptors.exporter.file.enabled | Enable file exporter | boolean | RK |
-| gin.interceptors.exporter.file.outputPath | Export tracing info to files | string | stdout |
-| gin.interceptors.exporter.jaeger.enabled | Export tracing info jaeger | boolean | false |
-| gin.interceptors.exporter.jaeger.collectorEndpoint | As name described | string | localhost:16368/api/trace |
-| gin.interceptors.exporter.jaeger.collectorUsername | As name described | string | "" |
-| gin.interceptors.exporter.jaeger.collectorPassword | As name described | string | "" |
+| gin.interceptors.tracingTelemetry.exporter.file.enabled | Enable file exporter | boolean | RK |
+| gin.interceptors.tracingTelemetry.exporter.file.outputPath | Export tracing info to files | string | stdout |
+| gin.interceptors.tracingTelemetry.exporter.jaeger.enabled | Export tracing info jaeger | boolean | false |
+| gin.interceptors.tracingTelemetry.exporter.jaeger.collectorEndpoint | As name described | string | localhost:16368/api/trace |
+| gin.interceptors.tracingTelemetry.exporter.jaeger.collectorUsername | As name described | string | "" |
+| gin.interceptors.tracingTelemetry.exporter.jaeger.collectorPassword | As name described | string | "" |
 
 ### Development Status: Stable
 
