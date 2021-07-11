@@ -10,31 +10,6 @@ import (
 	"time"
 )
 
-//var (
-//	DefaultLabelKeys = []string{
-//		"entryName",
-//		"entryType",
-//		"realm",
-//		"region",
-//		"az",
-//		"domain",
-//		"instance",
-//		"appVersion",
-//		"appName",
-//		"restMethod",
-//		"restPath",
-//		"type",
-//		"resCode",
-//	}
-//)
-//
-//const (
-//	ElapsedNano = "elapsedNano"
-//	Errors      = "errors"
-//	ResCode     = "resCode"
-//	unknown     = "unknown"
-//)
-
 // Create a new prometheus metrics interceptor with options.
 func Interceptor(opts ...Option) gin.HandlerFunc {
 	set := newOptionSet(opts...)

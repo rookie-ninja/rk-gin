@@ -1,5 +1,5 @@
 .PHONY: all
-all: gomod test lint readme fmt swag pkger
+all: gomod test lint readme fmt
 
 .PHONY: lint
 lint:
