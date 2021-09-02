@@ -1,4 +1,7 @@
 # rk-gin
+[![build](https://github.com/rookie-ninja/rk-gin/actions/workflows/ci.yml/badge.svg)](https://github.com/rookie-ninja/rk-gin/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 Interceptor & bootstrapper designed for gin framework. Currently, supports bellow functionalities.
 
 | Name | Description |
