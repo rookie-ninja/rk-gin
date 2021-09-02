@@ -1,3 +1,5 @@
+// +build !race
+
 // Copyright (c) 2021 rookie-ninja
 //
 // Use of this source code is governed by an Apache-style
