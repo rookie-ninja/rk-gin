@@ -4,8 +4,9 @@ go 1.15
 
 require (
 	github.com/gin-gonic/gin v1.7.2
-	github.com/rookie-ninja/rk-entry v0.0.0-20210630180059-341e0517e5a2
-	github.com/rookie-ninja/rk-gin v1.1.7-0.20210617174510-8af7876fd5ef
+	github.com/icza/dyno v0.0.0-20200205103839-49cb13720835 // indirect
+	github.com/rookie-ninja/rk-entry v1.0.1
+	github.com/rookie-ninja/rk-gin v1.2.0
 )
 
 replace github.com/rookie-ninja/rk-gin => ../../../

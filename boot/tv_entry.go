@@ -1,6 +1,6 @@
 // Copyright (c) 2021 rookie-ninja
 //
-// Use of this source code is governed by an MIT-style
+// Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
 package rkgin
 
@@ -61,7 +61,6 @@ func init() {
 // Read go template files with Pkger.
 func readFileFromPkger(filePath string) []byte {
 	if file, err := pkger.Open(path.Join("github.com/rookie-ninja/rk-gin:/boot", filePath)); err != nil {
-		fmt.Println(err)
 		return []byte{}
 	} else {
 		if bytes, err := ioutil.ReadAll(file); err != nil {

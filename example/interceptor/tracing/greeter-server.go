@@ -1,3 +1,7 @@
+// Copyright (c) 2021 rookie-ninja
+//
+// Use of this source code is governed by an Apache-style
+// license that can be found in the LICENSE file.
 package main
 
 import (
@@ -34,11 +38,11 @@ func main() {
 	interceptors := []gin.HandlerFunc{
 		rkginlog.Interceptor(),
 		rkgintrace.Interceptor(
-		// Entry name and entry type will be used for distinguishing interceptors. Recommended.
-		// rkgintrace.WithEntryNameAndType("greeter", "grpc"),
-		//
-		// Provide an exporter.
-		rkgintrace.WithExporter(exporter),
+			// Entry name and entry type will be used for distinguishing interceptors. Recommended.
+			// rkgintrace.WithEntryNameAndType("greeter", "grpc"),
+			//
+			// Provide an exporter.
+			rkgintrace.WithExporter(exporter),
 		//
 		// Provide propagation.TextMapPropagator
 		// rkgintrace.WithPropagator(<propagator>),
