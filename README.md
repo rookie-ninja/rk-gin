@@ -1,6 +1,7 @@
 # rk-gin
 [![build](https://github.com/rookie-ninja/rk-gin/actions/workflows/ci.yml/badge.svg)](https://github.com/rookie-ninja/rk-gin/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/rookie-ninja/rk-gin/branch/master/graph/badge.svg?token=S0B7KTMIHW)](https://codecov.io/gh/rookie-ninja/rk-gin)
+[![Go Report Card](https://goreportcard.com/badge/github.com/rookie-ninja/rk-gin)](https://goreportcard.com/report/github.com/rookie-ninja/rk-gin)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Interceptor & bootstrapper designed for gin framework. Currently, supports bellow functionalities.
