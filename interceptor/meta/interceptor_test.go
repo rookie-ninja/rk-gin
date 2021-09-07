@@ -2,43 +2,55 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
 package rkginmeta
 
 import (
-	"github.com/rookie-ninja/rk-gin/interceptor"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"net/http"
 	"testing"
 )
 
-func TestWithEntryNameAndType_HappyCase(t *testing.T) {
-	opt := WithEntryNameAndType("ut-name", "ut-type")
-
-	set := &optionSet{}
-
-	opt(set)
-
-	assert.Equal(t, "ut-name", set.EntryName)
-	assert.Equal(t, "ut-type", set.EntryType)
+func init() {
+	gin.SetMode(gin.ReleaseMode)
 }
 
-func TestWithPrefix_HappyCase(t *testing.T) {
-	opt := WithPrefix("ut-prefix")
-
-	set := &optionSet{}
-
-	opt(set)
-
-	assert.Equal(t, "ut-prefix", set.Prefix)
+func NewMockResponseWriter() *MockResponseWriter {
+	return &MockResponseWriter{
+		data:   make([]byte, 0),
+		header: http.Header{},
+	}
 }
 
-func TestExtensionInterceptor_WithoutOption(t *testing.T) {
-	Interceptor()
-
-	assert.NotNil(t, optionsMap[rkgininter.RpcEntryNameValue])
+type MockResponseWriter struct {
+	data       []byte
+	statusCode int
+	header     http.Header
 }
 
-func TestExtensionInterceptor_HappyCase(t *testing.T) {
-	Interceptor(WithEntryNameAndType("ut-name", "ut-type"))
+func (m *MockResponseWriter) Header() http.Header {
+	return m.header
+}
 
-	assert.NotNil(t, optionsMap["ut-name"])
+func (m *MockResponseWriter) Write(bytes []byte) (int, error) {
+	m.data = bytes
+	return len(bytes), nil
+}
+
+func (m *MockResponseWriter) WriteHeader(statusCode int) {
+	m.statusCode = statusCode
+}
+
+func TestInterceptor(t *testing.T) {
+	handler := Interceptor(
+		WithEntryNameAndType("ut-entry", "ut-type"))
+
+	ctx, _ := gin.CreateTestContext(NewMockResponseWriter())
+	handler(ctx)
+
+	assert.NotEmpty(t, ctx.Writer.Header().Get("X-RK-App-Name"))
+	assert.Empty(t, ctx.Writer.Header().Get("X-RK-App-Version"))
+	assert.NotEmpty(t, ctx.Writer.Header().Get("X-RK-App-Unix-Time"))
+	assert.NotEmpty(t, ctx.Writer.Header().Get("X-RK-Received-Time"))
 }

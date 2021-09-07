@@ -2,6 +2,8 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
+// Package rkginauth is auth middleware for gin framework
 package rkginauth
 
 import (
@@ -18,7 +20,7 @@ const (
 	typeApiKey = "X-API-Key"
 )
 
-// Validate bellow authorization.
+// Interceptor validate bellow authorization.
 //
 // 1: Basic Auth: The client sends HTTP requests with the Authorization header that contains the word Basic, followed by a space and a base64-encoded(non-encrypted) string username: password.
 // 2: Bearer Token: Commonly known as token authentication. It is an HTTP authentication scheme that involves security tokens called bearer tokens.

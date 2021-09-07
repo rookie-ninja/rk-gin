@@ -2,6 +2,8 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
+// Package rkgintrace is a middleware of gin framework for recording tracing
 package rkgintrace
 
 import (
@@ -23,6 +25,7 @@ import (
 	"strings"
 )
 
+// NoopExporter noop
 type NoopExporter struct{}
 
 // ExportSpans handles export of SpanSnapshots by dropping them.
@@ -31,12 +34,12 @@ func (nsb *NoopExporter) ExportSpans(context.Context, []*sdktrace.SpanSnapshot) 
 // Shutdown stops the exporter by doing nothing.
 func (nsb *NoopExporter) Shutdown(context.Context) error { return nil }
 
-// Create a noop exporter
+// CreateNoopExporter create a noop exporter
 func CreateNoopExporter() sdktrace.SpanExporter {
 	return &NoopExporter{}
 }
 
-// Create a file exporter whose default output is stdout.
+// CreateFileExporter create a file exporter whose default output is stdout.
 func CreateFileExporter(outputPath string, opts ...stdout.Option) sdktrace.SpanExporter {
 	if opts == nil {
 		opts = make([]stdout.Option, 0)
@@ -68,7 +71,7 @@ func CreateFileExporter(outputPath string, opts ...stdout.Option) sdktrace.SpanE
 	return exporter
 }
 
-// Beta stage
+// CreateJaegerExporter in beta stage
 // TODO: Wait for opentelemetry update version of jeager exporter. Current exporter is not compatible with jaeger agent.
 func CreateJaegerExporter(endpoint, username, password string) sdktrace.SpanExporter {
 	if len(endpoint) < 1 {
@@ -144,7 +147,7 @@ func newOptionSet(opts ...Option) *optionSet {
 	return set
 }
 
-// options which is used while initializing logging interceptor
+// Options which is used while initializing logging interceptor
 type optionSet struct {
 	EntryName  string
 	EntryType  string
@@ -155,6 +158,7 @@ type optionSet struct {
 	Tracer     oteltrace.Tracer
 }
 
+// Option is used while creating middleware as param
 type Option func(*optionSet)
 
 // Provide sdktrace.SpanExporter.
@@ -166,7 +170,7 @@ func WithExporter(exporter sdktrace.SpanExporter) Option {
 	}
 }
 
-// Provide sdktrace.SpanProcessor.
+// WithSpanProcessor provide sdktrace.SpanProcessor.
 func WithSpanProcessor(processor sdktrace.SpanProcessor) Option {
 	return func(opt *optionSet) {
 		if processor != nil {
@@ -175,7 +179,7 @@ func WithSpanProcessor(processor sdktrace.SpanProcessor) Option {
 	}
 }
 
-// Provide *sdktrace.TracerProvider.
+// WithTracerProvider provide *sdktrace.TracerProvider.
 func WithTracerProvider(provider *sdktrace.TracerProvider) Option {
 	return func(opt *optionSet) {
 		if provider != nil {
@@ -184,7 +188,7 @@ func WithTracerProvider(provider *sdktrace.TracerProvider) Option {
 	}
 }
 
-// Provide propagation.TextMapPropagator.
+// WithPropagator provide propagation.TextMapPropagator.
 func WithPropagator(propagator propagation.TextMapPropagator) Option {
 	return func(opt *optionSet) {
 		if propagator != nil {
@@ -193,7 +197,7 @@ func WithPropagator(propagator propagation.TextMapPropagator) Option {
 	}
 }
 
-// Provide entry name and entry type.
+// WithEntryNameAndType provide entry name and entry type.
 func WithEntryNameAndType(entryName, entryType string) Option {
 	return func(opt *optionSet) {
 		opt.EntryName = entryName
@@ -201,7 +205,7 @@ func WithEntryNameAndType(entryName, entryType string) Option {
 	}
 }
 
-// Shutdown all exporters.
+// ShutdownExporters shutdown all exporters.
 func ShutdownExporters() {
 	for _, v := range optionsMap {
 		v.Exporter.Shutdown(context.Background())

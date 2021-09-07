@@ -2,6 +2,8 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
+// Package rkgin an implementation of rkentry.Entry which could be used start restful server with gin framework
 package rkgin
 
 import (
@@ -35,7 +37,9 @@ import (
 )
 
 const (
-	GinEntryType        = "GinEntry"
+	// GinEntryType type of entry
+	GinEntryType = "GinEntry"
+	// GinEntryDescription description of entry
 	GinEntryDescription = "Internal RK entry which helps to bootstrap with Gin framework."
 	bootstrapEventIdKey = "bootstrapEventId"
 )
@@ -46,7 +50,7 @@ func init() {
 	rkentry.RegisterEntryRegFunc(RegisterGinEntriesWithConfig)
 }
 
-// Boot config which is for gin entry.
+// BootConfigGin boot config which is for gin entry.
 //
 // 1: Gin.Name: Name of gin entry, should be unique globally.
 // 2: Gin.Port: Port of gin entry.
@@ -160,10 +164,10 @@ type GinEntry struct {
 	TvEntry            *TvEntry                  `json:"tvEntry" yaml:"tvEntry"`
 }
 
-// Gin entry option.
+// GinEntryOption Gin entry option.
 type GinEntryOption func(*GinEntry)
 
-// Get GinEntry from rkentry.GlobalAppCtx.
+//GetGinEntry Get GinEntry from rkentry.GlobalAppCtx.
 func GetGinEntry(name string) *GinEntry {
 	entryRaw := rkentry.GlobalAppCtx.GetEntry(name)
 	if entryRaw == nil {
@@ -174,21 +178,21 @@ func GetGinEntry(name string) *GinEntry {
 	return entry
 }
 
-// Provide rkentry.ZapLoggerEntry.
+// WithZapLoggerEntryGin provide rkentry.ZapLoggerEntry.
 func WithZapLoggerEntryGin(zapLogger *rkentry.ZapLoggerEntry) GinEntryOption {
 	return func(entry *GinEntry) {
 		entry.ZapLoggerEntry = zapLogger
 	}
 }
 
-// Provide rkentry.EventLoggerEntry.
+// WithEventLoggerEntryGin provide rkentry.EventLoggerEntry.
 func WithEventLoggerEntryGin(eventLogger *rkentry.EventLoggerEntry) GinEntryOption {
 	return func(entry *GinEntry) {
 		entry.EventLoggerEntry = eventLogger
 	}
 }
 
-// Provide user interceptors.
+// WithInterceptorsGin provide user interceptors.
 func WithInterceptorsGin(inters ...gin.HandlerFunc) GinEntryOption {
 	return func(entry *GinEntry) {
 		if entry.Interceptors == nil {
@@ -199,63 +203,63 @@ func WithInterceptorsGin(inters ...gin.HandlerFunc) GinEntryOption {
 	}
 }
 
-// Provide CommonServiceEntry.
+// WithCommonServiceEntryGin provide CommonServiceEntry.
 func WithCommonServiceEntryGin(commonServiceEntry *CommonServiceEntry) GinEntryOption {
 	return func(entry *GinEntry) {
 		entry.CommonServiceEntry = commonServiceEntry
 	}
 }
 
-// Provide TvEntry.
+// WithTVEntryGin provide TvEntry.
 func WithTVEntryGin(tvEntry *TvEntry) GinEntryOption {
 	return func(entry *GinEntry) {
 		entry.TvEntry = tvEntry
 	}
 }
 
-// Provide rkentry.CertEntry.
+// WithCertEntryGin provide rkentry.CertEntry.
 func WithCertEntryGin(certEntry *rkentry.CertEntry) GinEntryOption {
 	return func(entry *GinEntry) {
 		entry.CertEntry = certEntry
 	}
 }
 
-// Provide SwEntry.
+// WithSwEntryGin provide SwEntry.
 func WithSwEntryGin(sw *SwEntry) GinEntryOption {
 	return func(entry *GinEntry) {
 		entry.SwEntry = sw
 	}
 }
 
-// Provide port.
+// WithPortGin provide port.
 func WithPortGin(port uint64) GinEntryOption {
 	return func(entry *GinEntry) {
 		entry.Port = port
 	}
 }
 
-// Provide name.
+// WithNameGin provide name.
 func WithNameGin(name string) GinEntryOption {
 	return func(entry *GinEntry) {
 		entry.EntryName = name
 	}
 }
 
-// Provide name.
+// WithDescriptionGin provide name.
 func WithDescriptionGin(description string) GinEntryOption {
 	return func(entry *GinEntry) {
 		entry.EntryDescription = description
 	}
 }
 
-// Provide PromEntry.
+// WithPromEntryGin provide PromEntry.
 func WithPromEntryGin(prom *PromEntry) GinEntryOption {
 	return func(entry *GinEntry) {
 		entry.PromEntry = prom
 	}
 }
 
-// Register gin entries with provided config file (Must YAML file).
+// RegisterGinEntriesWithConfig register gin entries with provided config file (Must YAML file).
 //
 // Currently, support two ways to provide config file path.
 // 1: With function parameters
@@ -487,7 +491,7 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 	return res
 }
 
-// Register GinEntry with options.
+// RegisterGinEntry register GinEntry with options.
 func RegisterGinEntry(opts ...GinEntryOption) *GinEntry {
 	entry := &GinEntry{
 		ZapLoggerEntry:   rkentry.GlobalAppCtx.GetZapLoggerEntryDefault(),
@@ -538,22 +542,22 @@ func RegisterGinEntry(opts ...GinEntryOption) *GinEntry {
 	return entry
 }
 
-// Get entry name.
+// GetName Get entry name.
 func (entry *GinEntry) GetName() string {
 	return entry.EntryName
 }
 
-// Get entry type.
+// GetType Get entry type.
 func (entry *GinEntry) GetType() string {
 	return entry.EntryType
 }
 
-// Get description of entry.
+// GetDescription Get description of entry.
 func (entry *GinEntry) GetDescription() string {
 	return entry.EntryDescription
 }
 
-// Stringfy gin entry.
+// String Stringfy gin entry.
 func (entry *GinEntry) String() string {
 	bytes, _ := json.Marshal(entry)
 	return string(bytes)
@@ -585,7 +589,7 @@ func (entry *GinEntry) logBasicInfo(event rkquery.Event) {
 
 }
 
-// Register interceptor, please make sure call this function before Bootstrap().
+// RegisterInterceptor Register interceptor, please make sure call this function before Bootstrap().
 func (entry *GinEntry) RegisterInterceptor(interceptor gin.HandlerFunc) {
 	if interceptor == nil {
 		return
@@ -731,38 +735,38 @@ func (entry *GinEntry) Interrupt(ctx context.Context) {
 	entry.EventLoggerEntry.GetEventHelper().Finish(event)
 }
 
-// Add interceptors.
+// AddInterceptor Add interceptors.
 // This function should be called before Bootstrap() called.
 func (entry *GinEntry) AddInterceptor(inters ...gin.HandlerFunc) {
 	entry.Interceptors = append(entry.Interceptors, inters...)
 }
 
-// Is swagger entry enabled?
+// IsSwEnabled Is swagger entry enabled?
 func (entry *GinEntry) IsSwEnabled() bool {
 	return entry.SwEntry != nil
 }
 
-// Is prometheus entry enabled?
+// IsPromEnabled Is prometheus entry enabled?
 func (entry *GinEntry) IsPromEnabled() bool {
 	return entry.PromEntry != nil
 }
 
-// Is common service entry enabled?
+// IsCommonServiceEnabled Is common service entry enabled?
 func (entry *GinEntry) IsCommonServiceEnabled() bool {
 	return entry.CommonServiceEntry != nil
 }
 
-// Is TV entry enabled?
+// IsTvEnabled Is TV entry enabled?
 func (entry *GinEntry) IsTvEnabled() bool {
 	return entry.TvEntry != nil
 }
 
-// Is TLS enabled?
+// IsTlsEnabled Is TLS enabled?
 func (entry *GinEntry) IsTlsEnabled() bool {
 	return entry.CertEntry != nil && entry.CertEntry.Store != nil
 }
 
-// Marshal entry.
+// MarshalJSON Marshal entry.
 func (entry *GinEntry) MarshalJSON() ([]byte, error) {
 	m := map[string]interface{}{
 		"entryName":          entry.EntryName,
@@ -793,7 +797,7 @@ func (entry *GinEntry) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&m)
 }
 
-// Not supported.
+// UnmarshalJSON Not supported.
 func (entry *GinEntry) UnmarshalJSON([]byte) error {
 	return nil
 }

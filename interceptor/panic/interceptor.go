@@ -2,6 +2,8 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
+// Package rkginpanic is a middleware of gin framework for recovering from panic
 package rkginpanic
 
 import (
@@ -15,7 +17,7 @@ import (
 	"runtime/debug"
 )
 
-// PanicInterceptor returns a gin.HandlerFunc (middleware)
+// Interceptor returns a gin.HandlerFunc (middleware)
 func Interceptor(opts ...Option) gin.HandlerFunc {
 	set := newOptionSet(opts...)
 

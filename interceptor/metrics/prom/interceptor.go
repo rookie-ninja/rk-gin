@@ -2,6 +2,8 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
+// Package rkginmetrics is a middleware for gin framework which record prometheus metrics for RPC
 package rkginmetrics
 
 import (
@@ -10,7 +12,7 @@ import (
 	"time"
 )
 
-// Create a new prometheus metrics interceptor with options.
+// Interceptor create a new prometheus metrics interceptor with options.
 func Interceptor(opts ...Option) gin.HandlerFunc {
 	set := newOptionSet(opts...)
 

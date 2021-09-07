@@ -2,6 +2,7 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
 package rkginmeta
 
 import (
@@ -40,7 +41,7 @@ func newOptionSet(opts ...Option) *optionSet {
 	return set
 }
 
-// options which is used while initializing extension interceptor
+// Options which is used while initializing extension interceptor
 type optionSet struct {
 	EntryName       string
 	EntryType       string
@@ -52,9 +53,10 @@ type optionSet struct {
 	ReceivedTimeKey string
 }
 
+// Option if for middleware options while creating middleware
 type Option func(*optionSet)
 
-// Provide entry name and entry type.
+// WithEntryNameAndType provide entry name and entry type.
 func WithEntryNameAndType(entryName, entryType string) Option {
 	return func(opt *optionSet) {
 		opt.EntryName = entryName
@@ -62,7 +64,7 @@ func WithEntryNameAndType(entryName, entryType string) Option {
 	}
 }
 
-// Provide prefix.
+// WithPrefix provide prefix.
 func WithPrefix(prefix string) Option {
 	return func(opt *optionSet) {
 		opt.Prefix = prefix

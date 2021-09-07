@@ -2,6 +2,7 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
 package rkginmetrics
 
 import (
@@ -15,6 +16,7 @@ import (
 )
 
 var (
+	// DefaultLabelKeys are default labels for prometheus metrics
 	DefaultLabelKeys = []string{
 		"entryName",
 		"entryType",
@@ -33,9 +35,9 @@ var (
 )
 
 const (
-	ElapsedNano = "elapsedNano"
-	Errors      = "errors"
-	ResCode     = "resCode"
+	ElapsedNano = "elapsedNano" // ElapsedNano records RPC duration
+	Errors      = "errors"      // Errors records RPC error
+	ResCode     = "resCode"     // ResCode records response code
 )
 
 // Register bellow metrics into metrics set.
@@ -48,7 +50,7 @@ func initMetrics(opts *optionSet) {
 	opts.MetricsSet.RegisterCounter(ResCode, DefaultLabelKeys...)
 }
 
-// Server request elapsed metrics.
+// GetServerDurationMetrics server request elapsed metrics.
 func GetServerDurationMetrics(ctx *gin.Context) prometheus.Observer {
 	if metricsSet := GetServerMetricsSet(ctx); metricsSet != nil {
 		return metricsSet.GetSummaryWithValues(ElapsedNano, getValues(ctx)...)
@@ -57,7 +59,7 @@ func GetServerDurationMetrics(ctx *gin.Context) prometheus.Observer {
 	return nil
 }
 
-// Server error metrics.
+// GetServerErrorMetrics server error metrics.
 func GetServerErrorMetrics(ctx *gin.Context) prometheus.Counter {
 	if ctx == nil {
 		return nil
@@ -70,7 +72,7 @@ func GetServerErrorMetrics(ctx *gin.Context) prometheus.Counter {
 	return nil
 }
 
-// Server response code metrics.
+// GetServerResCodeMetrics server response code metrics.
 func GetServerResCodeMetrics(ctx *gin.Context) prometheus.Counter {
 	if ctx == nil {
 		return nil
@@ -83,7 +85,7 @@ func GetServerResCodeMetrics(ctx *gin.Context) prometheus.Counter {
 	return nil
 }
 
-// Server metrics set.
+// GetServerMetricsSet server metrics set.
 func GetServerMetricsSet(ctx *gin.Context) *rkprom.MetricsSet {
 	if set := getOptionSet(ctx); set != nil {
 		return set.MetricsSet
@@ -92,7 +94,7 @@ func GetServerMetricsSet(ctx *gin.Context) *rkprom.MetricsSet {
 	return nil
 }
 
-// List all server metrics set associate with GinEntry.
+// ListServerMetricsSets list all server metrics set associate with GinEntry.
 func ListServerMetricsSets() []*rkprom.MetricsSet {
 	res := make([]*rkprom.MetricsSet, 0)
 	for _, v := range optionsMap {
@@ -102,7 +104,7 @@ func ListServerMetricsSets() []*rkprom.MetricsSet {
 	return res
 }
 
-// metrics set already set into context
+// Metrics set already set into context
 func getValues(ctx *gin.Context) []string {
 	entryName, entryType, method, path, resCode := "", "", "", "", ""
 	if ctx != nil && ctx.Request != nil {
@@ -183,7 +185,7 @@ func newOptionSet(opts ...Option) *optionSet {
 	return set
 }
 
-// options which is used while initializing logging interceptor
+// Options which is used while initializing logging interceptor
 type optionSet struct {
 	EntryName  string
 	EntryType  string
@@ -193,7 +195,7 @@ type optionSet struct {
 
 type Option func(*optionSet)
 
-// Provide entry name and entry type.
+// WithEntryNameAndType provide entry name and entry type.
 func WithEntryNameAndType(entryName, entryType string) Option {
 	return func(opt *optionSet) {
 		if len(entryName) > 0 {
@@ -206,7 +208,7 @@ func WithEntryNameAndType(entryName, entryType string) Option {
 	}
 }
 
-// Provide prometheus.Registerer.
+// WithRegisterer provide prometheus.Registerer.
 func WithRegisterer(registerer prometheus.Registerer) Option {
 	return func(opt *optionSet) {
 		if registerer != nil {

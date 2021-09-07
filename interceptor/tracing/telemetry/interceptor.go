@@ -2,6 +2,8 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
+// Package rkgintrace is aa middleware of gin framework for recording trace info of RPC
 package rkgintrace
 
 import (
@@ -15,7 +17,7 @@ import (
 	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
-// Create a interceptor with opentelemetry.
+// Interceptor create a interceptor with opentelemetry.
 func Interceptor(opts ...Option) gin.HandlerFunc {
 	set := newOptionSet(opts...)
 

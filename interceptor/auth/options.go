@@ -2,6 +2,7 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
 package rkginauth
 
 import (
@@ -36,7 +37,7 @@ func newOptionSet(opts ...Option) *optionSet {
 	return set
 }
 
-// Options which is used while initializing logging interceptor
+// optionSet which is used while initializing logging interceptor
 type optionSet struct {
 	EntryName     string
 	EntryType     string
@@ -46,7 +47,7 @@ type optionSet struct {
 	IgnorePrefix  []string
 }
 
-// Check permission with username and password.
+// Authorized checks permission with username and password.
 func (set *optionSet) Authorized(authType, cred string) bool {
 	switch authType {
 	case typeBasic:
@@ -60,6 +61,7 @@ func (set *optionSet) Authorized(authType, cred string) bool {
 	return false
 }
 
+// ShouldAuth determine whether auth should be checked
 func (set *optionSet) ShouldAuth(ctx *gin.Context) bool {
 	if ctx == nil || ctx.Request == nil || (len(set.BasicAccounts) < 1 && len(set.ApiKey) < 1) {
 		return false
@@ -78,7 +80,7 @@ func (set *optionSet) ShouldAuth(ctx *gin.Context) bool {
 
 type Option func(*optionSet)
 
-// Provide entry name and entry type.
+// WithEntryNameAndType provide entry name and entry type.
 func WithEntryNameAndType(entryName, entryType string) Option {
 	return func(set *optionSet) {
 		set.EntryName = entryName
@@ -86,7 +88,7 @@ func WithEntryNameAndType(entryName, entryType string) Option {
 	}
 }
 
-// Provide basic auth credentials formed as user:pass.
+// WithBasicAuth provide basic auth credentials formed as user:pass.
 // We will encode credential with base64 since incoming credential from client would be encoded.
 func WithBasicAuth(realm string, cred ...string) Option {
 	return func(set *optionSet) {
@@ -98,7 +100,7 @@ func WithBasicAuth(realm string, cred ...string) Option {
 	}
 }
 
-// Provide API Key auth credentials.
+// WithApiKeyAuth provide API Key auth credentials.
 // An API key is a token that a client provides when making API calls.
 // With API key auth, you send a key-value pair to the API either in the request headers or query parameters.
 // Some APIs use API keys for authorization.
@@ -112,7 +114,7 @@ func WithApiKeyAuth(key ...string) Option {
 	}
 }
 
-// Provide paths prefix that will ignore.
+// WithIgnorePrefix provide paths prefix that will ignore.
 // Mainly used for swagger main page and RK TV entry.
 func WithIgnorePrefix(paths ...string) Option {
 	return func(set *optionSet) {
