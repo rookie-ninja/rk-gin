@@ -2,6 +2,7 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
 package rkgin
 
 import (
@@ -20,8 +21,11 @@ import (
 )
 
 const (
-	CommonServiceEntryType        = "GinCommonServiceEntry"
+	// CommonServiceEntryType type of entry
+	CommonServiceEntryType = "GinCommonServiceEntry"
+	// CommonServiceEntryNameDefault name of entry
 	CommonServiceEntryNameDefault = "GinCommonServiceDefault"
+	// CommonServiceEntryDescription description of entry
 	CommonServiceEntryDescription = "Internal RK entry which implements commonly used API with Gin framework."
 )
 
@@ -44,13 +48,13 @@ const (
 
 // @schemes http https
 
-// Bootstrap config of common service.
+// BootConfigCommonService Bootstrap config of common service.
 // 1: Enabled: Enable common service.
 type BootConfigCommonService struct {
 	Enabled bool `yaml:"enabled" json:"enabled"`
 }
 
-// RK common service which contains commonly used APIs
+// CommonServiceEntry RK common service which contains commonly used APIs
 // 1: Healthy Returns true if process is alive
 // 2: Gc Trigger gc()
 // 3: Info Returns entry basic information
@@ -72,31 +76,31 @@ type CommonServiceEntry struct {
 	ZapLoggerEntry   *rkentry.ZapLoggerEntry   `json:"-" yaml:"-"`
 }
 
-// Common service entry option.
+// CommonServiceEntryOption Common service entry option.
 type CommonServiceEntryOption func(*CommonServiceEntry)
 
-// Provide name.
+// WithNameCommonService Provide name.
 func WithNameCommonService(name string) CommonServiceEntryOption {
 	return func(entry *CommonServiceEntry) {
 		entry.EntryName = name
 	}
 }
 
-// Provide rkentry.EventLoggerEntry.
+// WithEventLoggerEntryCommonService Provide rkentry.EventLoggerEntry.
 func WithEventLoggerEntryCommonService(eventLoggerEntry *rkentry.EventLoggerEntry) CommonServiceEntryOption {
 	return func(entry *CommonServiceEntry) {
 		entry.EventLoggerEntry = eventLoggerEntry
 	}
 }
 
-// Provide rkentry.ZapLoggerEntry.
+// WithZapLoggerEntryCommonService Provide rkentry.ZapLoggerEntry.
 func WithZapLoggerEntryCommonService(zapLoggerEntry *rkentry.ZapLoggerEntry) CommonServiceEntryOption {
 	return func(entry *CommonServiceEntry) {
 		entry.ZapLoggerEntry = zapLoggerEntry
 	}
 }
 
-// Create new common service entry with options.
+// NewCommonServiceEntry Create new common service entry with options.
 func NewCommonServiceEntry(opts ...CommonServiceEntryOption) *CommonServiceEntry {
 	entry := &CommonServiceEntry{
 		EntryName:        CommonServiceEntryNameDefault,
@@ -168,28 +172,28 @@ func (entry *CommonServiceEntry) Interrupt(ctx context.Context) {
 	logger.Info("Interrupting CommonServiceEntry.", event.ListPayloads()...)
 }
 
-// Get name of entry.
+// GetName Get name of entry.
 func (entry *CommonServiceEntry) GetName() string {
 	return entry.EntryName
 }
 
-// Get entry type.
+// GetType Get entry type.
 func (entry *CommonServiceEntry) GetType() string {
 	return entry.EntryType
 }
 
-// Stringfy entry.
+// String Stringfy entry.
 func (entry *CommonServiceEntry) String() string {
 	bytes, _ := json.Marshal(entry)
 	return string(bytes)
 }
 
-// Get description of entry.
+// GetDescription Get description of entry.
 func (entry *CommonServiceEntry) GetDescription() string {
 	return entry.EntryDescription
 }
 
-// Marshal entry.
+// MarshalJSON Marshal entry.
 func (entry *CommonServiceEntry) MarshalJSON() ([]byte, error) {
 	m := map[string]interface{}{
 		"entryName":        entry.EntryName,
@@ -202,7 +206,7 @@ func (entry *CommonServiceEntry) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&m)
 }
 
-// Not supported.
+// UnmarshalJSON Not supported.
 func (entry *CommonServiceEntry) UnmarshalJSON([]byte) error {
 	return nil
 }
@@ -350,10 +354,6 @@ func constructSwUrl(entry *GinEntry, ctx *gin.Context) string {
 func doApis(ctx *gin.Context) *rkentry.ApisResponse {
 	res := &rkentry.ApisResponse{
 		Entries: make([]*rkentry.ApisResponse_Entry, 0),
-	}
-
-	if ctx == nil {
-		return res
 	}
 
 	ginEntry := getEntry(ctx)
@@ -516,10 +516,6 @@ func doEntries(ctx *gin.Context) *rkentry.EntriesResponse {
 		Entries: make(map[string][]*rkentry.EntriesResponse_Entry),
 	}
 
-	if ctx == nil {
-		return res
-	}
-
 	// Iterate all internal and external entries in GlobalAppCtx
 	doEntriesHelper(rkentry.GlobalAppCtx.ListEntries(), res)
 	doEntriesHelper(rkentry.GlobalAppCtx.ListEventLoggerEntriesRaw(), res)
@@ -562,10 +558,6 @@ func (entry *CommonServiceEntry) Entries(ctx *gin.Context) {
 func doCerts(ctx *gin.Context) *rkentry.CertsResponse {
 	res := &rkentry.CertsResponse{
 		Entries: make([]*rkentry.CertsResponse_Entry, 0),
-	}
-
-	if ctx == nil {
-		return res
 	}
 
 	entries := rkentry.GlobalAppCtx.ListCertEntries()
@@ -724,10 +716,6 @@ func (entry *CommonServiceEntry) Deps(ctx *gin.Context) {
 func doDeps(ctx *gin.Context) *rkentry.DepResponse {
 	res := &rkentry.DepResponse{}
 
-	if ctx == nil {
-		return res
-	}
-
 	appInfoEntry := rkentry.GlobalAppCtx.GetAppInfoEntry()
 	if appInfoEntry == nil {
 		return res
@@ -757,10 +745,6 @@ func (entry *CommonServiceEntry) License(ctx *gin.Context) {
 // Extract Gin entry from gin_zap middleware
 func doLicense(ctx *gin.Context) *rkentry.LicenseResponse {
 	res := &rkentry.LicenseResponse{}
-
-	if ctx == nil {
-		return res
-	}
 
 	appInfoEntry := rkentry.GlobalAppCtx.GetAppInfoEntry()
 	if appInfoEntry == nil {
@@ -792,10 +776,6 @@ func (entry *CommonServiceEntry) Readme(ctx *gin.Context) {
 func doReadme(ctx *gin.Context) *rkentry.ReadmeResponse {
 	res := &rkentry.ReadmeResponse{}
 
-	if ctx == nil {
-		return res
-	}
-
 	appInfoEntry := rkentry.GlobalAppCtx.GetAppInfoEntry()
 	if appInfoEntry == nil {
 		return res
@@ -825,10 +805,6 @@ func (entry *CommonServiceEntry) Git(ctx *gin.Context) {
 // Extract Gin entry from gin_zap middleware
 func doGit(ctx *gin.Context) *rkentry.GitResponse {
 	res := &rkentry.GitResponse{}
-
-	if ctx == nil {
-		return res
-	}
 
 	rkMetaEntry := rkentry.GlobalAppCtx.GetRkMetaEntry()
 	if rkMetaEntry == nil {

@@ -17,8 +17,10 @@ import (
 )
 
 const (
+	// RequestIdKey is the header key sent to client
 	RequestIdKey = "X-Request-Id"
-	TraceIdKey   = "X-Trace-Id"
+	// TraceIdKey is the header sent to client
+	TraceIdKey = "X-Trace-Id"
 )
 
 var (
@@ -26,22 +28,23 @@ var (
 	noopEvent          = rkquery.NewEventFactory().CreateEventNoop()
 )
 
-// Extract call-scoped incoming headers
+// GetIncomingHeaders extract call-scoped incoming headers
 func GetIncomingHeaders(ctx *gin.Context) http.Header {
 	return ctx.Request.Header
 }
 
-// Headers that would be sent to client.
+// AddHeaderToClient headers that would be sent to client.
 // Values would be merged.
 func AddHeaderToClient(ctx *gin.Context, key, value string) {
 	if ctx == nil || ctx.Writer == nil {
 		return
 	}
+
 	header := ctx.Writer.Header()
 	header.Add(key, value)
 }
 
-// Headers that would be sent to client.
+// SetHeaderToClient headers that would be sent to client.
 // Values would be overridden.
 func SetHeaderToClient(ctx *gin.Context, key, value string) {
 	if ctx == nil || ctx.Writer == nil {
@@ -51,7 +54,7 @@ func SetHeaderToClient(ctx *gin.Context, key, value string) {
 	header.Set(key, value)
 }
 
-// Extract takes the call-scoped EventData from middleware.
+// GetEvent extract takes the call-scoped EventData from middleware.
 func GetEvent(ctx *gin.Context) rkquery.Event {
 	if ctx == nil {
 		return noopEvent
@@ -64,7 +67,7 @@ func GetEvent(ctx *gin.Context) rkquery.Event {
 	return noopEvent
 }
 
-// Extract takes the call-scoped zap logger from middleware.
+// GetLogger extract takes the call-scoped zap logger from middleware.
 func GetLogger(ctx *gin.Context) *zap.Logger {
 	if ctx == nil {
 		return rklogger.NoopLogger
@@ -87,7 +90,7 @@ func GetLogger(ctx *gin.Context) *zap.Logger {
 	return rklogger.NoopLogger
 }
 
-// Extract request id from context.
+// GetRequestId extract request id from context.
 // If user enabled meta interceptor, then a random request Id would e assigned and set to context as value.
 // If user called AddHeaderToClient() with key of RequestIdKey, then a new request id would be updated.
 func GetRequestId(ctx *gin.Context) string {
@@ -98,7 +101,7 @@ func GetRequestId(ctx *gin.Context) string {
 	return ctx.Writer.Header().Get(RequestIdKey)
 }
 
-// Extract trace id from context.
+// GetTraceId extract trace id from context.
 func GetTraceId(ctx *gin.Context) string {
 	if ctx == nil || ctx.Writer == nil {
 		return ""
@@ -107,7 +110,7 @@ func GetTraceId(ctx *gin.Context) string {
 	return ctx.Writer.Header().Get(TraceIdKey)
 }
 
-// Extract entry name from context.
+// GetEntryName extract entry name from context.
 func GetEntryName(ctx *gin.Context) string {
 	if ctx == nil {
 		return ""
@@ -120,7 +123,7 @@ func GetEntryName(ctx *gin.Context) string {
 	return ""
 }
 
-// Extract the call-scoped span from context.
+// GetTraceSpan extract the call-scoped span from context.
 func GetTraceSpan(ctx *gin.Context) trace.Span {
 	_, span := noopTracerProvider.Tracer("rk-trace-noop").Start(ctx, "noop-span")
 
@@ -135,7 +138,7 @@ func GetTraceSpan(ctx *gin.Context) trace.Span {
 	return span
 }
 
-// Extract the call-scoped tracer from context.
+// GetTracer extract the call-scoped tracer from context.
 func GetTracer(ctx *gin.Context) trace.Tracer {
 	if ctx == nil {
 		return noopTracerProvider.Tracer("rk-trace-noop")
@@ -148,7 +151,7 @@ func GetTracer(ctx *gin.Context) trace.Tracer {
 	return noopTracerProvider.Tracer("rk-trace-noop")
 }
 
-// Extract the call-scoped tracer provider from context.
+// GetTracerProvider extract the call-scoped tracer provider from context.
 func GetTracerProvider(ctx *gin.Context) trace.TracerProvider {
 	if ctx == nil {
 		return noopTracerProvider
@@ -161,7 +164,7 @@ func GetTracerProvider(ctx *gin.Context) trace.TracerProvider {
 	return noopTracerProvider
 }
 
-// Extract takes the call-scoped propagator from middleware.
+// GetTracerPropagator extract takes the call-scoped propagator from middleware.
 func GetTracerPropagator(ctx *gin.Context) propagation.TextMapPropagator {
 	if ctx == nil {
 		return nil
@@ -174,6 +177,7 @@ func GetTracerPropagator(ctx *gin.Context) propagation.TextMapPropagator {
 	return nil
 }
 
+// InjectSpanToHttpRequest inject span to http request
 func InjectSpanToHttpRequest(ctx *gin.Context, req *http.Request) {
 	if req == nil {
 		return
@@ -183,7 +187,7 @@ func InjectSpanToHttpRequest(ctx *gin.Context, req *http.Request) {
 	GetTracerPropagator(ctx).Inject(newCtx, propagation.HeaderCarrier(req.Header))
 }
 
-// Start a new span
+// NewTraceSpan start a new span
 func NewTraceSpan(ctx *gin.Context, name string) trace.Span {
 	tracer := GetTracer(ctx)
 	newCtx, span := tracer.Start(ctx.Request.Context(), name)
@@ -194,7 +198,7 @@ func NewTraceSpan(ctx *gin.Context, name string) trace.Span {
 	return span
 }
 
-// End span
+// EndTraceSpan end span
 func EndTraceSpan(ctx *gin.Context, span trace.Span, success bool) {
 	if success {
 		span.SetStatus(otelcodes.Ok, otelcodes.Ok.String())
@@ -202,13 +206,3 @@ func EndTraceSpan(ctx *gin.Context, span trace.Span, success bool) {
 
 	span.End()
 }
-
-//// Inject tracer information into http.Header
-//func InjectTracerIntoHeader(ctx *gin.Context, header *http.Header) {
-//	propagator := GetTracerPropagator(ctx)
-//
-//	if propagator == nil {
-//		return
-//	}
-//	propagator.Inject(ctx.Request.Context(), propagation.HeaderCarrier(*header))
-//}

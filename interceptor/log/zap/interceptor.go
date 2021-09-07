@@ -2,6 +2,8 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
+// Package rkginlog is a middleware for gin framework for logging RPC.
 package rkginlog
 
 import (

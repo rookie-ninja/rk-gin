@@ -5,12 +5,51 @@
 package rkgin
 
 import (
+	"context"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rookie-ninja/rk-entry/entry"
 	"github.com/rookie-ninja/rk-prom"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
+
+func TestWithNameProm_HappyCase(t *testing.T) {
+	entry := NewPromEntry(WithNameProm("ut-name"))
+
+	assert.Equal(t, "ut-name", entry.EntryName)
+	assert.NotEmpty(t, entry.GetDescription())
+}
+
+func TestPromEntry_UnmarshalJSON(t *testing.T) {
+	entry := NewPromEntry()
+	assert.Nil(t, entry.UnmarshalJSON(nil))
+}
+
+func TestPromEntry_RegisterCollectors(t *testing.T) {
+	entry := NewPromEntry(WithPromRegistryProm(prometheus.NewRegistry()))
+
+	assert.Nil(t, entry.RegisterCollectors(prometheus.NewGoCollector()))
+	assert.NotNil(t, entry.RegisterCollectors(prometheus.NewGoCollector()))
+}
+
+func TestPromEntry_Bootstrap(t *testing.T) {
+	defer assertNotPanic(t)
+
+	entry := NewPromEntry()
+
+	ctx := context.WithValue(context.Background(), bootstrapEventIdKey, "ut")
+	entry.Bootstrap(ctx)
+}
+
+func TestPromEntry_Interrupt(t *testing.T) {
+	defer assertNotPanic(t)
+
+	entry := NewPromEntry()
+
+	ctx := context.WithValue(context.Background(), bootstrapEventIdKey, "ut")
+	entry.Bootstrap(ctx)
+	entry.Interrupt(ctx)
+}
 
 func TestWithPortProm_HappyCase(t *testing.T) {
 	entry := NewPromEntry(WithPortProm(1949))

@@ -2,6 +2,7 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
 package rkginlog
 
 import (
@@ -77,6 +78,7 @@ func newOptionSet(opts ...Option) *optionSet {
 	return set
 }
 
+// Make incoming paths to absolute path with current working directory attached as prefix
 func toAbsPath(p ...string) []string {
 	res := make([]string, 0)
 
@@ -91,7 +93,7 @@ func toAbsPath(p ...string) []string {
 	return res
 }
 
-// options which is used while initializing logging interceptor
+// Options which is used while initializing logging interceptor
 type optionSet struct {
 	EntryName             string
 	EntryType             string
@@ -107,7 +109,7 @@ type optionSet struct {
 
 type Option func(*optionSet)
 
-// Provide entry name and entry type.
+// WithEntryNameAndType provide entry name and entry type.
 func WithEntryNameAndType(entryName, entryType string) Option {
 	return func(set *optionSet) {
 		set.EntryName = entryName
@@ -115,7 +117,7 @@ func WithEntryNameAndType(entryName, entryType string) Option {
 	}
 }
 
-// Provide rkentry.ZapLoggerEntry.
+// WithZapLoggerEntry provide rkentry.ZapLoggerEntry.
 func WithZapLoggerEntry(zapLoggerEntry *rkentry.ZapLoggerEntry) Option {
 	return func(set *optionSet) {
 		if zapLoggerEntry != nil {
@@ -124,7 +126,7 @@ func WithZapLoggerEntry(zapLoggerEntry *rkentry.ZapLoggerEntry) Option {
 	}
 }
 
-// Provide rkentry.EventLoggerEntry.
+// WithEventLoggerEntry provide rkentry.EventLoggerEntry.
 func WithEventLoggerEntry(eventLoggerEntry *rkentry.EventLoggerEntry) Option {
 	return func(set *optionSet) {
 		if eventLoggerEntry != nil {
@@ -133,7 +135,7 @@ func WithEventLoggerEntry(eventLoggerEntry *rkentry.EventLoggerEntry) Option {
 	}
 }
 
-// Provide ZapLoggerEncodingType.
+// WithZapLoggerEncoding provide ZapLoggerEncodingType.
 // json or console is supported.
 func WithZapLoggerEncoding(ec int) Option {
 	return func(set *optionSet) {
@@ -141,7 +143,7 @@ func WithZapLoggerEncoding(ec int) Option {
 	}
 }
 
-// Provide ZapLogger Output Path.
+// WithZapLoggerOutputPaths provide ZapLogger Output Path.
 // Multiple output path could be supported including stdout.
 func WithZapLoggerOutputPaths(path ...string) Option {
 	return func(set *optionSet) {
@@ -149,7 +151,7 @@ func WithZapLoggerOutputPaths(path ...string) Option {
 	}
 }
 
-// Provide ZapLoggerEncodingType.
+// WithEventLoggerEncoding provide ZapLoggerEncodingType.
 // ENCODING_CONSOLE or ENCODING_JSON is supported.
 func WithEventLoggerEncoding(ec int) Option {
 	return func(set *optionSet) {
@@ -164,7 +166,7 @@ func WithEventLoggerEncoding(ec int) Option {
 	}
 }
 
-// Provide EventLogger Output Path.
+// WithEventLoggerOutputPaths provide EventLogger Output Path.
 // Multiple output path could be supported including stdout.
 func WithEventLoggerOutputPaths(path ...string) Option {
 	return func(set *optionSet) {

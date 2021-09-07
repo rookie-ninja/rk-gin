@@ -2,6 +2,8 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
+// Package rkgininter provides common utility functions for middleware of gin framework
 package rkgininter
 
 import (
@@ -13,29 +15,35 @@ import (
 )
 
 var (
-	Realm         = zap.String("realm", rkcommon.GetEnvValueOrDefault("REALM", "*"))
-	Region        = zap.String("region", rkcommon.GetEnvValueOrDefault("REGION", "*"))
-	AZ            = zap.String("az", rkcommon.GetEnvValueOrDefault("AZ", "*"))
-	Domain        = zap.String("domain", rkcommon.GetEnvValueOrDefault("DOMAIN", "*"))
-	LocalIp       = zap.String("localIp", rkcommon.GetLocalIP())
+	// Realm environment variable
+	Realm = zap.String("realm", rkcommon.GetEnvValueOrDefault("REALM", "*"))
+	// Region environment variable
+	Region = zap.String("region", rkcommon.GetEnvValueOrDefault("REGION", "*"))
+	// AZ environment variable
+	AZ = zap.String("az", rkcommon.GetEnvValueOrDefault("AZ", "*"))
+	// Domain environment variable
+	Domain = zap.String("domain", rkcommon.GetEnvValueOrDefault("DOMAIN", "*"))
+	// LocalIp read local IP from localhost
+	LocalIp = zap.String("localIp", rkcommon.GetLocalIP())
+	// LocalHostname read hostname from localhost
 	LocalHostname = zap.String("localHostname", rkcommon.GetLocalHostname())
 )
 
 const (
-	RpcEntryNameKey           = "ginEntryName"
-	RpcEntryNameValue         = "gin"
-	RpcEntryTypeValue         = "gin"
-	RpcEventKey               = "ginEvent"
-	RpcLoggerKey              = "ginLogger"
-	RpcTracerKey              = "ginTracer"
-	RpcSpanKey                = "ginSpan"
-	RpcTracerProviderKey      = "ginTracerProvider"
-	RpcPropagatorKey          = "ginPropagator"
-	RpcAuthorizationHeaderKey = "authorization"
-	RpcApiKeyHeaderKey        = "X-API-Key"
+	RpcEntryNameKey           = "ginEntryName"      // RpcEntryNameKey entry name key
+	RpcEntryNameValue         = "gin"               // RpcEntryNameValue entry name
+	RpcEntryTypeValue         = "gin"               // RpcEntryTypeValue entry type
+	RpcEventKey               = "ginEvent"          // RpcEventKey event key
+	RpcLoggerKey              = "ginLogger"         // RpcLoggerKey logger key
+	RpcTracerKey              = "ginTracer"         // RpcTracerKey tracer key
+	RpcSpanKey                = "ginSpan"           // RpcSpanKey span key
+	RpcTracerProviderKey      = "ginTracerProvider" // RpcTracerProviderKey trace provider key
+	RpcPropagatorKey          = "ginPropagator"     // RpcPropagatorKey propagator key
+	RpcAuthorizationHeaderKey = "authorization"     // RpcAuthorizationHeaderKey auth key
+	RpcApiKeyHeaderKey        = "X-API-Key"         // RpcApiKeyHeaderKey api auth key
 )
 
-// Get remote endpoint information set including IP, Port.
+// GetRemoteAddressSet returns remote endpoint information set including IP, Port.
 // We will do as best as we can to determine it.
 // If fails, then just return default ones.
 func GetRemoteAddressSet(ctx *gin.Context) (remoteIp, remotePort string) {
@@ -68,6 +76,7 @@ func GetRemoteAddressSet(ctx *gin.Context) (remoteIp, remotePort string) {
 	return remoteIp, remotePort
 }
 
+// ShouldLog determines whether should log the RPC
 func ShouldLog(ctx *gin.Context) bool {
 	if ctx == nil || ctx.Request == nil {
 		return false

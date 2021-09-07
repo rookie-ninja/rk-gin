@@ -2,6 +2,7 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
 package rkgin
 
 import (
@@ -25,6 +26,7 @@ import (
 )
 
 var (
+	// Templates is a map to store go template
 	Templates = map[string][]byte{}
 )
 
@@ -73,13 +75,13 @@ func readFileFromPkger(filePath string) []byte {
 	return []byte{}
 }
 
-// Bootstrap config of tv.
+// BootConfigTv Bootstrap config of tv.
 // 1: Enabled: Enable tv service.
 type BootConfigTv struct {
 	Enabled bool `yaml:"enabled" json:"enabled"`
 }
 
-// RK TV entry supports web UI for application & process information.
+// TvEntry RK TV entry supports web UI for application & process information.
 // 1: EntryName: Name of entry.
 // 2: EntryType: Type of entry.
 // 2: EntryDescription: Description of entry.
@@ -95,31 +97,31 @@ type TvEntry struct {
 	Template         *template.Template        `json:"-" yaml:"-"`
 }
 
-// TV entry option.
+// TvEntryOption TV entry option.
 type TvEntryOption func(entry *TvEntry)
 
-// Provide name.
+// WithNameTv Provide name.
 func WithNameTv(name string) TvEntryOption {
 	return func(entry *TvEntry) {
 		entry.EntryName = name
 	}
 }
 
-// Provide rkentry.EventLoggerEntry.
+// WithEventLoggerEntryTv Provide rkentry.EventLoggerEntry.
 func WithEventLoggerEntryTv(eventLoggerEntry *rkentry.EventLoggerEntry) TvEntryOption {
 	return func(entry *TvEntry) {
 		entry.EventLoggerEntry = eventLoggerEntry
 	}
 }
 
-// Provide rkentry.ZapLoggerEntry.
+// WithZapLoggerEntryTv Provide rkentry.ZapLoggerEntry.
 func WithZapLoggerEntryTv(zapLoggerEntry *rkentry.ZapLoggerEntry) TvEntryOption {
 	return func(entry *TvEntry) {
 		entry.ZapLoggerEntry = zapLoggerEntry
 	}
 }
 
-// Create new TV entry with options.
+// NewTvEntry Create new TV entry with options.
 func NewTvEntry(opts ...TvEntryOption) *TvEntry {
 	entry := &TvEntry{
 		EntryName:        TvEntryNameDefault,
@@ -140,7 +142,7 @@ func NewTvEntry(opts ...TvEntryOption) *TvEntry {
 	return entry
 }
 
-// Handler which returns js, css, images and html files for TV web UI.
+// AssetsFileHandler Handler which returns js, css, images and html files for TV web UI.
 func (entry *TvEntry) AssetsFileHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		w := ctx.Writer
@@ -228,28 +230,28 @@ func (entry *TvEntry) Interrupt(ctx context.Context) {
 	logger.Info("Interrupting TvEntry.", event.ListPayloads()...)
 }
 
-// Get name of entry.
+// GetName Get name of entry.
 func (entry *TvEntry) GetName() string {
 	return entry.EntryName
 }
 
-// Get type of entry.
+// GetType Get type of entry.
 func (entry *TvEntry) GetType() string {
 	return entry.EntryType
 }
 
-// Get description of entry.
+// GetDescription Get description of entry.
 func (entry *TvEntry) GetDescription() string {
 	return entry.EntryDescription
 }
 
-// Stringfy entry.
+// String Stringfy entry.
 func (entry *TvEntry) String() string {
 	bytesStr, _ := json.Marshal(entry)
 	return string(bytesStr)
 }
 
-// Marshal entry
+// MarshalJSON Marshal entry
 func (entry *TvEntry) MarshalJSON() ([]byte, error) {
 	m := map[string]interface{}{
 		"entryName":        entry.EntryName,
@@ -262,7 +264,7 @@ func (entry *TvEntry) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&m)
 }
 
-// Not supported.
+// UnmarshalJSON Not supported.
 func (entry *TvEntry) UnmarshalJSON([]byte) error {
 	return nil
 }

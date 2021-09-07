@@ -2,6 +2,7 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
 package rkgin
 
 import (
@@ -46,7 +47,7 @@ type swUrl struct {
 	Url  string `json:"url" yaml:"url"`
 }
 
-// Bootstrap config of swagger.
+// BootConfigSw Bootstrap config of swagger.
 // 1: Enabled: Enable swagger.
 // 2: Path: Swagger path accessible from restful API.
 // 3: JsonPath: The path of where swagger JSON file was located.
@@ -77,24 +78,24 @@ type SwEntry struct {
 	EnableCommonService bool                      `json:"enableCommonService" yaml:"enableCommonService"`
 }
 
-// Swagger entry option.
+// SwOption Swagger entry option.
 type SwOption func(*SwEntry)
 
-// Provide port.
+// WithPortSw Provide port.
 func WithPortSw(port uint64) SwOption {
 	return func(entry *SwEntry) {
 		entry.Port = port
 	}
 }
 
-// Provide name.
+// WithNameSw Provide name.
 func WithNameSw(name string) SwOption {
 	return func(entry *SwEntry) {
 		entry.EntryName = name
 	}
 }
 
-// Provide path.
+// WithPathSw Provide path.
 func WithPathSw(path string) SwOption {
 	return func(entry *SwEntry) {
 		if len(path) < 1 {
@@ -104,42 +105,42 @@ func WithPathSw(path string) SwOption {
 	}
 }
 
-// Provide JsonPath.
+// WithJsonPathSw Provide JsonPath.
 func WithJsonPathSw(path string) SwOption {
 	return func(entry *SwEntry) {
 		entry.JsonPath = path
 	}
 }
 
-// Provide headers.
+// WithHeadersSw Provide headers.
 func WithHeadersSw(headers map[string]string) SwOption {
 	return func(entry *SwEntry) {
 		entry.Headers = headers
 	}
 }
 
-// Provide rkentry.ZapLoggerEntry.
+// WithZapLoggerEntrySw Provide rkentry.ZapLoggerEntry.
 func WithZapLoggerEntrySw(zapLoggerEntry *rkentry.ZapLoggerEntry) SwOption {
 	return func(entry *SwEntry) {
 		entry.ZapLoggerEntry = zapLoggerEntry
 	}
 }
 
-// Provide rkentry.EventLoggerEntry.
+// WithEventLoggerEntrySw Provide rkentry.EventLoggerEntry.
 func WithEventLoggerEntrySw(eventLoggerEntry *rkentry.EventLoggerEntry) SwOption {
 	return func(entry *SwEntry) {
 		entry.EventLoggerEntry = eventLoggerEntry
 	}
 }
 
-// Provide enable common service option.
+// WithEnableCommonServiceSw Provide enable common service option.
 func WithEnableCommonServiceSw(enable bool) SwOption {
 	return func(entry *SwEntry) {
 		entry.EnableCommonService = enable
 	}
 }
 
-// Create new swagger entry with options.
+// NewSwEntry Create new swagger entry with options.
 func NewSwEntry(opts ...SwOption) *SwEntry {
 	entry := &SwEntry{
 		EntryName:        SwEntryNameDefault,
@@ -218,28 +219,28 @@ func (entry *SwEntry) Interrupt(ctx context.Context) {
 	logger.Info("Interrupting SwEntry.", event.ListPayloads()...)
 }
 
-// Get name of entry.
+// GetName Get name of entry.
 func (entry *SwEntry) GetName() string {
 	return entry.EntryName
 }
 
-// Get type of entry.
+// GetType Get type of entry.
 func (entry *SwEntry) GetType() string {
 	return entry.EntryType
 }
 
-// Get description of entry
+// GetDescription Get description of entry
 func (entry *SwEntry) GetDescription() string {
 	return entry.EntryDescription
 }
 
-// Stringfy swagger entry
+// String Stringfy swagger entry
 func (entry *SwEntry) String() string {
 	bytes, _ := json.Marshal(entry)
 	return string(bytes)
 }
 
-// Marshal entry
+// MarshalJSON Marshal entry
 func (entry *SwEntry) MarshalJSON() ([]byte, error) {
 	m := map[string]interface{}{
 		"entryName":           entry.EntryName,
@@ -257,7 +258,7 @@ func (entry *SwEntry) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&m)
 }
 
-// Unmarshal entry
+// UnmarshalJSON Unmarshal entry
 func (entry *SwEntry) UnmarshalJSON([]byte) error {
 	return nil
 }
@@ -273,7 +274,7 @@ func (entry *SwEntry) logBasicInfo(event rkquery.Event) {
 	)
 }
 
-// Handler for swagger assets files.
+// AssetsFileHandler Handler for swagger assets files.
 func (entry *SwEntry) AssetsFileHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		w := ctx.Writer
@@ -289,7 +290,7 @@ func (entry *SwEntry) AssetsFileHandler() gin.HandlerFunc {
 	}
 }
 
-// handler for swagger config files.
+// ConfigFileHandler handler for swagger config files.
 func (entry *SwEntry) ConfigFileHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		w := ctx.Writer
@@ -381,7 +382,7 @@ func (entry *SwEntry) listFilesWithSuffix(urlConfig *swUrlConfig) {
 			zap.String("path", jsonPath),
 			zap.String("suffix", suffix),
 			zap.String("error", err.Error()))
-		rkcommon.ShutdownWithError(err)
+		return
 	}
 
 	for i := range files {

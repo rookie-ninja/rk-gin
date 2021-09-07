@@ -2,6 +2,7 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
 package rkginpanic
 
 import (
@@ -29,12 +30,13 @@ func newOptionSet(opts ...Option) *optionSet {
 	return set
 }
 
-// options which is used while initializing panic interceptor
+// Options which is used while initializing panic interceptor
 type optionSet struct {
 	EntryName string
 	EntryType string
 }
 
+// Option is for middleware while creating
 type Option func(*optionSet)
 
 // Provide entry name and entry type.

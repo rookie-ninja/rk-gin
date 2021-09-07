@@ -4,6 +4,7 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
 package rkgin
 
 import (
@@ -36,6 +37,10 @@ gin:
       enabled: true
     tv:
       enabled: true
+    prom:
+      enabled: true
+      pusher:
+        enabled: false
     interceptors:
       loggingZap:
         enabled: true
@@ -45,6 +50,10 @@ gin:
         enabled: true
         basic:
           - "user:pass"
+      meta:
+        enabled: true
+      tracingTelemetry:
+        enabled: true
   - name: greeter2
     port: 2008
     sw:
@@ -275,7 +284,8 @@ func TestRegisterGinEntriesWithConfig_HappyCase(t *testing.T) {
 	assert.NotNil(t, greeter.CommonServiceEntry)
 	assert.NotNil(t, greeter.TvEntry)
 	// logging, metrics, auth and panic interceptor should be included
-	assert.Len(t, greeter.Interceptors, 4)
+	assert.True(t, len(greeter.Interceptors) > 0)
+	greeter.Bootstrap(context.TODO())
 
 	greeter2 := entries["greeter2"].(*GinEntry)
 	assert.NotNil(t, greeter2)

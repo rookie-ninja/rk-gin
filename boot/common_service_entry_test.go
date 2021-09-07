@@ -8,7 +8,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus"
+	rkcommon "github.com/rookie-ninja/rk-common/common"
 	rkentry "github.com/rookie-ninja/rk-entry/entry"
+	rkginmetrics "github.com/rookie-ninja/rk-gin/interceptor/metrics/prom"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	httptest "github.com/stretchr/testify/http"
@@ -362,6 +365,8 @@ func TestCommonServiceEntry_APIs_HappyCase(t *testing.T) {
 		WithNameGin("unit-test-gin"))
 	rkentry.GlobalAppCtx.AddEntry(ginEntry)
 
+	ginEntry.Router.GET("ut-test")
+
 	defer func() {
 		if r := recover(); r != nil {
 			// expect panic to be called with non nil error
@@ -414,6 +419,36 @@ func TestCommonServiceEntry_Sys_HappyCase(t *testing.T) {
 	assert.NotEmpty(t, writer.Output)
 }
 
+func TestCommonServiceEntry_Req_HappyCase(t *testing.T) {
+	entry := NewCommonServiceEntry()
+
+	writer := &httptest.TestResponseWriter{}
+	ctx, _ := gin.CreateTestContext(writer)
+
+	ginEntry := RegisterGinEntry(
+		WithCommonServiceEntryGin(entry),
+		WithNameGin("unit-test-gin"))
+	rkentry.GlobalAppCtx.AddEntry(ginEntry)
+
+	ginEntry.Router.GET("ut-test")
+	ginEntry.AddInterceptor(rkginmetrics.Interceptor(
+		rkginmetrics.WithRegisterer(prometheus.NewRegistry())))
+
+	defer func() {
+		if r := recover(); r != nil {
+			// expect panic to be called with non nil error
+			assert.True(t, false)
+		} else {
+			// this should never be called in case of a bug
+			assert.True(t, true)
+		}
+	}()
+
+	entry.Req(ctx)
+	assert.Equal(t, 200, writer.StatusCode)
+	assert.NotEmpty(t, writer.Output)
+}
+
 func TestCommonServiceEntry_Req_WithNilContext(t *testing.T) {
 	entry := NewCommonServiceEntry()
 
@@ -428,6 +463,317 @@ func TestCommonServiceEntry_Req_WithNilContext(t *testing.T) {
 	}()
 
 	entry.Req(nil)
+}
+
+func TestCommonServiceEntry_Entries_WithNilContext(t *testing.T) {
+	entry := NewCommonServiceEntry()
+
+	defer func() {
+		if r := recover(); r != nil {
+			// expect panic to be called with non nil error
+			assert.True(t, false)
+		} else {
+			// this should never be called in case of a bug
+			assert.True(t, true)
+		}
+	}()
+
+	entry.Entries(nil)
+}
+
+func TestCommonServiceEntry_Entries_HappyCase(t *testing.T) {
+	entry := NewCommonServiceEntry()
+
+	writer := &httptest.TestResponseWriter{}
+	ctx, _ := gin.CreateTestContext(writer)
+
+	ginEntry := RegisterGinEntry(
+		WithCommonServiceEntryGin(entry),
+		WithNameGin("unit-test-gin"))
+	rkentry.GlobalAppCtx.AddEntry(ginEntry)
+
+	defer func() {
+		if r := recover(); r != nil {
+			// expect panic to be called with non nil error
+			assert.True(t, false)
+		} else {
+			// this should never be called in case of a bug
+			assert.True(t, true)
+		}
+	}()
+
+	entry.Entries(ctx)
+	assert.Equal(t, 200, writer.StatusCode)
+	assert.NotEmpty(t, writer.Output)
+}
+
+func TestCommonServiceEntry_Certs_WithNilContext(t *testing.T) {
+	entry := NewCommonServiceEntry()
+
+	defer func() {
+		if r := recover(); r != nil {
+			// expect panic to be called with non nil error
+			assert.True(t, false)
+		} else {
+			// this should never be called in case of a bug
+			assert.True(t, true)
+		}
+	}()
+
+	entry.Certs(nil)
+}
+
+func TestCommonServiceEntry_Certs_HappyCase(t *testing.T) {
+	entry := NewCommonServiceEntry()
+
+	writer := &httptest.TestResponseWriter{}
+	ctx, _ := gin.CreateTestContext(writer)
+
+	ginEntry := RegisterGinEntry(
+		WithCommonServiceEntryGin(entry),
+		WithNameGin("unit-test-gin"))
+	rkentry.GlobalAppCtx.AddEntry(ginEntry)
+	rkentry.RegisterCertEntry(rkentry.WithNameCert("ut-cert"))
+	certEntry := rkentry.GlobalAppCtx.GetCertEntry("ut-cert")
+	certEntry.Retriever = &rkentry.CredRetrieverLocalFs{}
+	certEntry.Store = &rkentry.CertStore{}
+
+	defer func() {
+		if r := recover(); r != nil {
+			// expect panic to be called with non nil error
+			assert.True(t, false)
+		} else {
+			// this should never be called in case of a bug
+			assert.True(t, true)
+		}
+	}()
+
+	entry.Certs(ctx)
+	assert.Equal(t, 200, writer.StatusCode)
+	assert.NotEmpty(t, writer.Output)
+}
+
+func TestCommonServiceEntry_Logs_WithNilContext(t *testing.T) {
+	entry := NewCommonServiceEntry()
+
+	defer func() {
+		if r := recover(); r != nil {
+			// expect panic to be called with non nil error
+			assert.True(t, false)
+		} else {
+			// this should never be called in case of a bug
+			assert.True(t, true)
+		}
+	}()
+
+	entry.Logs(nil)
+}
+
+func TestCommonServiceEntry_Logs_HappyCase(t *testing.T) {
+	entry := NewCommonServiceEntry()
+
+	writer := &httptest.TestResponseWriter{}
+	ctx, _ := gin.CreateTestContext(writer)
+
+	ginEntry := RegisterGinEntry(
+		WithCommonServiceEntryGin(entry),
+		WithNameGin("unit-test-gin"))
+	rkentry.GlobalAppCtx.AddEntry(ginEntry)
+
+	defer func() {
+		if r := recover(); r != nil {
+			// expect panic to be called with non nil error
+			assert.True(t, false)
+		} else {
+			// this should never be called in case of a bug
+			assert.True(t, true)
+		}
+	}()
+
+	entry.Logs(ctx)
+	assert.Equal(t, 200, writer.StatusCode)
+	assert.NotEmpty(t, writer.Output)
+}
+
+func TestCommonServiceEntry_Deps_WithNilContext(t *testing.T) {
+	entry := NewCommonServiceEntry()
+
+	defer func() {
+		if r := recover(); r != nil {
+			// expect panic to be called with non nil error
+			assert.True(t, false)
+		} else {
+			// this should never be called in case of a bug
+			assert.True(t, true)
+		}
+	}()
+
+	entry.Deps(nil)
+}
+
+func TestCommonServiceEntry_Deps_HappyCase(t *testing.T) {
+	entry := NewCommonServiceEntry()
+
+	writer := &httptest.TestResponseWriter{}
+	ctx, _ := gin.CreateTestContext(writer)
+
+	ginEntry := RegisterGinEntry(
+		WithCommonServiceEntryGin(entry),
+		WithNameGin("unit-test-gin"))
+	rkentry.GlobalAppCtx.AddEntry(ginEntry)
+
+	defer func() {
+		if r := recover(); r != nil {
+			// expect panic to be called with non nil error
+			assert.True(t, false)
+		} else {
+			// this should never be called in case of a bug
+			assert.True(t, true)
+		}
+	}()
+
+	entry.Deps(ctx)
+	assert.Equal(t, 200, writer.StatusCode)
+	assert.NotEmpty(t, writer.Output)
+}
+
+func TestCommonServiceEntry_License_WithNilContext(t *testing.T) {
+	entry := NewCommonServiceEntry()
+
+	defer func() {
+		if r := recover(); r != nil {
+			// expect panic to be called with non nil error
+			assert.True(t, false)
+		} else {
+			// this should never be called in case of a bug
+			assert.True(t, true)
+		}
+	}()
+
+	entry.License(nil)
+}
+
+func TestCommonServiceEntry_License_HappyCase(t *testing.T) {
+	entry := NewCommonServiceEntry()
+
+	writer := &httptest.TestResponseWriter{}
+	ctx, _ := gin.CreateTestContext(writer)
+
+	ginEntry := RegisterGinEntry(
+		WithCommonServiceEntryGin(entry),
+		WithNameGin("unit-test-gin"))
+	rkentry.GlobalAppCtx.AddEntry(ginEntry)
+
+	defer func() {
+		if r := recover(); r != nil {
+			// expect panic to be called with non nil error
+			assert.True(t, false)
+		} else {
+			// this should never be called in case of a bug
+			assert.True(t, true)
+		}
+	}()
+
+	entry.License(ctx)
+	assert.Equal(t, 200, writer.StatusCode)
+	assert.NotEmpty(t, writer.Output)
+}
+
+func TestCommonServiceEntry_Readme_WithNilContext(t *testing.T) {
+	entry := NewCommonServiceEntry()
+
+	defer func() {
+		if r := recover(); r != nil {
+			// expect panic to be called with non nil error
+			assert.True(t, false)
+		} else {
+			// this should never be called in case of a bug
+			assert.True(t, true)
+		}
+	}()
+
+	entry.Readme(nil)
+}
+
+func TestCommonServiceEntry_Readme_HappyCase(t *testing.T) {
+	entry := NewCommonServiceEntry()
+
+	writer := &httptest.TestResponseWriter{}
+	ctx, _ := gin.CreateTestContext(writer)
+
+	ginEntry := RegisterGinEntry(
+		WithCommonServiceEntryGin(entry),
+		WithNameGin("unit-test-gin"))
+	rkentry.GlobalAppCtx.AddEntry(ginEntry)
+
+	defer func() {
+		if r := recover(); r != nil {
+			// expect panic to be called with non nil error
+			assert.True(t, false)
+		} else {
+			// this should never be called in case of a bug
+			assert.True(t, true)
+		}
+	}()
+
+	entry.Readme(ctx)
+	assert.Equal(t, 200, writer.StatusCode)
+	assert.NotEmpty(t, writer.Output)
+}
+
+func TestCommonServiceEntry_Git_WithNilContext(t *testing.T) {
+	entry := NewCommonServiceEntry()
+
+	defer func() {
+		if r := recover(); r != nil {
+			// expect panic to be called with non nil error
+			assert.True(t, false)
+		} else {
+			// this should never be called in case of a bug
+			assert.True(t, true)
+		}
+	}()
+
+	entry.Git(nil)
+}
+
+func TestCommonServiceEntry_Git_HappyCase(t *testing.T) {
+	entry := NewCommonServiceEntry()
+
+	writer := &httptest.TestResponseWriter{}
+	ctx, _ := gin.CreateTestContext(writer)
+
+	ginEntry := RegisterGinEntry(
+		WithCommonServiceEntryGin(entry),
+		WithNameGin("unit-test-gin"))
+	rkentry.GlobalAppCtx.AddEntry(ginEntry)
+	rkentry.GlobalAppCtx.SetRkMetaEntry(&rkentry.RkMetaEntry{
+		RkMeta: &rkcommon.RkMeta{
+			Git: &rkcommon.Git{
+				Commit: &rkcommon.Commit{
+					Committer: &rkcommon.Committer{},
+				},
+			},
+		},
+	})
+
+	defer func() {
+		if r := recover(); r != nil {
+			// expect panic to be called with non nil error
+			assert.True(t, false)
+		} else {
+			// this should never be called in case of a bug
+			assert.True(t, true)
+		}
+	}()
+
+	entry.Git(ctx)
+	assert.Equal(t, 200, writer.StatusCode)
+	assert.NotEmpty(t, writer.Output)
+}
+
+func TestGetEntry_WithNilContext(t *testing.T) {
+	assert.Nil(t, getEntry(nil))
 }
 
 func TestConstructSwUrl_WithNilEntry(t *testing.T) {
