@@ -8,7 +8,7 @@ package rkgin
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	rkentry "github.com/rookie-ninja/rk-entry/entry"
+	"github.com/rookie-ninja/rk-entry/entry"
 	"github.com/stretchr/testify/assert"
 	httptest "github.com/stretchr/testify/http"
 	"net/http"
