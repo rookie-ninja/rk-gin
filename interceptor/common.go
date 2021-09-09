@@ -30,17 +30,28 @@ var (
 )
 
 const (
-	RpcEntryNameKey           = "ginEntryName"      // RpcEntryNameKey entry name key
-	RpcEntryNameValue         = "gin"               // RpcEntryNameValue entry name
-	RpcEntryTypeValue         = "gin"               // RpcEntryTypeValue entry type
-	RpcEventKey               = "ginEvent"          // RpcEventKey event key
-	RpcLoggerKey              = "ginLogger"         // RpcLoggerKey logger key
-	RpcTracerKey              = "ginTracer"         // RpcTracerKey tracer key
-	RpcSpanKey                = "ginSpan"           // RpcSpanKey span key
-	RpcTracerProviderKey      = "ginTracerProvider" // RpcTracerProviderKey trace provider key
-	RpcPropagatorKey          = "ginPropagator"     // RpcPropagatorKey propagator key
-	RpcAuthorizationHeaderKey = "authorization"     // RpcAuthorizationHeaderKey auth key
-	RpcApiKeyHeaderKey        = "X-API-Key"         // RpcApiKeyHeaderKey api auth key
+	// RpcEntryNameKey entry name key
+	RpcEntryNameKey = "ginEntryName"
+	// RpcEntryNameValue entry name
+	RpcEntryNameValue = "gin"
+	// RpcEntryTypeValue entry type
+	RpcEntryTypeValue = "gin"
+	// RpcEventKey event key
+	RpcEventKey = "ginEvent"
+	// RpcLoggerKey logger key
+	RpcLoggerKey = "ginLogger"
+	// RpcTracerKey tracer key
+	RpcTracerKey = "ginTracer"
+	// RpcSpanKey span key
+	RpcSpanKey = "ginSpan"
+	// RpcTracerProviderKey trace provider key
+	RpcTracerProviderKey = "ginTracerProvider"
+	// RpcPropagatorKey propagator key
+	RpcPropagatorKey = "ginPropagator"
+	// RpcAuthorizationHeaderKey auth key
+	RpcAuthorizationHeaderKey = "authorization"
+	// RpcApiKeyHeaderKey api auth key
+	RpcApiKeyHeaderKey = "X-API-Key"
 )
 
 // GetRemoteAddressSet returns remote endpoint information set including IP, Port.

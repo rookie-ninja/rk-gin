@@ -226,6 +226,7 @@ func doHealthy(*gin.Context) *rkentry.HealthyResponse {
 	}
 }
 
+// Healthy handler
 // @Summary Get application healthy status
 // @Id 1
 // @version 1.0
@@ -254,6 +255,7 @@ func doGc(*gin.Context) *rkentry.GcResponse {
 	}
 }
 
+// Gc handler
 // @Summary Trigger Gc
 // @Id 2
 // @version 1.0
@@ -278,6 +280,7 @@ func doInfo(*gin.Context) *rkentry.ProcessInfo {
 	return rkentry.NewProcessInfo()
 }
 
+// Info handler
 // @Summary Get application and process info
 // @Id 3
 // @version 1.0
@@ -315,6 +318,7 @@ func doConfigs(*gin.Context) *rkentry.ConfigsResponse {
 	return res
 }
 
+// Configs handler
 // @Summary List ConfigEntry
 // @Id 4
 // @version 1.0
@@ -379,6 +383,7 @@ func doApis(ctx *gin.Context) *rkentry.ApisResponse {
 	return res
 }
 
+// Apis handler
 // @Summary List API
 // @Id 5
 // @version 1.0
@@ -408,6 +413,7 @@ func doSys(*gin.Context) *rkentry.SysResponse {
 	}
 }
 
+// Sys handler
 // @Summary Get OS Stat
 // @Id 6
 // @version 1.0
@@ -474,6 +480,7 @@ func doReq(ctx *gin.Context) *rkentry.ReqResponse {
 	}
 }
 
+// Req handler
 // @Summary List prometheus metrics of requests
 // @Id 7
 // @version 1.0
@@ -538,6 +545,7 @@ func doEntries(ctx *gin.Context) *rkentry.EntriesResponse {
 	return res
 }
 
+// Entries handler
 // @Summary List all Entry
 // @Id 8
 // @version 1.0
@@ -593,6 +601,7 @@ func doCerts(ctx *gin.Context) *rkentry.CertsResponse {
 	return res
 }
 
+// Certs handler
 // @Summary List CertEntry
 // @Id 9
 // @version 1.0
@@ -665,6 +674,7 @@ func doLogs(ctx *gin.Context) *rkentry.LogsResponse {
 	return res
 }
 
+// Logs handler
 // @Summary List logger related entries
 // @Id 10
 // @version 1.0
@@ -696,6 +706,7 @@ func getEntry(ctx *gin.Context) *GinEntry {
 	return entry
 }
 
+// Deps handler
 // @Summary List dependencies related application
 // @Id 11
 // @version 1.0
@@ -726,6 +737,7 @@ func doDeps(ctx *gin.Context) *rkentry.DepResponse {
 	return res
 }
 
+// License handler
 // @Summary Get license related application
 // @Id 12
 // @version 1.0
@@ -756,6 +768,7 @@ func doLicense(ctx *gin.Context) *rkentry.LicenseResponse {
 	return res
 }
 
+// Readme handler
 // @Summary Get README file.
 // @Id 13
 // @version 1.0
@@ -786,6 +799,7 @@ func doReadme(ctx *gin.Context) *rkentry.ReadmeResponse {
 	return res
 }
 
+// Git handler
 // @Summary Get Git information.
 // @Id 14
 // @version 1.0

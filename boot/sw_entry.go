@@ -31,8 +31,11 @@ var (
 )
 
 const (
-	SwEntryType        = "GinSwEntry"
+	// SwEntryType default entry type
+	SwEntryType = "GinSwEntry"
+	// SwEntryNameDefault default entry name
 	SwEntryNameDefault = "GinSwDefault"
+	// SwEntryDescription default entry description
 	SwEntryDescription = "Internal RK entry which implements swagger with Gin framework."
 )
 

@@ -85,12 +85,12 @@ func startGreeterServer(interceptors ...gin.HandlerFunc) *http.Server {
 	return server
 }
 
-// Response.
+// GreeterResponse Response of Greeter.
 type GreeterResponse struct {
 	Message string
 }
 
-// Handler.
+// Greeter Handler.
 func Greeter(ctx *gin.Context) {
 	rkginctx.GetLogger(ctx).Info("Received request from client.")
 

@@ -56,12 +56,12 @@ func startGreeterServer(interceptors ...gin.HandlerFunc) *http.Server {
 	return server
 }
 
-// Response.
+// GreeterResponse Response of Greeter.
 type GreeterResponse struct {
 	Message string
 }
 
-// Handler.
+// Greeter Handler.
 func Greeter(ctx *gin.Context) {
 	// All bellow panic case should return same error response.
 	// {"error":{"code":500,"status":"Internal Server Error","message":"Panic manually!","details":[]}}

@@ -161,7 +161,7 @@ type optionSet struct {
 // Option is used while creating middleware as param
 type Option func(*optionSet)
 
-// Provide sdktrace.SpanExporter.
+// WithExporter Provide sdktrace.SpanExporter.
 func WithExporter(exporter sdktrace.SpanExporter) Option {
 	return func(opt *optionSet) {
 		if exporter != nil {
