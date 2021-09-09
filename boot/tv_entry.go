@@ -31,8 +31,11 @@ var (
 )
 
 const (
-	TvEntryType        = "GinTvEntry"
+	// TvEntryType default entry type
+	TvEntryType = "GinTvEntry"
+	// TvEntryNameDefault default entry name
 	TvEntryNameDefault = "GinTvDefault"
+	// TvEntryDescription default entry description
 	TvEntryDescription = "Internal RK entry which implements tv web with Gin framework."
 )
 
@@ -71,8 +74,6 @@ func readFileFromPkger(filePath string) []byte {
 			return bytes
 		}
 	}
-
-	return []byte{}
 }
 
 // BootConfigTv Bootstrap config of tv.
@@ -277,6 +278,7 @@ func (entry *TvEntry) logBasicInfo(event rkquery.Event) {
 	)
 }
 
+// TV handler
 // @Summary Get HTML page of /tv
 // @Id 15
 // @version 1.0

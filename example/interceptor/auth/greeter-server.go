@@ -59,12 +59,12 @@ func startGreeterServer(interceptors ...gin.HandlerFunc) *http.Server {
 	return server
 }
 
-// Response.
+// GreeterResponse Response of Greeter.
 type GreeterResponse struct {
 	Message string
 }
 
-// Handler.
+// Greeter Handler.
 func Greeter(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, &GreeterResponse{
 		Message: fmt.Sprintf("Hello %s!", ctx.Query("name")),

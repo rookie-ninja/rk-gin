@@ -41,8 +41,11 @@ const (
 	GinEntryType = "GinEntry"
 	// GinEntryDescription description of entry
 	GinEntryDescription = "Internal RK entry which helps to bootstrap with Gin framework."
-	bootstrapEventIdKey = "bootstrapEventId"
 )
+
+var bootstrapEventIdKey = eventIdKey{}
+
+type eventIdKey struct{}
 
 // This must be declared in order to register registration function into rk context
 // otherwise, rk-boot won't able to bootstrap gin entry automatically from boot config file

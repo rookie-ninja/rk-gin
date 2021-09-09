@@ -193,6 +193,7 @@ type optionSet struct {
 	MetricsSet *rkprom.MetricsSet
 }
 
+// Option options provided to Interceptor or optionsSet while creating
 type Option func(*optionSet)
 
 // WithEntryNameAndType provide entry name and entry type.

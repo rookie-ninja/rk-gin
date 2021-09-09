@@ -23,8 +23,11 @@ var (
 )
 
 const (
-	PromEntryType        = "GinPromEntry"
+	// PromEntryType default entry type
+	PromEntryType = "GinPromEntry"
+	// PromEntryNameDefault default entry name
 	PromEntryNameDefault = "GinPromDefault"
+	// PromEntryDescription default entry description
 	PromEntryDescription = "Internal RK entry which implements prometheus client with Gin framework."
 )
 

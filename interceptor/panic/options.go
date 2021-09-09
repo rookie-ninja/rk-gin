@@ -39,7 +39,7 @@ type optionSet struct {
 // Option is for middleware while creating
 type Option func(*optionSet)
 
-// Provide entry name and entry type.
+// WithEntryNameAndType Provide entry name and entry type.
 func WithEntryNameAndType(entryName, entryType string) Option {
 	return func(opt *optionSet) {
 		opt.EntryName = entryName

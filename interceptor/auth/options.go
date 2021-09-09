@@ -78,6 +78,7 @@ func (set *optionSet) ShouldAuth(ctx *gin.Context) bool {
 	return true
 }
 
+// Option options provided to Interceptor or optionsSet while creating
 type Option func(*optionSet)
 
 // WithEntryNameAndType provide entry name and entry type.

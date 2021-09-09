@@ -18,8 +18,10 @@ import (
 )
 
 const (
+	// ENCODING_CONSOLE console encoding style of logging
 	ENCODING_CONSOLE int = 0
-	ENCODING_JSON    int = 1
+	// ENCODING_JSON console encoding style of logging
+	ENCODING_JSON int = 1
 )
 
 // Interceptor returns a gin.HandlerFunc (middleware) that logs requests using uber-go/zap.
