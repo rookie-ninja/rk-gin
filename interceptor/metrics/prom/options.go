@@ -35,9 +35,12 @@ var (
 )
 
 const (
-	ElapsedNano = "elapsedNano" // ElapsedNano records RPC duration
-	Errors      = "errors"      // Errors records RPC error
-	ResCode     = "resCode"     // ResCode records response code
+	// ElapsedNano records RPC duration
+	ElapsedNano = "elapsedNano"
+	// Errors records RPC error
+	Errors      = "errors"
+	// ResCode records response code
+	ResCode     = "resCode"
 )
 
 // Register bellow metrics into metrics set.

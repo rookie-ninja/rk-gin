@@ -12,6 +12,7 @@ import (
 	"github.com/markbates/pkger"
 	"github.com/rookie-ninja/rk-common/common"
 	"github.com/rookie-ninja/rk-entry/entry"
+	// Importing in order to make swag.Read() to be validated
 	_ "github.com/rookie-ninja/rk-gin/boot/assets/sw/config"
 	"github.com/rookie-ninja/rk-query"
 	"github.com/swaggo/swag"

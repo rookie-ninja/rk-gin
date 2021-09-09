@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/markbates/pkger"
+	"github.com/markbates/pkger/pkging"
 	"github.com/rookie-ninja/rk-common/common"
 	"github.com/rookie-ninja/rk-entry/entry"
 	"github.com/rookie-ninja/rk-gin/interceptor/context"
@@ -65,15 +66,19 @@ func init() {
 
 // Read go template files with Pkger.
 func readFileFromPkger(filePath string) []byte {
-	if file, err := pkger.Open(path.Join("github.com/rookie-ninja/rk-gin:/boot", filePath)); err != nil {
+	var file pkging.File
+	var err error
+
+	if file, err = pkger.Open(path.Join("github.com/rookie-ninja/rk-gin:/boot", filePath)); err != nil {
 		return []byte{}
-	} else {
-		if bytes, err := ioutil.ReadAll(file); err != nil {
-			return []byte{}
-		} else {
-			return bytes
-		}
 	}
+
+	var bytes []byte
+	if bytes, err = ioutil.ReadAll(file); err != nil {
+		return []byte{}
+	}
+
+	return bytes
 }
 
 // BootConfigTv Bootstrap config of tv.
