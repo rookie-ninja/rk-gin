@@ -38,9 +38,9 @@ const (
 	// ElapsedNano records RPC duration
 	ElapsedNano = "elapsedNano"
 	// Errors records RPC error
-	Errors      = "errors"
+	Errors = "errors"
 	// ResCode records response code
-	ResCode     = "resCode"
+	ResCode = "resCode"
 )
 
 // Register bellow metrics into metrics set.
