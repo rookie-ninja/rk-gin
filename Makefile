@@ -1,37 +1,45 @@
 .PHONY: all
-all: gomod test lint readme fmt
+all: gomod test lint doctoc fmt
 
 .PHONY: lint
 lint:
-	@echo "running golangci-lint..."
+	@echo "[golangci-lint] Running golangci-lint..."
 	@golangci-lint run 2>&1
+	@echo "------------------------------------[Done]"
 
 .PHONY: test
 test:
-	@echo "running go test..."
+	@echo "[test] Running go test..."
 	@go test ./... -coverprofile coverage.txt 2>&1
+	@go tool cover -html=coverage.txt
+	@echo "------------------------------------[Done]"
 
 .PHONY: fmt
 fmt:
-	@echo "format go project..."
+	@echo "[fmt] Formatting go project..."
 	@gofmt -s -w . 2>&1
+	@echo "------------------------------------[Done]"
 
-.PHONY: readme
-readme:
-	@echo "running doctoc..."
+.PHONY: doctoc
+doctoc:
+	@echo "[doctoc] Running doctoc..."
 	@doctoc . 2>&1
+	@echo "------------------------------------[Done]"
 
 .PHONY: swag
 swag:
-	@echo "running swag..."
+	@echo "[swag] Running swag..."
 	@swag init --generalInfo boot/common_service_entry.go --output boot/assets/sw/config --parseDependency 2 --propertyStrategy camelcase
+	@echo "------------------------------------[Done]"
 
 .PHONY: pkger
 pkger:
-	@echo "running pkger..."
+	@echo "[pkger] Running pkger..."
 	@pkger -o boot
+	@echo "------------------------------------[Done]"
 
 .PHONY: gomod
 gomod:
-	@echo "running go mod tidy..."
+	@echo "[gomod] Running go mod tidy..."
 	@go mod tidy
+	@echo "------------------------------------[Done]"
