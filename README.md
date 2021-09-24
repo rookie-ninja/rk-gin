@@ -77,6 +77,7 @@ Please refer example at [example/boot/simple](example/boot/simple).
 gin:
   - name: greeter                     # Required
     port: 8080                        # Required
+    enabled: true                     # Required
     tv:
       enabled: true                   # Optional, default: false
     prom:
@@ -226,6 +227,7 @@ User can start multiple gin servers at the same time. Please make sure use diffe
 | ------ | ------ | ------ | ------ |
 | gin.name | The name of gin server | string | N/A |
 | gin.port | The port of gin server | integer | nil, server won't start |
+| gin.enabled | Enable Gin entry or not | bool | false |
 | gin.description | Description of gin entry. | string | "" |
 | gin.cert.ref | Reference of cert entry declared in [cert entry](https://github.com/rookie-ninja/rk-entry#certentry) | string | "" |
 | gin.logger.zapLogger.ref | Reference of zapLoggerEntry declared in [zapLoggerEntry](https://github.com/rookie-ninja/rk-entry#zaploggerentry) | string | "" |
