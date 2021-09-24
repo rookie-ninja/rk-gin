@@ -292,7 +292,6 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 	// 2: Init gin entries with boot config
 	for i := range config.Gin {
 		element := config.Gin[i]
-		fmt.Println(element.Enabled)
 		if !element.Enabled {
 			continue
 		}
