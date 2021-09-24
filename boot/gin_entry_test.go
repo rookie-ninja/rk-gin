@@ -30,6 +30,7 @@ const (
 gin:
   - name: greeter
     port: 1949
+    enabled: true
     sw:
       enabled: true
       path: "sw"
@@ -56,6 +57,7 @@ gin:
         enabled: true
   - name: greeter2
     port: 2008
+    enabled: true
     sw:
       enabled: true
       path: "sw"

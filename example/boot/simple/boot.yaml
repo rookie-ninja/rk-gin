@@ -2,6 +2,7 @@
 gin:
   - name: greeter                     # Required
     port: 8080                        # Required
+    enabled: true                     # Required
     tv:
       enabled: true                   # Optional, default: false
     prom:

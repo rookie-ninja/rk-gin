@@ -55,30 +55,32 @@ func init() {
 
 // BootConfigGin boot config which is for gin entry.
 //
-// 1: Gin.Name: Name of gin entry, should be unique globally.
-// 2: Gin.Port: Port of gin entry.
-// 3: Gin.Cert.Ref: Reference of rkentry.CertEntry.
-// 4: Gin.SW: See BootConfigSW for details.
-// 5: Gin.CommonService: See BootConfigCommonService for details.
-// 6: Gin.TV: See BootConfigTv for details.
-// 7: Gin.Prom: See BootConfigProm for details.
-// 8: Gin.Interceptors.LoggingZap.Enabled: Enable zap logging interceptor.
-// 9: Gin.Interceptors.MetricsProm.Enable: Enable prometheus interceptor.
-// 10: Gin.Interceptors.auth.Enabled: Enable basic auth.
-// 11: Gin.Interceptors.auth.Basic: Credential for basic auth, scheme: <user:pass>
-// 12: Gin.Interceptors.auth.ApiKey: Credential for X-API-Key.
-// 13: Gin.Interceptors.auth.igorePrefix: List of paths that will be ignored.
-// 14: Gin.Interceptors.Extension.Enabled: Enable extension interceptor.
-// 15: Gin.Interceptors.Extension.Prefix: Prefix of extension header key.
-// 16: Gin.Interceptors.TracingTelemetry.Enabled: Enable tracing interceptor with opentelemetry.
-// 17: Gin.Interceptors.TracingTelemetry.Exporter.File.Enabled: Enable file exporter which support type of stdout and local file.
-// 18: Gin.Interceptors.TracingTelemetry.Exporter.File.OutputPath: Output path of file exporter, stdout and file path is supported.
-// 19: Gin.Interceptors.TracingTelemetry.Exporter.Jaeger.Enabled: Enable jaeger exporter.
-// 20: Gin.Interceptors.TracingTelemetry.Exporter.Jaeger.AgentEndpoint: Specify jeager agent endpoint, localhost:6832 would be used by default.
-// 21: Gin.Logger.ZapLogger.Ref: Zap logger reference, see rkentry.ZapLoggerEntry for details.
-// 22: Gin.Logger.EventLogger.Ref: Event logger reference, see rkentry.EventLoggerEntry for details.
+// 1: Gin.Enabled: Enable gin entry, default is true.
+// 2: Gin.Name: Name of gin entry, should be unique globally.
+// 3: Gin.Port: Port of gin entry.
+// 4: Gin.Cert.Ref: Reference of rkentry.CertEntry.
+// 5: Gin.SW: See BootConfigSW for details.
+// 6: Gin.CommonService: See BootConfigCommonService for details.
+// 7: Gin.TV: See BootConfigTv for details.
+// 8: Gin.Prom: See BootConfigProm for details.
+// 9: Gin.Interceptors.LoggingZap.Enabled: Enable zap logging interceptor.
+// 10: Gin.Interceptors.MetricsProm.Enable: Enable prometheus interceptor.
+// 11: Gin.Interceptors.auth.Enabled: Enable basic auth.
+// 12: Gin.Interceptors.auth.Basic: Credential for basic auth, scheme: <user:pass>
+// 13: Gin.Interceptors.auth.ApiKey: Credential for X-API-Key.
+// 14: Gin.Interceptors.auth.igorePrefix: List of paths that will be ignored.
+// 15: Gin.Interceptors.Extension.Enabled: Enable extension interceptor.
+// 16: Gin.Interceptors.Extension.Prefix: Prefix of extension header key.
+// 17: Gin.Interceptors.TracingTelemetry.Enabled: Enable tracing interceptor with opentelemetry.
+// 18: Gin.Interceptors.TracingTelemetry.Exporter.File.Enabled: Enable file exporter which support type of stdout and local file.
+// 19: Gin.Interceptors.TracingTelemetry.Exporter.File.OutputPath: Output path of file exporter, stdout and file path is supported.
+// 20: Gin.Interceptors.TracingTelemetry.Exporter.Jaeger.Enabled: Enable jaeger exporter.
+// 21: Gin.Interceptors.TracingTelemetry.Exporter.Jaeger.AgentEndpoint: Specify jeager agent endpoint, localhost:6832 would be used by default.
+// 22: Gin.Logger.ZapLogger.Ref: Zap logger reference, see rkentry.ZapLoggerEntry for details.
+// 23: Gin.Logger.EventLogger.Ref: Event logger reference, see rkentry.EventLoggerEntry for details.
 type BootConfigGin struct {
 	Gin []struct {
+		Enabled     bool   `yaml:"enabled" json:"enabled"`
 		Name        string `yaml:"name" json:"name"`
 		Port        uint64 `yaml:"port" json:"port"`
 		Description string `yaml:"description" json:"description"`
@@ -170,7 +172,7 @@ type GinEntry struct {
 // GinEntryOption Gin entry option.
 type GinEntryOption func(*GinEntry)
 
-//GetGinEntry Get GinEntry from rkentry.GlobalAppCtx.
+// GetGinEntry Get GinEntry from rkentry.GlobalAppCtx.
 func GetGinEntry(name string) *GinEntry {
 	entryRaw := rkentry.GlobalAppCtx.GetEntry(name)
 	if entryRaw == nil {
@@ -290,6 +292,10 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 	// 2: Init gin entries with boot config
 	for i := range config.Gin {
 		element := config.Gin[i]
+		if !element.Enabled {
+			continue
+		}
+
 		name := element.Name
 
 		zapLoggerEntry := rkentry.GlobalAppCtx.GetZapLoggerEntry(element.Logger.ZapLogger.Ref)
