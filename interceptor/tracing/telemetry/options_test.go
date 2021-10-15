@@ -7,6 +7,7 @@ package rkgintrace
 
 import (
 	"github.com/stretchr/testify/assert"
+	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/propagation"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"testing"
@@ -76,11 +77,11 @@ func TestCreateNoopExporter(t *testing.T) {
 
 func TestCreateJaegerExporter(t *testing.T) {
 	// without endpoint
-	exporter := CreateJaegerExporter("", "ut-user", "ut-pass")
+	exporter := CreateJaegerExporter(nil)
 	assert.NotNil(t, exporter)
 
-	// with endpoint
-	exporter = CreateJaegerExporter("localhost:14268", "ut-user", "ut-pass")
+	// with default jaeger agent
+	exporter = CreateJaegerExporter(jaeger.WithAgentEndpoint())
 	assert.NotNil(t, exporter)
 }
 

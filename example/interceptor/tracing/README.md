@@ -89,7 +89,7 @@ then server will use the same traceId.
     exporter := rkgintrace.CreateFileExporter("stdout")
 
     // Users can define own stdout exporter by themselves.
-    exporter, _ := stdout.NewExporter(stdout.WithPrettyPrint(), stdout.WithoutMetricExport())
+	exporter, _ := stdouttrace.New(stdouttrace.WithPrettyPrint())
 ```
 
 #### File exporter
@@ -108,8 +108,8 @@ then server will use the same traceId.
     // ********** Create Exporter *************
     // ****************************************
 
-    // Export trace to jaeger collector
-    exporter := rkgintrace.CreateJaegerExporter("localhost:14368", "", "")
+	// Export trace to jaeger agent
+	exporter := rkgintrace.CreateJaegerExporter(jaeger.WithAgentEndpoint())
 ```
 
 ## Example
