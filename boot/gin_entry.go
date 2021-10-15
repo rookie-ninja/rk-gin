@@ -459,7 +459,6 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 			}
 
 			inters = append(inters, rkgintrace.Interceptor(opts...))
-			rkentry.GlobalAppCtx.AddShutdownHook("tracing exporter", rkgintrace.ShutdownExporters)
 		}
 
 		// Did we enabled extension interceptor?
