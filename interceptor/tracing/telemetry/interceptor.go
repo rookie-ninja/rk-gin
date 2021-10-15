@@ -13,7 +13,7 @@ import (
 	"github.com/rookie-ninja/rk-gin/interceptor/context"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/semconv"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
@@ -37,7 +37,7 @@ func Interceptor(opts ...Option) gin.HandlerFunc {
 }
 
 func before(ctx *gin.Context, set *optionSet) oteltrace.Span {
-	opts := []oteltrace.SpanOption{
+	opts := []oteltrace.SpanStartOption{
 		oteltrace.WithAttributes(semconv.NetAttributesFromHTTPRequest("tcp", ctx.Request)...),
 		oteltrace.WithAttributes(semconv.EndUserAttributesFromHTTPRequest(ctx.Request)...),
 		oteltrace.WithAttributes(semconv.HTTPServerAttributesFromHTTPRequest(rkentry.GlobalAppCtx.GetAppInfoEntry().AppName, ctx.FullPath(), ctx.Request)...),
