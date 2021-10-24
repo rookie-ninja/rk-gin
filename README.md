@@ -48,6 +48,7 @@ Interceptor & bootstrapper designed for gin framework. Currently, supports bello
     - [Auth](#auth)
     - [Meta](#meta-1)
     - [Tracing](#tracing)
+    - [RateLimit](#ratelimit)
   - [Development Status: Stable](#development-status-stable)
   - [Contributing](#contributing)
 
@@ -378,6 +379,16 @@ Send application metadata as header to client.
 | gin.interceptors.tracingTelemetry.exporter.jaeger.collector.endpoint | As name described | string | http://localhost:16368/api/trace |
 | gin.interceptors.tracingTelemetry.exporter.jaeger.collector.username | As name described | string | "" |
 | gin.interceptors.tracingTelemetry.exporter.jaeger.collector.password | As name described | string | "" |
+
+#### RateLimit
+| name | description | type | default value |
+| ------ | ------ | ------ | ------ |
+| gin.interceptors.rateLimit.enabled | Enable rate limit interceptor | boolean | false |
+| gin.interceptors.rateLimit.algorithm | Provide algorithm, tokenBucket and leakyBucket are available options | string | tokenBucket |
+| gin.interceptors.rateLimit.reqPerSec | Request per second globally | int | 0 |
+| gin.interceptors.rateLimit.paths.path | Full path | string | "" |
+| gin.interceptors.rateLimit.paths.reqPerSec | Request per second by full path | int | 0 |
+
 
 ### Development Status: Stable
 
