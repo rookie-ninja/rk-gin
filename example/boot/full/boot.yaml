@@ -106,7 +106,7 @@ gin:
       rateLimit:
         enabled: false
         algorithm: "leakyBucket"
-        reqPerSec: 0
+        reqPerSec: 100
         paths:
           - path: "/rk/v1/healthy"
             reqPerSec: 0

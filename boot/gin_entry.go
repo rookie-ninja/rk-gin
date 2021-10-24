@@ -520,6 +520,8 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 				e := element.Interceptors.RateLimit.Paths[i]
 				opts = append(opts, rkginlimit.WithReqPerSecByPath(e.Path, e.ReqPerSec))
 			}
+
+			inters = append(inters, rkginlimit.Interceptor(opts...))
 		}
 
 		// Did we enabled common service?
