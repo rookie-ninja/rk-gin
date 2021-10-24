@@ -21,6 +21,7 @@ import (
 	"github.com/rookie-ninja/rk-gin/interceptor/meta"
 	"github.com/rookie-ninja/rk-gin/interceptor/metrics/prom"
 	"github.com/rookie-ninja/rk-gin/interceptor/panic"
+	"github.com/rookie-ninja/rk-gin/interceptor/ratelimit"
 	"github.com/rookie-ninja/rk-gin/interceptor/tracing/telemetry"
 	"github.com/rookie-ninja/rk-prom"
 	"github.com/rookie-ninja/rk-query"
@@ -77,8 +78,13 @@ func init() {
 // 19: Gin.Interceptors.TracingTelemetry.Exporter.File.OutputPath: Output path of file exporter, stdout and file path is supported.
 // 20: Gin.Interceptors.TracingTelemetry.Exporter.Jaeger.Enabled: Enable jaeger exporter.
 // 21: Gin.Interceptors.TracingTelemetry.Exporter.Jaeger.AgentEndpoint: Specify jeager agent endpoint, localhost:6832 would be used by default.
-// 22: Gin.Logger.ZapLogger.Ref: Zap logger reference, see rkentry.ZapLoggerEntry for details.
-// 23: Gin.Logger.EventLogger.Ref: Event logger reference, see rkentry.EventLoggerEntry for details.
+// 22: Gin.Interceptors.RateLimit.Enabled: Enable rate limit interceptor.
+// 23: Gin.Interceptors.RateLimit.Algorithm: Algorithm of rate limiter.
+// 24: Gin.Interceptors.RateLimit.ReqPerSec: Request per second.
+// 25: Gin.Interceptors.RateLimit.Paths.path: Name of full path.
+// 26: Gin.Interceptors.RateLimit.Paths.ReqPerSec: Request per second by path.
+// 27: Gin.Logger.ZapLogger.Ref: Zap logger reference, see rkentry.ZapLoggerEntry for details.
+// 28: Gin.Logger.EventLogger.Ref: Event logger reference, see rkentry.EventLoggerEntry for details.
 type BootConfigGin struct {
 	Gin []struct {
 		Enabled     bool   `yaml:"enabled" json:"enabled"`
@@ -113,6 +119,15 @@ type BootConfigGin struct {
 				Enabled bool   `yaml:"enabled" json:"enabled"`
 				Prefix  string `yaml:"prefix" json:"prefix"`
 			} `yaml:"meta" json:"meta"`
+			RateLimit struct {
+				Enabled   bool   `yaml:"enabled" json:"enabled"`
+				Algorithm string `yaml:"algorithm" json:"algorithm"`
+				ReqPerSec int    `yaml:"reqPerSec" json:"reqPerSec"`
+				Paths     []struct {
+					Path      string `yaml:"path" json:"path"`
+					ReqPerSec int    `yaml:"reqPerSec" json:"reqPerSec"`
+				} `yaml:"paths" json:"paths"`
+			} `yaml:"rateLimit" json:"rateLimit"`
 			TracingTelemetry struct {
 				Enabled  bool `yaml:"enabled" json:"enabled"`
 				Exporter struct {
@@ -488,6 +503,23 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 			opts = append(opts, rkginauth.WithIgnorePrefix(element.Interceptors.Auth.IgnorePrefix...))
 
 			inters = append(inters, rkginauth.Interceptor(opts...))
+		}
+
+		// Did we enabled rate limit interceptor?
+		if element.Interceptors.RateLimit.Enabled {
+			opts := make([]rkginlimit.Option, 0)
+			opts = append(opts,
+				rkginlimit.WithEntryNameAndType(element.Name, GinEntryType))
+
+			if len(element.Interceptors.RateLimit.Algorithm) > 0 {
+				opts = append(opts, rkginlimit.WithAlgorithm(element.Interceptors.RateLimit.Algorithm))
+			}
+			opts = append(opts, rkginlimit.WithReqPerSec(element.Interceptors.RateLimit.ReqPerSec))
+
+			for i := range element.Interceptors.RateLimit.Paths {
+				e := element.Interceptors.RateLimit.Paths[i]
+				opts = append(opts, rkginlimit.WithReqPerSecByPath(e.Path, e.ReqPerSec))
+			}
 		}
 
 		// Did we enabled common service?

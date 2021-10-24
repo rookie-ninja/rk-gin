@@ -55,6 +55,8 @@ gin:
         enabled: true
       tracingTelemetry:
         enabled: true
+      ratelimit:
+        enabled: true
   - name: greeter2
     port: 2008
     enabled: true
