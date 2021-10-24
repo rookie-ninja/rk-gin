@@ -20,6 +20,7 @@ Interceptor & bootstrapper designed for gin framework. Currently, supports bello
 | Panic interceptor | Recover from panic for RPC requests and log it. |
 | Meta interceptor | Send application metadata as header to client. |
 | Auth interceptor | Support [Basic Auth] and [API Key] authorization types. |
+| RateLimit interceptor | Limiting RPC rate |
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -388,7 +389,6 @@ Send application metadata as header to client.
 | gin.interceptors.rateLimit.reqPerSec | Request per second globally | int | 0 |
 | gin.interceptors.rateLimit.paths.path | Full path | string | "" |
 | gin.interceptors.rateLimit.paths.reqPerSec | Request per second by full path | int | 0 |
-
 
 ### Development Status: Stable
 
