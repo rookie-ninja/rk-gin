@@ -27,7 +27,7 @@ func Interceptor(opts ...Option) gin.HandlerFunc {
 			event.SetCounter("rateLimitWaitMs", duration.Milliseconds())
 			event.AddErr(err)
 
-			ctx.JSON(http.StatusTooManyRequests, rkerror.New(
+			ctx.AbortWithStatusJSON(http.StatusTooManyRequests, rkerror.New(
 				rkerror.WithHttpCode(http.StatusTooManyRequests),
 				rkerror.WithDetails(err)))
 

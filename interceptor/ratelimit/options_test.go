@@ -66,10 +66,10 @@ func TestWithReqPerSec(t *testing.T) {
 func TestWithReqPerSecByPath(t *testing.T) {
 	// with non-zero
 	set := newOptionSet(
-		WithReqPerSecByPath("ut-method", 1))
+		WithReqPerSecByPath("/ut-path", 1))
 
-	assert.Equal(t, 1, set.reqPerSecByPath["ut-method"])
-	assert.NotNil(t, set.limiter["ut-method"])
+	assert.Equal(t, 1, set.reqPerSecByPath["/ut-path"])
+	assert.NotNil(t, set.limiter["/ut-path"])
 
 	// Should be token based limiter
 	ctx, _ := gin.CreateTestContext(NewMockResponseWriter())
@@ -78,14 +78,14 @@ func TestWithReqPerSecByPath(t *testing.T) {
 			Path: "/ut-path",
 		},
 	}
-	set.getLimiter("ut-method")(ctx)
+	set.getLimiter("/ut-path")(ctx)
 
 	// With zero
 	set = newOptionSet(
-		WithReqPerSecByPath("ut-method", 0))
+		WithReqPerSecByPath("/ut-path", 0))
 
-	assert.Equal(t, 0, set.reqPerSecByPath["ut-method"])
-	assert.NotNil(t, set.limiter["ut-method"])
+	assert.Equal(t, 0, set.reqPerSecByPath["/ut-path"])
+	assert.NotNil(t, set.limiter["/ut-path"])
 
 	// should be zero rate limiter which returns error
 	ctx, _ = gin.CreateTestContext(NewMockResponseWriter())
@@ -94,7 +94,7 @@ func TestWithReqPerSecByPath(t *testing.T) {
 			Path: "/ut-path",
 		},
 	}
-	assert.NotNil(t, set.getLimiter("ut-method")(ctx))
+	assert.NotNil(t, set.getLimiter("/ut-path")(ctx))
 }
 
 func TestWithAlgorithm(t *testing.T) {

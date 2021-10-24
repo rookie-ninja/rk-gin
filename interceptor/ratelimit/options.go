@@ -200,6 +200,10 @@ func WithReqPerSec(reqPerSec int) Option {
 // WithReqPerSecByPath Provide request per second by method.
 func WithReqPerSecByPath(path string, reqPerSec int) Option {
 	return func(opt *optionSet) {
+		if !strings.HasPrefix(path, "/") {
+			path = "/" + path
+		}
+
 		if reqPerSec >= 0 {
 			opt.reqPerSecByPath[path] = reqPerSec
 		}

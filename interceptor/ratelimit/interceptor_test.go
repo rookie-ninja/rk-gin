@@ -117,5 +117,5 @@ func TestInterceptor_WithUserLimiter(t *testing.T) {
 	handler(ctx)
 
 	assert.Equal(t, http.StatusTooManyRequests, ctx.Writer.Status())
-	assert.False(t, ctx.IsAborted())
+	assert.True(t, ctx.IsAborted())
 }
