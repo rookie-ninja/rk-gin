@@ -57,6 +57,8 @@ gin:
         enabled: true
       ratelimit:
         enabled: true
+      timeout:
+        enabled: true
   - name: greeter2
     port: 2008
     enabled: true

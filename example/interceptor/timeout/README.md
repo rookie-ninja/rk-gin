@@ -1,12 +1,5 @@
-# Rate limit interceptor
-In this example, we will try to create gin server rate limit interceptor enabled.
-
-Rate limit interceptor contains bellow algorithm
-
-| Type | Description |
-| ---- | ---- |
-| tokenBucket | [wiki](https://en.wikipedia.org/wiki/Token_bucket) |
-| leakyBucket | [wiki](https://en.wikipedia.org/wiki/Leaky_bucket) |
+# Timeout interceptor
+In this example, we will try to create gin server with timeout interceptor enabled.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -31,17 +24,17 @@ go get -u github.com/rookie-ninja/rk-gin
 ```
 
 ### Code
-Add rkginlimit.Interceptor() with option.
+Add rkgintimeout.Interceptor() with option.
 
 ```go
-import     "github.com/rookie-ninja/rk-gin/interceptor/ratelimit"
+import     "github.com/rookie-ninja/rk-gin/interceptor/timeout"
 ```
 ```go
     // ********************************************
     // ********** Enable interceptors *************
     // ********************************************
     interceptors := []gin.HandlerFunc{
-        rkginlimit.Interceptor(),
+        rkgintimeout.Interceptor(),
     }
 ```
 
@@ -49,44 +42,26 @@ import     "github.com/rookie-ninja/rk-gin/interceptor/ratelimit"
 | Name | Default | Description |
 | ---- | ---- | ---- |
 | WithEntryNameAndType(entryName, entryType string) | entryName=grpc, entryType=grpc | entryName and entryType will be used to distinguish options if there are multiple interceptors in single process. |
-| WithReqPerSec(int) | int | Global rate limit per second. |
-| WithReqPerSecByPath(path string, reqPerSec int) | "", 0 | Request limiter by gRPC method. |
-| WithAlgorithm(algo string) | tokenBucket | Algorithm of rate limiter. |
-| WithGlobalLimiter(l Limiter) | nil | Provider user defined limiter. |
-| WithLimiterByPath(path string, l Limiter) | "", nil | Provider user defined limiter by gRPC method. |
+| WithTimeoutAndResp(time.Duration, gin.HandlerFunc) | 5*time.Second, response with http.StatusRequestTimeout | Set timeout interceptor with all routes. |
+| WithTimeoutAndRespByPath(path string, time.Duration, gin.HandlerFunc) | "", 5*time.Second, response with http.StatusRequestTimeout | Set timeout interceptor with specified path. |
 
 ```go
 	// ********************************************
 	// ********** Enable interceptors *************
 	// ********************************************
 	interceptors := []gin.HandlerFunc{
+		rkginpanic.Interceptor(),
 		rkginlog.Interceptor(),
-		rkginlimit.Interceptor(
+		rkgintimeout.Interceptor(
 			// Entry name and entry type will be used for distinguishing interceptors. Recommended.
-			// rkginmeta.WithEntryNameAndType("greeter", "gin"),
+			// rkgintimeout.WithEntryNameAndType("greeter", "gin"),
 			//
-			// Provide algorithm, rkgrpclimit.LeakyBucket and rkgrpclimit.TokenBucket was available, default is TokenBucket.
-			//rkginlimit.WithAlgorithm(rkginlimit.LeakyBucket),
+			// Provide timeout and response handler, a default one would be assigned with http.StatusRequestTimeout
+			// This option impact all routes
+			// rkgintimeout.WithTimeoutAndResp(time.Second, nil),
 			//
-			// Provide request per second, if provide value of zero, then no requests will be pass through and user will receive an error with
-			// resource exhausted.
-			//rkginlimit.WithReqPerSec(10),
-			//
-			// Provide request per second with path name.
-			// The name should be full path name. if provide value of zero,
-			// then no requests will be pass through and user will receive an error with resource exhausted.
-			//rkginlimit.WithReqPerSecByPath("/rk/v1/greeter", 0),
-			//
-			// Provide user function of limiter
-			//rkginlimit.WithGlobalLimiter(func(ctx *gin.Context) error {
-			//	 return nil
-			//}),
-			//
-			// Provide user function of limiter by path name.
-			// The name should be full path name.
-			//rkginlimit.WithLimiterByPath("/rk/v1/greeter", func(ctx *gin.Context) error {
-			//	 return nil
-			//}),
+			// Provide timeout and response handler by path, a default one would be assigned with http.StatusRequestTimeout
+			// rkgintimeout.WithTimeoutAndRespByPath("/rk/v1/healthy", time.Second, nil),
 		),
 	}
 ```
@@ -101,7 +76,7 @@ import     "github.com/rookie-ninja/rk-gin/interceptor/ratelimit"
 | rkginctx.SetHeaderToClient(ctx, "k", "v") | Set k/v to headers which would be sent to client. |
 
 ## Example
-In this example, we enable log interceptor either to monitor RPC status.
+In this example, we enable log and panic interceptor either to monitor RPC status.
 
 #### Start server
 ```shell script
@@ -109,30 +84,45 @@ $ go run greeter-server.go
 ```
 
 #### Output
-- Server side (zap & event)
-```shell script
-2021-10-24T12:23:28.823+0800    INFO    ratelimit/greeter-server.go:108 Received request from client.
+- Response
+
 ```
+$ curl "localhost:8080/rk/v1/greeter?name=rk-dev"
+{
+    "error":{
+        "code":408,
+        "status":"Request Timeout",
+        "message":"Request timed out!",
+        "details":[]
+    }
+}
+```
+
+- Server side (zap & event)
+
+```shell script
+2021-10-29T21:30:44.413+0800    INFO    timeout/greeter-server.go:95    Received request from client.
+```
+
 ```shell script
 ------------------------------------------------------------------------
-endTime=2021-10-24T12:23:28.823835+08:00
-startTime=2021-10-24T12:23:28.823768+08:00
-elapsedNano=66686
+endTime=2021-10-29T21:30:49.416786+08:00
+startTime=2021-10-29T21:30:44.413405+08:00
+elapsedNano=5003376246
 timezone=CST
-ids={"eventId":"4a52d665-0605-44e5-994c-f3139df1c4e2"}
+ids={"eventId":"95a50e31-7a82-47ae-b0f4-8b3ad7a9b06d"}
 app={"appName":"rk","appVersion":"","entryName":"gin","entryType":"gin"}
-env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"192.168.101.5","os":"darwin","realm":"*","region":"*"}
-payloads={"apiMethod":"GET","apiPath":"/rk/v1/greeter","apiProtocol":"HTTP/1.1","apiQuery":"","userAgent":"curl/7.64.1"}
+env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.2","os":"darwin","realm":"*","region":"*"}
+payloads={"apiMethod":"GET","apiPath":"/rk/v1/greeter","apiProtocol":"HTTP/1.1","apiQuery":"name=rk-dev","userAgent":"curl/7.64.1"}
 error={}
-counters={}
+counters={"timeout":1}
 pairs={}
 timing={}
-remoteAddr=127.0.0.1:57395
+remoteAddr=127.0.0.1:57989
 operation=/rk/v1/greeter
-resCode=200
+resCode=408
 eventStatus=Ended
 EOE
-
 ```
 
 #### Code
