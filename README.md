@@ -21,6 +21,7 @@ Interceptor & bootstrapper designed for gin framework. Currently, supports bello
 | Meta interceptor | Send application metadata as header to client. |
 | Auth interceptor | Support [Basic Auth] and [API Key] authorization types. |
 | RateLimit interceptor | Limiting RPC rate |
+| Timeout interceptor | Timing out request by configuration. |
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -50,6 +51,7 @@ Interceptor & bootstrapper designed for gin framework. Currently, supports bello
     - [Meta](#meta-1)
     - [Tracing](#tracing)
     - [RateLimit](#ratelimit)
+    - [Timeout](#timeout)
   - [Development Status: Stable](#development-status-stable)
   - [Contributing](#contributing)
 
@@ -389,6 +391,14 @@ Send application metadata as header to client.
 | gin.interceptors.rateLimit.reqPerSec | Request per second globally | int | 0 |
 | gin.interceptors.rateLimit.paths.path | Full path | string | "" |
 | gin.interceptors.rateLimit.paths.reqPerSec | Request per second by full path | int | 0 |
+
+#### Timeout
+| name | description | type | default value |
+| ------ | ------ | ------ | ------ |
+| gin.interceptors.timeout.enabled | Enable timeout interceptor | boolean | false |
+| gin.interceptors.timeout.timeoutMs | Global timeout in milliseconds. | int | 5000 |
+| gin.interceptors.timeout.paths.path | Full path | string | "" |
+| gin.interceptors.timeout.paths.timeoutMs | Timeout in milliseconds by full path | int | 5000 |
 
 ### Development Status: Stable
 

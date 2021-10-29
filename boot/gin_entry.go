@@ -22,6 +22,7 @@ import (
 	"github.com/rookie-ninja/rk-gin/interceptor/metrics/prom"
 	"github.com/rookie-ninja/rk-gin/interceptor/panic"
 	"github.com/rookie-ninja/rk-gin/interceptor/ratelimit"
+	rkgintimeout "github.com/rookie-ninja/rk-gin/interceptor/timeout"
 	"github.com/rookie-ninja/rk-gin/interceptor/tracing/telemetry"
 	"github.com/rookie-ninja/rk-prom"
 	"github.com/rookie-ninja/rk-query"
@@ -128,6 +129,14 @@ type BootConfigGin struct {
 					ReqPerSec int    `yaml:"reqPerSec" json:"reqPerSec"`
 				} `yaml:"paths" json:"paths"`
 			} `yaml:"rateLimit" json:"rateLimit"`
+			Timeout struct {
+				Enabled   bool `yaml:"enabled" json:"enabled"`
+				TimeoutMs int  `yaml:"timeoutMs" json:"timeoutMs"`
+				Paths     []struct {
+					Path      string `yaml:"path" json:"path"`
+					TimeoutMs int    `yaml:"timeoutMs" json:"timeoutMs"`
+				} `yaml:"paths" json:"paths"`
+			} `yaml:"timeout" json:"timeout"`
 			TracingTelemetry struct {
 				Enabled  bool `yaml:"enabled" json:"enabled"`
 				Exporter struct {
@@ -503,6 +512,25 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 			opts = append(opts, rkginauth.WithIgnorePrefix(element.Interceptors.Auth.IgnorePrefix...))
 
 			inters = append(inters, rkginauth.Interceptor(opts...))
+		}
+
+		// Did we enabled timeout interceptor?
+		// This should be in front of rate limit interceptor since rate limit may block over the threshold of timeout.
+		if element.Interceptors.Timeout.Enabled {
+			opts := make([]rkgintimeout.Option, 0)
+			opts = append(opts,
+				rkgintimeout.WithEntryNameAndType(element.Name, GinEntryType))
+
+			timeout := time.Duration(element.Interceptors.Timeout.TimeoutMs) * time.Millisecond
+			opts = append(opts, rkgintimeout.WithTimeoutAndResp(timeout, nil))
+
+			for i := range element.Interceptors.Timeout.Paths {
+				e := element.Interceptors.Timeout.Paths[i]
+				timeout := time.Duration(e.TimeoutMs) * time.Millisecond
+				opts = append(opts, rkgintimeout.WithTimeoutAndRespByPath(e.Path, timeout, nil))
+			}
+
+			inters = append(inters, rkgintimeout.Interceptor(opts...))
 		}
 
 		// Did we enabled rate limit interceptor?
