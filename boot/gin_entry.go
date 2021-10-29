@@ -84,8 +84,12 @@ func init() {
 // 24: Gin.Interceptors.RateLimit.ReqPerSec: Request per second.
 // 25: Gin.Interceptors.RateLimit.Paths.path: Name of full path.
 // 26: Gin.Interceptors.RateLimit.Paths.ReqPerSec: Request per second by path.
-// 27: Gin.Logger.ZapLogger.Ref: Zap logger reference, see rkentry.ZapLoggerEntry for details.
-// 28: Gin.Logger.EventLogger.Ref: Event logger reference, see rkentry.EventLoggerEntry for details.
+// 27: Gin.Interceptors.Timeout.Enabled: Enable timeout interceptor.
+// 28: Gin.Interceptors.Timeout.TimeoutMs: Timeout in milliseconds.
+// 29: Gin.Interceptors.Timeout.Paths.path: Name of full path.
+// 30: Gin.Interceptors.Timeout.Paths.TimeoutMs: Timeout in milliseconds by path.
+// 31: Gin.Logger.ZapLogger.Ref: Zap logger reference, see rkentry.ZapLoggerEntry for details.
+// 32: Gin.Logger.EventLogger.Ref: Event logger reference, see rkentry.EventLoggerEntry for details.
 type BootConfigGin struct {
 	Gin []struct {
 		Enabled     bool   `yaml:"enabled" json:"enabled"`
