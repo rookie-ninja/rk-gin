@@ -6,7 +6,6 @@
 package rkgintimeout
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-common/error"
 	"github.com/rookie-ninja/rk-gin/interceptor"
@@ -100,7 +99,6 @@ func (set *optionSet) Tick(ctx *gin.Context, path string) {
 		defer func() {
 			if recv := recover(); recv != nil {
 				panicChan <- recv
-				fmt.Println("I am herer")
 			}
 		}()
 
