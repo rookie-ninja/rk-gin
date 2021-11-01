@@ -387,12 +387,12 @@ definitions:
     type: object
 info:
   contact:
-    email: dongxuny@gmail.com
+    email: lark@pointgoal.io
     name: rk-dev
     url: https://github.com/rookie-ninja/rk-gin
   description: This is builtin RK common service.
   license:
-    name: MIT License
+    name: Apache 2.0 License
     url: https://github.com/rookie-ninja/rk-gin/blob/master/LICENSE.txt
   title: RK Common Service
   version: "1.0"
