@@ -7,14 +7,14 @@ gin:
       enabled: true                   # Optional, default: false
     prom:
       enabled: true                   # Optional, default: false
-    sw:                               # Optional
+    sw:
       enabled: true                   # Optional, default: false
-    commonService:                    # Optional
+    commonService:
       enabled: true                   # Optional, default: false
     interceptors:
       loggingZap:
-        enabled: true
+        enabled: true                 # Optional, default: false
       metricsProm:
-        enabled: true
+        enabled: true                 # Optional, default: false
       meta:
-        enabled: true
+        enabled: true                 # Optional, default: false
