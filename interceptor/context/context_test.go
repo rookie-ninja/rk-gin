@@ -102,7 +102,6 @@ func TestGetEvent(t *testing.T) {
 	event := rkquery.NewEventFactory().CreateEventNoop()
 	ctx.Set(rkgininter.RpcEventKey, event)
 	assert.Equal(t, event, GetEvent(ctx))
-
 }
 
 func TestGetLogger(t *testing.T) {
@@ -218,7 +217,7 @@ func TestGetTracerPropagator(t *testing.T) {
 }
 
 func TestInjectSpanToHttpRequest(t *testing.T) {
-	assertNotPanic(t)
+	defer assertNotPanic(t)
 
 	// With nil context and request
 	InjectSpanToHttpRequest(nil, nil)
@@ -239,7 +238,7 @@ func TestNewTraceSpan(t *testing.T) {
 }
 
 func TestEndTraceSpan(t *testing.T) {
-	assertNotPanic(t)
+	defer assertNotPanic(t)
 
 	// With success
 	ctx, _ := gin.CreateTestContext(NewMockResponseWriter())

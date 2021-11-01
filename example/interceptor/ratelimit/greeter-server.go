@@ -35,7 +35,7 @@ func main() {
 		// Entry name and entry type will be used for distinguishing interceptors. Recommended.
 		// rkginmeta.WithEntryNameAndType("greeter", "gin"),
 		//
-		// Provide algorithm, rkgrpclimit.LeakyBucket and rkgrpclimit.TokenBucket was available, default is TokenBucket.
+		// Provide algorithm, rkginlimit.LeakyBucket and rkginlimit.TokenBucket was available, default is TokenBucket.
 		//rkginlimit.WithAlgorithm(rkginlimit.LeakyBucket),
 		//
 		// Provide request per second, if provide value of zero, then no requests will be pass through and user will receive an error with

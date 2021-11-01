@@ -22,7 +22,7 @@ import (
 	"github.com/rookie-ninja/rk-gin/interceptor/metrics/prom"
 	"github.com/rookie-ninja/rk-gin/interceptor/panic"
 	"github.com/rookie-ninja/rk-gin/interceptor/ratelimit"
-	rkgintimeout "github.com/rookie-ninja/rk-gin/interceptor/timeout"
+	"github.com/rookie-ninja/rk-gin/interceptor/timeout"
 	"github.com/rookie-ninja/rk-gin/interceptor/tracing/telemetry"
 	"github.com/rookie-ninja/rk-prom"
 	"github.com/rookie-ninja/rk-query"
@@ -580,6 +580,7 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 			WithZapLoggerEntryGin(zapLoggerEntry),
 			WithEventLoggerEntryGin(eventLoggerEntry),
 			WithNameGin(name),
+			WithDescriptionGin(element.Description),
 			WithPortGin(element.Port),
 			WithSwEntryGin(swEntry),
 			WithPromEntryGin(promEntry),
@@ -690,15 +691,6 @@ func (entry *GinEntry) logBasicInfo(event rkquery.Event) {
 			zap.Uint64("promPort", entry.PromEntry.Port))
 	}
 
-}
-
-// RegisterInterceptor Register interceptor, please make sure call this function before Bootstrap().
-func (entry *GinEntry) RegisterInterceptor(interceptor gin.HandlerFunc) {
-	if interceptor == nil {
-		return
-	}
-
-	entry.Interceptors = append(entry.Interceptors, interceptor)
 }
 
 // Bootstrap GinEntry.

@@ -186,7 +186,9 @@ func InjectSpanToHttpRequest(ctx *gin.Context, req *http.Request) {
 	}
 
 	newCtx := trace.ContextWithRemoteSpanContext(req.Context(), GetTraceSpan(ctx).SpanContext())
-	GetTracerPropagator(ctx).Inject(newCtx, propagation.HeaderCarrier(req.Header))
+	if propagator := GetTracerPropagator(ctx); propagator != nil {
+		propagator.Inject(newCtx, propagation.HeaderCarrier(req.Header))
+	}
 }
 
 // NewTraceSpan start a new span

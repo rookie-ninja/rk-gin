@@ -60,7 +60,8 @@ Auth interceptor validate authorization for each request.
 | WithEntryNameAndType(entryName, entryType string) | entryName=gin, entryType=gin | entryName and entryType will be used to distinguish options if there are multiple interceptors in single process. |
 | WithBasicAuth(realm string, cred ...string) | []string | Provide Basic auth credential with scheme of [user:pass]. Multiple credential are available for server. |
 | WithApiKeyAuth(key ...string) | []string | Provide API key. Multiple keys are available for server. |
-| WithExceptionalPaths(paths ...string) | []string | Exceptional paths that interceptors will ignore. |
+| WithIgnorePrefix(paths ...string) | []string | Ignoring paths that interceptors will ignore. |
+
 ```go
     // ********************************************
     // ********** Enable interceptors *************

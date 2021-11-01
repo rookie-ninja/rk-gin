@@ -48,12 +48,12 @@ import     "github.com/rookie-ninja/rk-gin/interceptor/ratelimit"
 ## Options
 | Name | Default | Description |
 | ---- | ---- | ---- |
-| WithEntryNameAndType(entryName, entryType string) | entryName=grpc, entryType=grpc | entryName and entryType will be used to distinguish options if there are multiple interceptors in single process. |
+| WithEntryNameAndType(entryName, entryType string) | entryName=gin, entryType=gin | entryName and entryType will be used to distinguish options if there are multiple interceptors in single process. |
 | WithReqPerSec(int) | int | Global rate limit per second. |
-| WithReqPerSecByPath(path string, reqPerSec int) | "", 0 | Request limiter by gRPC method. |
+| WithReqPerSecByPath(path string, reqPerSec int) | "", 0 | Request limiter by gin method. |
 | WithAlgorithm(algo string) | tokenBucket | Algorithm of rate limiter. |
 | WithGlobalLimiter(l Limiter) | nil | Provider user defined limiter. |
-| WithLimiterByPath(path string, l Limiter) | "", nil | Provider user defined limiter by gRPC method. |
+| WithLimiterByPath(path string, l Limiter) | "", nil | Provider user defined limiter by gin method. |
 
 ```go
 	// ********************************************
@@ -65,7 +65,7 @@ import     "github.com/rookie-ninja/rk-gin/interceptor/ratelimit"
 			// Entry name and entry type will be used for distinguishing interceptors. Recommended.
 			// rkginmeta.WithEntryNameAndType("greeter", "gin"),
 			//
-			// Provide algorithm, rkgrpclimit.LeakyBucket and rkgrpclimit.TokenBucket was available, default is TokenBucket.
+			// Provide algorithm, rkginlimit.LeakyBucket and rkginlimit.TokenBucket was available, default is TokenBucket.
 			//rkginlimit.WithAlgorithm(rkginlimit.LeakyBucket),
 			//
 			// Provide request per second, if provide value of zero, then no requests will be pass through and user will receive an error with

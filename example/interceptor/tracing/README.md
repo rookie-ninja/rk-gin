@@ -7,7 +7,7 @@ Trace interceptor has bellow options currently while exporting tracing informati
 | ---- | ---- |
 | Stdout | Export as JSON style. |
 | Local file | Export as JSON style. |
-| Jaeger |  In beta stage, export to jaeger collector only. |
+| Jaeger | Export to jaeger collector or agent. |
 
 **Please make sure panic interceptor to be added at last in chain of interceptors.**
 

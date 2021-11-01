@@ -39,7 +39,7 @@ func main() {
 		rkginlog.Interceptor(),
 		rkgintrace.Interceptor(
 			// Entry name and entry type will be used for distinguishing interceptors. Recommended.
-			// rkgintrace.WithEntryNameAndType("greeter", "grpc"),
+			// rkgintrace.WithEntryNameAndType("greeter", "gin"),
 			//
 			// Provide an exporter.
 			rkgintrace.WithExporter(exporter),
