@@ -83,7 +83,7 @@ func Greeter(ctx *gin.Context) {
 	//
 	// RequestId will be printed if enabled by bellow codes.
 	// 1: Enable rkginmeta.Interceptor() in server side.
-	// 2: rkginctx.AddHeaderToClient(ctx, rkginctx.RequestIdKey, rkcommon.GenerateRequestId())
+	// 2: rkginctx.SetHeaderToClient(ctx, rkginctx.RequestIdKey, rkcommon.GenerateRequestId())
 	//
 	rkginctx.GetLogger(ctx).Info("Received request from client.")
 
@@ -120,7 +120,7 @@ func Greeter(ctx *gin.Context) {
 	//
 	// RequestId will be printed on both client and server side.
 	//
-	// rkginctx.AddHeaderToClient(ctx, rkginctx.RequestIdKey, rkcommon.GenerateRequestId())
+	// rkginctx.SetHeaderToClient(ctx, rkginctx.RequestIdKey, rkcommon.GenerateRequestId())
 
 	ctx.JSON(http.StatusOK, &GreeterResponse{
 		Message: fmt.Sprintf("Hello %s!", ctx.Query("name")),

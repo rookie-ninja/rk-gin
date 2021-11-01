@@ -28,7 +28,7 @@ func main() {
 	interceptors := []gin.HandlerFunc{
 		rkginmetrics.Interceptor(
 		// Entry name and entry type will be used for distinguishing interceptors. Recommended.
-		// rkginmetrics.WithEntryNameAndType("greeter", "grpc"),
+		// rkginmetrics.WithEntryNameAndType("greeter", "gin"),
 		//
 		// Provide new prometheus registerer.
 		// Default value is prometheus.DefaultRegisterer
@@ -85,7 +85,7 @@ func Greeter(ctx *gin.Context) {
 	//
 	// RequestId will be printed if enabled by bellow codes.
 	// 1: Enable rkginmeta.Interceptor() in server side.
-	// 2: rkginctx.AddHeaderToClient(ctx, rkginctx.RequestIdKey, rkcommon.GenerateRequestId())
+	// 2: rkginctx.SetHeaderToClient(ctx, rkginctx.RequestIdKey, rkcommon.GenerateRequestId())
 	//
 	rkginctx.GetLogger(ctx).Info("Received request from client.")
 

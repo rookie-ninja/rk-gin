@@ -41,7 +41,7 @@ import     "github.com/rookie-ninja/rk-gin/interceptor/timeout"
 ## Options
 | Name | Default | Description |
 | ---- | ---- | ---- |
-| WithEntryNameAndType(entryName, entryType string) | entryName=grpc, entryType=grpc | entryName and entryType will be used to distinguish options if there are multiple interceptors in single process. |
+| WithEntryNameAndType(entryName, entryType string) | entryName=gin, entryType=gin | entryName and entryType will be used to distinguish options if there are multiple interceptors in single process. |
 | WithTimeoutAndResp(time.Duration, gin.HandlerFunc) | 5*time.Second, response with http.StatusRequestTimeout | Set timeout interceptor with all routes. |
 | WithTimeoutAndRespByPath(path string, time.Duration, gin.HandlerFunc) | "", 5*time.Second, response with http.StatusRequestTimeout | Set timeout interceptor with specified path. |
 

@@ -24,7 +24,7 @@ respect! We take our [code of conduct](CODE_OF_CONDUCT.md) seriously.
 
 ```
 git clone https://github.com/rookie-ninja/rk-gin.git
-cd rk-gin-interceptor
+cd rk-gin
 git remote add upstream https://github.com/rookie-ninja/rk-gin.git
 git fetch upstream
 ```

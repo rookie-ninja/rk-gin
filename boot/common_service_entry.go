@@ -35,9 +35,9 @@ const (
 
 // @contact.name rk-dev
 // @contact.url https://github.com/rookie-ninja/rk-gin
-// @contact.email dongxuny@gmail.com
+// @contact.email lark@pointgoal.io
 
-// @license.name MIT License
+// @license.name Apache 2.0 License
 // @license.url https://github.com/rookie-ninja/rk-gin/blob/master/LICENSE.txt
 
 // @securityDefinitions.basic BasicAuth
@@ -268,9 +268,6 @@ func (entry *CommonServiceEntry) Gc(ctx *gin.Context) {
 	if ctx == nil {
 		return
 	}
-
-	rkginctx.GetLogger(ctx).Info("first")
-	rkginctx.GetLogger(ctx).Info("second")
 
 	ctx.JSON(http.StatusOK, doGc(ctx))
 }

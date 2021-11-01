@@ -33,7 +33,6 @@ Interceptor & bootstrapper designed for gin framework. Currently, supports bello
   - [Output](#output)
     - [Gin Service](#gin-service)
     - [Swagger Service](#swagger-service)
-    - [Swagger Service](#swagger-service-1)
     - [TV Service](#tv-service)
     - [Metrics](#metrics)
     - [Logging](#logging)
@@ -41,7 +40,7 @@ Interceptor & bootstrapper designed for gin framework. Currently, supports bello
 - [YAML Config](#yaml-config)
   - [Gin Service](#gin-service-1)
   - [Common Service](#common-service)
-  - [Swagger Service](#swagger-service-2)
+  - [Swagger Service](#swagger-service-1)
   - [Prom Client](#prom-client)
   - [TV Service](#tv-service-1)
   - [Interceptors](#interceptors)
@@ -132,12 +131,6 @@ Try to test Gin Service with [curl](https://curl.se/)
 $ curl localhost:8080/rk/v1/healthy
 {"healthy":true}
 ```
-
-#### Swagger Service
-By default, we could access swagger UI at [/sw].
-- http://localhost:8080/sw
-
-![sw](docs/img/simple-sw.png)
 
 #### Swagger Service
 By default, we could access swagger UI at [/sw].

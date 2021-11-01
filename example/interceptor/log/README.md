@@ -136,9 +136,6 @@ No options needs to be provided.
     // ********************************************
     interceptors := []gin.HandlerFunc{
         rkginlog.Interceptor(
-            // Event logger would be logged as JSON format.
-            // rkginlog.WithEventLoggerEncoding(rkginlog.ENCODING_JSON),
-            //
             // Zap logger would be logged to specified path.
             rkginlog.WithZapLoggerOutputPaths("logs/server-zap.log"),
             //

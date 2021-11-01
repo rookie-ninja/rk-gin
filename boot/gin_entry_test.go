@@ -79,36 +79,6 @@ gin:
         basic:
           - "user:pass"
 `
-
-	serverCert = `
------BEGIN CERTIFICATE-----
-MIIC/jCCAeagAwIBAgIUWVMP53O835+njsr23UZIX2KEXGYwDQYJKoZIhvcNAQEL
-BQAwYDELMAkGA1UEBhMCQ04xEDAOBgNVBAgTB0JlaWppbmcxCzAJBgNVBAcTAkJK
-MQswCQYDVQQKEwJSSzEQMA4GA1UECxMHUksgRGVtbzETMBEGA1UEAxMKUksgRGVt
-byBDQTAeFw0yMTA0MDcxMzAzMDBaFw0yNjA0MDYxMzAzMDBaMEIxCzAJBgNVBAYT
-AkNOMRAwDgYDVQQIEwdCZWlqaW5nMQswCQYDVQQHEwJCSjEUMBIGA1UEAxMLZXhh
-bXBsZS5uZXQwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARf8p/nxvY1HHUkJXZk
-fFQgDtQ2CK9DOAe6y3lE21HTJ/Vi4vHNqWko9koyYgKqgUXyiq5lGAswo68KvmD7
-c2L4o4GYMIGVMA4GA1UdDwEB/wQEAwIFoDATBgNVHSUEDDAKBggrBgEFBQcDATAM
-BgNVHRMBAf8EAjAAMB0GA1UdDgQWBBTv6dUlEI6NcQBzihnzKZrxKpbnTTAfBgNV
-HSMEGDAWgBRgwpYKhgfeO3p2XuX0he35caeUgTAgBgNVHREEGTAXgglsb2NhbGhv
-c3SHBH8AAAGHBAAAAAAwDQYJKoZIhvcNAQELBQADggEBAByqLc3QkaGNr+QqjFw7
-znk9j0X4Ucm/1N6iGIp8fUi9t+mS1La6CB1ej+FoWkSYskzqBpdIkqzqZan1chyF
-njhtMsWgZYW6srXNRgByA9XS2s28+xg9owcpceXa3wG4wbnTj1emcunzSrKVFjS1
-IJUjl5HWCKibnVjgt4g0s9tc8KYpXkGYl23U4FUta/07YFmtW5SDF38NWrNOe5qV
-EALMz1Ry0PMgY0SDtKhddDNnNS32fz40IP0wB7a31T24eZetZK/INaIi+5SM0iLx
-kfqN71xKxAIIYmuI9YwWCFaZ2+qbLIiDTbR6gyuLIQ2AfwBLZ06g939ZfSqZuP8P
-oxU=
------END CERTIFICATE-----
-`
-
-	serverKey = `
------BEGIN EC PRIVATE KEY-----
-MHcCAQEEIPSAlU9WxdGhhmdJqg3OLmUPZlnKhejtZ2LbFNBkCTJfoAoGCCqGSM49
-AwEHoUQDQgAEX/Kf58b2NRx1JCV2ZHxUIA7UNgivQzgHust5RNtR0yf1YuLxzalp
-KPZKMmICqoFF8oquZRgLMKOvCr5g+3Ni+A==
------END EC PRIVATE KEY-----
-`
 )
 
 func TestWithZapLoggerEntryGin_HappyCase(t *testing.T) {
@@ -414,38 +384,6 @@ func TestGinEntry_GetServer_HappyCase(t *testing.T) {
 	assert.NotNil(t, entry.Server)
 	assert.NotNil(t, entry.Server.Handler)
 	assert.Equal(t, "0.0.0.0:80", entry.Server.Addr)
-}
-
-func TestGinEntry_RegisterInterceptor_WithNilInterceptor(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			// expect panic to be called with non nil error
-			assert.True(t, false)
-		} else {
-			// this should never be called in case of a bug
-			assert.True(t, true)
-		}
-	}()
-
-	entry := RegisterGinEntry()
-	entry.RegisterInterceptor(nil)
-}
-
-func TestGinEntry_RegisterInterceptor_HappyCase(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			// expect panic to be called with non nil error
-			assert.True(t, false)
-		} else {
-			// this should never be called in case of a bug
-			assert.True(t, true)
-		}
-	}()
-
-	entry := RegisterGinEntry()
-	loggingInterceptor := rkginlog.Interceptor()
-	entry.RegisterInterceptor(loggingInterceptor)
-	assert.Len(t, entry.Interceptors, 2)
 }
 
 func TestGinEntry_Bootstrap_WithSwagger(t *testing.T) {
