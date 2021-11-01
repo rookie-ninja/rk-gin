@@ -30,6 +30,7 @@ doctoc:
 swag:
 	@echo "[swag] Running swag..."
 	@swag init --generalInfo boot/common_service_entry.go --output boot/assets/sw/config --parseDependency 2 --propertyStrategy camelcase
+	@rm -rf boot/assets/sw/config/docs.go
 	@echo "------------------------------------[Done]"
 
 .PHONY: pkger

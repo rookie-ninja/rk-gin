@@ -10,10 +10,10 @@
         "contact": {
             "name": "rk-dev",
             "url": "https://github.com/rookie-ninja/rk-gin",
-            "email": "dongxuny@gmail.com"
+            "email": "lark@pointgoal.io"
         },
         "license": {
-            "name": "MIT License",
+            "name": "Apache 2.0 License",
             "url": "https://github.com/rookie-ninja/rk-gin/blob/master/LICENSE.txt"
         },
         "version": "1.0"

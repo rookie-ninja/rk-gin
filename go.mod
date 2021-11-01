@@ -3,7 +3,6 @@ module github.com/rookie-ninja/rk-gin
 go 1.14
 
 require (
-	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/gin-gonic/gin v1.7.2
 	github.com/juju/ratelimit v1.0.1
 	github.com/markbates/pkger v0.17.1
@@ -15,7 +14,6 @@ require (
 	github.com/rookie-ninja/rk-query v1.2.4
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.0
-	github.com/swaggo/swag v1.7.0
 	github.com/ugorji/go v1.1.11 // indirect
 	go.opentelemetry.io/contrib v1.0.0
 	go.opentelemetry.io/otel v1.0.1

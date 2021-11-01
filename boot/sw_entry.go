@@ -12,10 +12,7 @@ import (
 	"github.com/markbates/pkger"
 	"github.com/rookie-ninja/rk-common/common"
 	"github.com/rookie-ninja/rk-entry/entry"
-	// Importing in order to make swag.Read() to be validated
-	_ "github.com/rookie-ninja/rk-gin/boot/assets/sw/config"
 	"github.com/rookie-ninja/rk-query"
-	"github.com/swaggo/swag"
 	"go.uber.org/zap"
 	"io/ioutil"
 	"net/http"
@@ -347,7 +344,7 @@ func (entry *SwEntry) initSwaggerConfig() {
 	if entry.EnableCommonService {
 		key := entry.EntryName + "-rk-common.swagger.json"
 		// add common service json file
-		swaggerJsonFiles[key], _ = swag.ReadDoc()
+		swaggerJsonFiles[key] = string(readFileFromPkger("/assets/sw/config/swagger.json"))
 		swaggerUrlConfig.Urls = append(swaggerUrlConfig.Urls, &swUrl{
 			Name: key,
 			Url:  path.Join(entry.Path, key),
