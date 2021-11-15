@@ -17,6 +17,7 @@ import (
 	"github.com/rookie-ninja/rk-common/common"
 	"github.com/rookie-ninja/rk-entry/entry"
 	"github.com/rookie-ninja/rk-gin/interceptor/auth"
+	"github.com/rookie-ninja/rk-gin/interceptor/gzip"
 	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
 	"github.com/rookie-ninja/rk-gin/interceptor/meta"
 	"github.com/rookie-ninja/rk-gin/interceptor/metrics/prom"
@@ -133,6 +134,10 @@ type BootConfigGin struct {
 					ReqPerSec int    `yaml:"reqPerSec" json:"reqPerSec"`
 				} `yaml:"paths" json:"paths"`
 			} `yaml:"rateLimit" json:"rateLimit"`
+			Gzip struct {
+				Enabled bool   `yaml:"enabled" json:"enabled"`
+				Level   string `yaml:"level" json:"level"`
+			} `yaml:"gzip" json:"gzip"`
 			Timeout struct {
 				Enabled   bool `yaml:"enabled" json:"enabled"`
 				TimeoutMs int  `yaml:"timeoutMs" json:"timeoutMs"`
@@ -489,7 +494,17 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 			inters = append(inters, rkgintrace.Interceptor(opts...))
 		}
 
-		// Did we enabled extension interceptor?
+		// Did we enabled gzip interceptor?
+		if element.Interceptors.Gzip.Enabled {
+			opts := []rkgingzip.Option{
+				rkgingzip.WithEntryNameAndType(element.Name, GinEntryType),
+				rkgingzip.WithLevel(element.Interceptors.Gzip.Level),
+			}
+
+			inters = append(inters, rkgingzip.Interceptor(opts...))
+		}
+
+		// Did we enabled meta interceptor?
 		if element.Interceptors.Meta.Enabled {
 			opts := []rkginmeta.Option{
 				rkginmeta.WithEntryNameAndType(element.Name, GinEntryType),

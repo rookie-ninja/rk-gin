@@ -15,15 +15,15 @@
 #cred:
 #  - name: "local-cred"                                    # Required
 #    provider: "localFs"                                   # Required, etcd, consul, localFs, remoteFs are supported options
+#    locale: "*::*::*::*"                                  # Required, default: *::*::*::*
 #    description: "Description of entry"                   # Optional
-#    locale: "*::*::*::*"                                  # Optional, default: *::*::*::*
 #    paths:                                                # Optional
 #      - "example/boot/full/cred.yaml"
 #cert:
 #  - name: "local-cert"                                    # Required
 #    provider: "localFs"                                   # Required, etcd, consul, localFs, remoteFs are supported options
+#    locale: "*::*::*::*"                                  # Required, default: *::*::*::*
 #    description: "Description of entry"                   # Optional
-#    locale: "*::*::*::*"                                  # Optional, default: *::*::*::*
 #    serverCertPath: "example/boot/full/server.pem"        # Optional, default: "", path of certificate on local FS
 #    serverKeyPath: "example/boot/full/server-key.pem"     # Optional, default: "", path of certificate on local FS
 #    clientCertPath: "example/client.pem"                  # Optional, default: "", path of certificate on local FS

@@ -1,0 +1,11 @@
+---
+gin:
+  - name: greeter                     # Required
+    port: 8080                        # Required
+    enabled: true                     # Required
+    commonService:
+      enabled: true                   # Optional, default: false
+    interceptors:
+      gzip:
+        enabled: true                 # Optional, default: false
+        level: bestSpeed              # Optional, options: [noCompression, bestSpeed， bestCompression, defaultCompression, huffmanOnly]
