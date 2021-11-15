@@ -33,7 +33,7 @@ func main() {
 	interceptors := []gin.HandlerFunc{
 		rkgingzip.Interceptor(
 		// Entry name and entry type will be used for distinguishing interceptors. Recommended.
-		// rkgingzip.WithEntryNameAndType("greeter", "echo"),
+		// rkgingzip.WithEntryNameAndType("greeter", "gin"),
 		//
 		// Provide level of compression.
 		// Available options are
@@ -45,7 +45,7 @@ func main() {
 		//rkgingzip.WithLevel(rkgingzip.DefaultCompression),
 		//
 		// Provide skipper function
-		//rkgingzip.WithSkipper(func(e echo.Context) bool {
+		//rkgingzip.WithSkipper(func(e *gin.Context) bool {
 		//	return false
 		//}),
 		),
