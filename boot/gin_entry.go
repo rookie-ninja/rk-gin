@@ -17,6 +17,7 @@ import (
 	"github.com/rookie-ninja/rk-common/common"
 	"github.com/rookie-ninja/rk-entry/entry"
 	"github.com/rookie-ninja/rk-gin/interceptor/auth"
+	"github.com/rookie-ninja/rk-gin/interceptor/cors"
 	"github.com/rookie-ninja/rk-gin/interceptor/gzip"
 	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
 	"github.com/rookie-ninja/rk-gin/interceptor/meta"
@@ -121,6 +122,15 @@ type BootConfigGin struct {
 				Basic        []string `yaml:"basic" json:"basic"`
 				ApiKey       []string `yaml:"apiKey" json:"apiKey"`
 			} `yaml:"auth" json:"auth"`
+			Cors struct {
+				Enabled          bool     `yaml:"enabled" json:"enabled"`
+				AllowOrigins     []string `yaml:"allowOrigins" json:"allowOrigins"`
+				AllowCredentials bool     `yaml:"allowCredentials" json:"allowCredentials"`
+				AllowHeaders     []string `yaml:"allowHeaders" json:"allowHeaders"`
+				AllowMethods     []string `yaml:"allowMethods" json:"allowMethods"`
+				ExposeHeaders    []string `yaml:"exposeHeaders" json:"exposeHeaders"`
+				MaxAge           int      `yaml:"maxAge" json:"maxAge"`
+			} `yaml:"cors" json:"cors"`
 			Meta struct {
 				Enabled bool   `yaml:"enabled" json:"enabled"`
 				Prefix  string `yaml:"prefix" json:"prefix"`
@@ -492,6 +502,21 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 			}
 
 			inters = append(inters, rkgintrace.Interceptor(opts...))
+		}
+
+		// Did we enabled cors interceptor?
+		if element.Interceptors.Cors.Enabled {
+			opts := []rkgincors.Option{
+				rkgincors.WithEntryNameAndType(element.Name, GinEntryType),
+				rkgincors.WithAllowOrigins(element.Interceptors.Cors.AllowOrigins...),
+				rkgincors.WithAllowCredentials(element.Interceptors.Cors.AllowCredentials),
+				rkgincors.WithExposeHeaders(element.Interceptors.Cors.ExposeHeaders...),
+				rkgincors.WithMaxAge(element.Interceptors.Cors.MaxAge),
+				rkgincors.WithAllowHeaders(element.Interceptors.Cors.AllowHeaders...),
+				rkgincors.WithAllowMethods(element.Interceptors.Cors.AllowMethods...),
+			}
+
+			inters = append(inters, rkgincors.Interceptor(opts...))
 		}
 
 		// Did we enabled gzip interceptor?
