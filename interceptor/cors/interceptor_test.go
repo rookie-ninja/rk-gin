@@ -44,14 +44,9 @@ func TestInterceptor(t *testing.T) {
 	resp = performRequest(router, http.MethodOptions)
 	assert.Equal(t, http.StatusNoContent, resp.Code)
 
-	// match 2.1
+	// match 2
 	router = getRouter(Interceptor(WithAllowOrigins("http://do-not-pass-through")))
 	resp = performRequest(router, http.MethodGet, header{headerOrigin, originHeaderValue})
-	assert.Equal(t, http.StatusFound, resp.Code)
-
-	// match 2.2
-	router = getRouter(Interceptor(WithAllowOrigins("http://do-not-pass-through")))
-	resp = performRequest(router, http.MethodOptions, header{headerOrigin, originHeaderValue})
 	assert.Equal(t, http.StatusNoContent, resp.Code)
 
 	// match 3

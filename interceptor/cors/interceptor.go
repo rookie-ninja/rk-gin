@@ -3,7 +3,7 @@
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
 //
-// Package rkgincors is a CORS middleware for echo framework
+// Package rkgincors is a CORS middleware for gin framework
 package rkgincors
 
 import (
@@ -48,13 +48,6 @@ func Interceptor(opts ...Option) gin.HandlerFunc {
 
 		// 2: origin not allowed, we will return 204 if request is not a OPTION method
 		if !set.isOriginAllowed(originHeader) {
-			// 2.1: if not a preflight request, then pass through
-			if !preflight {
-				ctx.AbortWithStatus(http.StatusFound)
-				return
-			}
-
-			// 2.2: if it is a preflight request, then return with 204
 			ctx.AbortWithStatus(http.StatusNoContent)
 			return
 		}
