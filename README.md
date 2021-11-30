@@ -24,6 +24,7 @@ Interceptor & bootstrapper designed for gin framework. Currently, supports bello
 | Timeout interceptor | Timing out request by configuration. |
 | Gzip interceptor | Compress and Decompress message body based on request header. |
 | CORS interceptor | Server side CORS interceptor. |
+| JWT interceptor | Server side JWT interceptor. |
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -55,6 +56,7 @@ Interceptor & bootstrapper designed for gin framework. Currently, supports bello
     - [Timeout](#timeout)
     - [Gzip](#gzip)
     - [CORS](#cors)
+    - [JWT](#jwt)
   - [Development Status: Stable](#development-status-stable)
   - [Contributing](#contributing)
 
@@ -413,6 +415,42 @@ Send application metadata as header to client.
 | gin.interceptors.cors.allowCredentials | Returns as response header of OPTIONS request. | bool | false |
 | gin.interceptors.cors.exposeHeaders | Provide exposed headers returns as response header of OPTIONS request. | []string | "" |
 | gin.interceptors.cors.maxAge | Provide max age returns as response header of OPTIONS request. | int | 0 |
+
+#### JWT
+In order to make swagger UI and RK tv work under JWT without JWT token, we need to ignore prefixes of paths as bellow.
+
+```yaml
+jwt:
+  ...
+  ignorePrefix:
+   - "/rk/v1/tv"
+   - "/sw"
+   - "/rk/v1/assets"
+```
+
+| name | description | type | default value |
+| ------ | ------ | ------ | ------ |
+| gin.interceptors.jwt.enabled | Enable JWT interceptor | boolean | false |
+| gin.interceptors.jwt.signingKey | Required, Provide signing key. | string | "" |
+| gin.interceptors.jwt.ignorePrefix | Provide ignoring path prefix. | []string | [] |
+| gin.interceptors.jwt.signingKeys | Provide signing keys as scheme of <key>:<value>. | []string | [] |
+| gin.interceptors.jwt.signingAlgo | Provide signing algorithm. | string | HS256 |
+| gin.interceptors.jwt.tokenLookup | Provide token lookup scheme, please see bellow description. | string | "header:Authorization" |
+| gin.interceptors.jwt.authScheme | Provide auth scheme. | string | Bearer |
+
+The supported scheme of **tokenLookup** 
+
+```
+// Optional. Default value "header:Authorization".
+// Possible values:
+// - "header:<name>"
+// - "query:<name>"
+// - "param:<name>"
+// - "cookie:<name>"
+// - "form:<name>"
+// Multiply sources example:
+// - "header: Authorization,cookie: myowncookie"
+```
 
 ### Development Status: Stable
 
