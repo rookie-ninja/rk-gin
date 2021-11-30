@@ -27,6 +27,9 @@
                     },
                     {
                         "BasicAuth": []
+                    },
+                    {
+                        "JWT": []
                     }
                 ],
                 "produces": [
@@ -52,6 +55,9 @@
                     },
                     {
                         "BasicAuth": []
+                    },
+                    {
+                        "JWT": []
                     }
                 ],
                 "produces": [
@@ -77,6 +83,9 @@
                     },
                     {
                         "BasicAuth": []
+                    },
+                    {
+                        "JWT": []
                     }
                 ],
                 "produces": [
@@ -102,6 +111,9 @@
                     },
                     {
                         "BasicAuth": []
+                    },
+                    {
+                        "JWT": []
                     }
                 ],
                 "produces": [
@@ -127,6 +139,9 @@
                     },
                     {
                         "BasicAuth": []
+                    },
+                    {
+                        "JWT": []
                     }
                 ],
                 "produces": [
@@ -152,6 +167,9 @@
                     },
                     {
                         "BasicAuth": []
+                    },
+                    {
+                        "JWT": []
                     }
                 ],
                 "produces": [
@@ -177,6 +195,9 @@
                     },
                     {
                         "BasicAuth": []
+                    },
+                    {
+                        "JWT": []
                     }
                 ],
                 "produces": [
@@ -202,6 +223,9 @@
                     },
                     {
                         "BasicAuth": []
+                    },
+                    {
+                        "JWT": []
                     }
                 ],
                 "produces": [
@@ -227,6 +251,9 @@
                     },
                     {
                         "BasicAuth": []
+                    },
+                    {
+                        "JWT": []
                     }
                 ],
                 "produces": [
@@ -252,6 +279,9 @@
                     },
                     {
                         "BasicAuth": []
+                    },
+                    {
+                        "JWT": []
                     }
                 ],
                 "produces": [
@@ -277,6 +307,9 @@
                     },
                     {
                         "BasicAuth": []
+                    },
+                    {
+                        "JWT": []
                     }
                 ],
                 "produces": [
@@ -302,6 +335,9 @@
                     },
                     {
                         "BasicAuth": []
+                    },
+                    {
+                        "JWT": []
                     }
                 ],
                 "produces": [
@@ -327,6 +363,9 @@
                     },
                     {
                         "BasicAuth": []
+                    },
+                    {
+                        "JWT": []
                     }
                 ],
                 "produces": [
@@ -352,6 +391,9 @@
                     },
                     {
                         "BasicAuth": []
+                    },
+                    {
+                        "JWT": []
                     }
                 ],
                 "produces": [
@@ -995,6 +1037,11 @@
         },
         "BasicAuth": {
             "type": "basic"
+        },
+        "JWT": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }

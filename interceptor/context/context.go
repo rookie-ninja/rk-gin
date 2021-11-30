@@ -8,6 +8,7 @@ package rkginctx
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 	"github.com/rookie-ninja/rk-gin/interceptor"
 	"github.com/rookie-ninja/rk-logger"
 	"github.com/rookie-ninja/rk-query"
@@ -209,4 +210,19 @@ func EndTraceSpan(ctx *gin.Context, span trace.Span, success bool) {
 	}
 
 	span.End()
+}
+
+// GetJwtToken return jwt.Token if exists
+func GetJwtToken(ctx *gin.Context) *jwt.Token {
+	if ctx == nil {
+		return nil
+	}
+
+	if raw, exist := ctx.Get(rkgininter.RpcJwtTokenKey); exist {
+		if res, ok := raw.(*jwt.Token); ok {
+			return res
+		}
+	}
+
+	return nil
 }

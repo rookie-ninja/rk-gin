@@ -19,6 +19,7 @@ import (
 	"github.com/rookie-ninja/rk-gin/interceptor/auth"
 	"github.com/rookie-ninja/rk-gin/interceptor/cors"
 	"github.com/rookie-ninja/rk-gin/interceptor/gzip"
+	"github.com/rookie-ninja/rk-gin/interceptor/jwt"
 	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
 	"github.com/rookie-ninja/rk-gin/interceptor/meta"
 	"github.com/rookie-ninja/rk-gin/interceptor/metrics/prom"
@@ -135,6 +136,15 @@ type BootConfigGin struct {
 				Enabled bool   `yaml:"enabled" json:"enabled"`
 				Prefix  string `yaml:"prefix" json:"prefix"`
 			} `yaml:"meta" json:"meta"`
+			Jwt struct {
+				Enabled      bool     `yaml:"enabled" json:"enabled"`
+				IgnorePrefix []string `yaml:"ignorePrefix" json:"ignorePrefix"`
+				SigningKey   string   `yaml:"signingKey" json:"signingKey"`
+				SigningKeys  []string `yaml:"signingKeys" json:"signingKeys"`
+				SigningAlgo  string   `yaml:"signingAlgo" json:"signingAlgo"`
+				TokenLookup  string   `yaml:"tokenLookup" json:"tokenLookup"`
+				AuthScheme   string   `yaml:"authScheme" json:"authScheme"`
+			} `yaml:"jwt" json:"jwt"`
 			RateLimit struct {
 				Enabled   bool   `yaml:"enabled" json:"enabled"`
 				Algorithm string `yaml:"algorithm" json:"algorithm"`
@@ -502,6 +512,32 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 			}
 
 			inters = append(inters, rkgintrace.Interceptor(opts...))
+		}
+
+		// Did we enabled jwt interceptor?
+		if element.Interceptors.Jwt.Enabled {
+			var signingKey []byte
+			if len(element.Interceptors.Jwt.SigningKey) > 0 {
+				signingKey = []byte(element.Interceptors.Jwt.SigningKey)
+			}
+
+			opts := []rkginjwt.Option{
+				rkginjwt.WithEntryNameAndType(element.Name, GinEntryType),
+				rkginjwt.WithSigningKey(signingKey),
+				rkginjwt.WithSigningAlgorithm(element.Interceptors.Jwt.SigningAlgo),
+				rkginjwt.WithTokenLookup(element.Interceptors.Jwt.TokenLookup),
+				rkginjwt.WithAuthScheme(element.Interceptors.Jwt.AuthScheme),
+				rkginjwt.WithIgnorePrefix(element.Interceptors.Jwt.IgnorePrefix...),
+			}
+
+			for _, v := range element.Interceptors.Jwt.SigningKeys {
+				tokens := strings.SplitN(v, ":", 2)
+				if len(tokens) == 2 {
+					opts = append(opts, rkginjwt.WithSigningKeys(tokens[0], tokens[1]))
+				}
+			}
+
+			inters = append(inters, rkginjwt.Interceptor(opts...))
 		}
 
 		// Did we enabled cors interceptor?

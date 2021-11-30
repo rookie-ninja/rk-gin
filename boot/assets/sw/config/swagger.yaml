@@ -410,6 +410,7 @@ paths:
       security:
       - ApiKeyAuth: []
       - BasicAuth: []
+      - JWT: []
       summary: List API
   /rk/v1/certs:
     get:
@@ -424,6 +425,7 @@ paths:
       security:
       - ApiKeyAuth: []
       - BasicAuth: []
+      - JWT: []
       summary: List CertEntry
   /rk/v1/configs:
     get:
@@ -438,6 +440,7 @@ paths:
       security:
       - ApiKeyAuth: []
       - BasicAuth: []
+      - JWT: []
       summary: List ConfigEntry
   /rk/v1/deps:
     get:
@@ -452,6 +455,7 @@ paths:
       security:
       - ApiKeyAuth: []
       - BasicAuth: []
+      - JWT: []
       summary: List dependencies related application
   /rk/v1/entries:
     get:
@@ -466,6 +470,7 @@ paths:
       security:
       - ApiKeyAuth: []
       - BasicAuth: []
+      - JWT: []
       summary: List all Entry
   /rk/v1/gc:
     get:
@@ -480,6 +485,7 @@ paths:
       security:
       - ApiKeyAuth: []
       - BasicAuth: []
+      - JWT: []
       summary: Trigger Gc
   /rk/v1/git:
     get:
@@ -494,6 +500,7 @@ paths:
       security:
       - ApiKeyAuth: []
       - BasicAuth: []
+      - JWT: []
       summary: Get Git information.
   /rk/v1/healthy:
     get:
@@ -508,6 +515,7 @@ paths:
       security:
       - ApiKeyAuth: []
       - BasicAuth: []
+      - JWT: []
       summary: Get application healthy status
   /rk/v1/info:
     get:
@@ -522,6 +530,7 @@ paths:
       security:
       - ApiKeyAuth: []
       - BasicAuth: []
+      - JWT: []
       summary: Get application and process info
   /rk/v1/license:
     get:
@@ -536,6 +545,7 @@ paths:
       security:
       - ApiKeyAuth: []
       - BasicAuth: []
+      - JWT: []
       summary: Get license related application
   /rk/v1/logs:
     get:
@@ -550,6 +560,7 @@ paths:
       security:
       - ApiKeyAuth: []
       - BasicAuth: []
+      - JWT: []
       summary: List logger related entries
   /rk/v1/readme:
     get:
@@ -564,6 +575,7 @@ paths:
       security:
       - ApiKeyAuth: []
       - BasicAuth: []
+      - JWT: []
       summary: Get README file.
   /rk/v1/req:
     get:
@@ -578,6 +590,7 @@ paths:
       security:
       - ApiKeyAuth: []
       - BasicAuth: []
+      - JWT: []
       summary: List prometheus metrics of requests
   /rk/v1/sys:
     get:
@@ -592,6 +605,7 @@ paths:
       security:
       - ApiKeyAuth: []
       - BasicAuth: []
+      - JWT: []
       summary: Get OS Stat
   /rk/v1/tv:
     get:
@@ -617,4 +631,8 @@ securityDefinitions:
     type: apiKey
   BasicAuth:
     type: basic
+  JWT:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

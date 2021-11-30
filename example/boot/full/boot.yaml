@@ -114,3 +114,16 @@ gin:
 #        paths:
 #          - path: "/rk/v1/healthy"                        # Optional, default: ""
 #            timeoutMs: 1000                               # Optional, default: 5000
+#      jwt:
+#        enabled: true
+#        signingKey: "my-secret"
+#        ignorePrefix:
+#          - "/rk/v1/tv"
+#          - "/sw"
+#          - "/rk/v1/assets"
+#        signingKeys:
+#          - "key:value"
+#        signingAlgo: ""
+#        tokenLookup: "header:<name>"
+#        authScheme: "Bearer"
+
