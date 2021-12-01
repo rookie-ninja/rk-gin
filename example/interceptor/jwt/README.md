@@ -94,14 +94,6 @@ import     "github.com/rookie-ninja/rk-gin/interceptor/jwt"
         ),
     }
 ```
-```shell script
-# Print out headers from server on client side.
-< X-Request-Id: 861adbd1-6b98-446b-8fa0-3699a37bd7f1
-< X-Rk-App-Name: rk
-< X-Rk-App-Unix-Time: 2021-06-24T21:29:24.877293+08:00
-< X-Rk-App-Version: v0.0.0
-< X-Rk-Received-Time: 2021-06-24T21:29:24.877293+08:00
-```
 
 ### Context Usage
 | Name | Functionality |
