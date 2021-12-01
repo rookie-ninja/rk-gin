@@ -25,6 +25,7 @@ import (
 	"github.com/rookie-ninja/rk-gin/interceptor/metrics/prom"
 	"github.com/rookie-ninja/rk-gin/interceptor/panic"
 	"github.com/rookie-ninja/rk-gin/interceptor/ratelimit"
+	rkginsec "github.com/rookie-ninja/rk-gin/interceptor/secure"
 	"github.com/rookie-ninja/rk-gin/interceptor/timeout"
 	"github.com/rookie-ninja/rk-gin/interceptor/tracing/telemetry"
 	"github.com/rookie-ninja/rk-prom"
@@ -145,6 +146,19 @@ type BootConfigGin struct {
 				TokenLookup  string   `yaml:"tokenLookup" json:"tokenLookup"`
 				AuthScheme   string   `yaml:"authScheme" json:"authScheme"`
 			} `yaml:"jwt" json:"jwt"`
+			Secure struct {
+				Enabled               bool     `yaml:"enabled" json:"enabled"`
+				IgnorePrefix          []string `yaml:"ignorePrefix" json:"ignorePrefix"`
+				XssProtection         string   `yaml:"xssProtection" json:"xssProtection"`
+				ContentTypeNosniff    string   `yaml:"contentTypeNosniff" json:"contentTypeNosniff"`
+				XFrameOptions         string   `yaml:"xFrameOptions" json:"xFrameOptions"`
+				HstsMaxAge            int      `yaml:"hstsMaxAge" json:"hstsMaxAge"`
+				HstsExcludeSubdomains bool     `yaml:"hstsExcludeSubdomains" json:"hstsExcludeSubdomains"`
+				HstsPreloadEnabled    bool     `yaml:"hstsPreloadEnabled" json:"hstsPreloadEnabled"`
+				ContentSecurityPolicy string   `yaml:"contentSecurityPolicy" json:"contentSecurityPolicy"`
+				CspReportOnly         bool     `yaml:"cspReportOnly" json:"cspReportOnly"`
+				ReferrerPolicy        string   `yaml:"referrerPolicy" json:"referrerPolicy"`
+			} `yaml:"secure" json:"secure"`
 			RateLimit struct {
 				Enabled   bool   `yaml:"enabled" json:"enabled"`
 				Algorithm string `yaml:"algorithm" json:"algorithm"`
@@ -538,6 +552,25 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 			}
 
 			inters = append(inters, rkginjwt.Interceptor(opts...))
+		}
+
+		// Did we enabled secure interceptor?
+		if element.Interceptors.Secure.Enabled {
+			opts := []rkginsec.Option{
+				rkginsec.WithEntryNameAndType(element.Name, GinEntryType),
+				rkginsec.WithXSSProtection(element.Interceptors.Secure.XssProtection),
+				rkginsec.WithContentTypeNosniff(element.Interceptors.Secure.ContentTypeNosniff),
+				rkginsec.WithXFrameOptions(element.Interceptors.Secure.XFrameOptions),
+				rkginsec.WithHSTSMaxAge(element.Interceptors.Secure.HstsMaxAge),
+				rkginsec.WithHSTSExcludeSubdomains(element.Interceptors.Secure.HstsExcludeSubdomains),
+				rkginsec.WithHSTSPreloadEnabled(element.Interceptors.Secure.HstsPreloadEnabled),
+				rkginsec.WithContentSecurityPolicy(element.Interceptors.Secure.ContentSecurityPolicy),
+				rkginsec.WithCSPReportOnly(element.Interceptors.Secure.CspReportOnly),
+				rkginsec.WithReferrerPolicy(element.Interceptors.Secure.ReferrerPolicy),
+				rkginsec.WithIgnorePrefix(element.Interceptors.Secure.IgnorePrefix...),
+			}
+
+			inters = append(inters, rkginsec.Interceptor(opts...))
 		}
 
 		// Did we enabled cors interceptor?

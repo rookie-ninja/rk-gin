@@ -25,6 +25,7 @@ Interceptor & bootstrapper designed for gin framework. Currently, supports bello
 | Gzip interceptor | Compress and Decompress message body based on request header. |
 | CORS interceptor | Server side CORS interceptor. |
 | JWT interceptor | Server side JWT interceptor. |
+| Secure interceptor | Server side secure interceptor. |
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -57,6 +58,7 @@ Interceptor & bootstrapper designed for gin framework. Currently, supports bello
     - [Gzip](#gzip)
     - [CORS](#cors)
     - [JWT](#jwt)
+    - [Secure](#secure)
   - [Development Status: Stable](#development-status-stable)
   - [Contributing](#contributing)
 
@@ -451,6 +453,21 @@ The supported scheme of **tokenLookup**
 // Multiply sources example:
 // - "header: Authorization,cookie: myowncookie"
 ```
+
+#### Secure
+| name | description | type | default value |
+| ------ | ------ | ------ | ------ |
+| gin.interceptors.secure.enabled | Enable secure interceptor | boolean | false |
+| gin.interceptors.secure.xssProtection | X-XSS-Protection header value. | string | "1; mode=block" |
+| gin.interceptors.secure.contentTypeNosniff | X-Content-Type-Options header value. | string | nosniff |
+| gin.interceptors.secure.xFrameOptions | X-Frame-Options header value. | string | SAMEORIGIN |
+| gin.interceptors.secure.hstsMaxAge | Strict-Transport-Security header value. | int | 0 |
+| gin.interceptors.secure.hstsExcludeSubdomains | Excluding subdomains of HSTS. | bool | false |
+| gin.interceptors.secure.hstsPreloadEnabled | Enabling HSTS preload. | bool | false |
+| gin.interceptors.secure.contentSecurityPolicy | Content-Security-Policy header value. | string | "" |
+| gin.interceptors.secure.cspReportOnly | Content-Security-Policy-Report-Only header value. | bool | false |
+| gin.interceptors.secure.referrerPolicy | Referrer-Policy header value. | string | "" |
+| gin.interceptors.secure.ignorePrefix | Ignoring path prefix. | []string | [] |
 
 ### Development Status: Stable
 
