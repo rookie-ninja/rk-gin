@@ -61,6 +61,10 @@ gin:
         enabled: true
       cors:
         enabled: true
+      jwt:
+        enabled: true
+      secure:
+        enabled: true
   - name: greeter2
     port: 2008
     enabled: true
