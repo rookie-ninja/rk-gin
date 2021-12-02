@@ -174,7 +174,9 @@ func WithSkipper(skip Skipper) Option {
 // Optional. Default value "1; mode=block".
 func WithXSSProtection(val string) Option {
 	return func(opt *optionSet) {
-		opt.XSSProtection = val
+		if len(val) > 0 {
+			opt.XSSProtection = val
+		}
 	}
 }
 
@@ -182,7 +184,9 @@ func WithXSSProtection(val string) Option {
 // Optional. Default value "nosniff".
 func WithContentTypeNosniff(val string) Option {
 	return func(opt *optionSet) {
-		opt.ContentTypeNosniff = val
+		if len(val) > 0 {
+			opt.ContentTypeNosniff = val
+		}
 	}
 }
 
@@ -190,7 +194,9 @@ func WithContentTypeNosniff(val string) Option {
 // Optional. Default value "SAMEORIGIN".
 func WithXFrameOptions(val string) Option {
 	return func(opt *optionSet) {
-		opt.XFrameOptions = val
+		if len(val) > 0 {
+			opt.XFrameOptions = val
+		}
 	}
 }
 
@@ -236,7 +242,9 @@ func WithCSPReportOnly(val bool) Option {
 // Optional. Default value "".
 func WithReferrerPolicy(val string) Option {
 	return func(opt *optionSet) {
-		opt.ReferrerPolicy = val
+		if len(val) > 0 {
+			opt.ReferrerPolicy = val
+		}
 	}
 }
 
