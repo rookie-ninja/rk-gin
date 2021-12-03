@@ -10,9 +10,9 @@ In this example, we will try to create Gin server with Secure middleware enabled
 - [Options](#options)
   - [Context Usage](#context-usage)
 - [Example](#example)
-    - [Start server](#start-server)
-    - [Send request](#send-request)
-    - [Code](#code-1)
+  - [Start server](#start-server)
+  - [Send request](#send-request)
+  - [Code](#code-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -112,12 +112,12 @@ import     "github.com/rookie-ninja/rk-gin/interceptor/secure"
 | rkginctx.GetJwtToken(ctx) | Get jwt token if exists |
 
 ## Example
-#### Start server
+### Start server
 ```shell script
 $ go run greeter-server.go
 ```
 
-#### Send request
+### Send request
 ```shell script
 $ curl -vs localhost:8080/rk/v1/greeter
   ...
@@ -132,6 +132,6 @@ $ curl -vs localhost:8080/rk/v1/greeter
   {"Message":"Received message!"}
 ```
 
-#### Code
+### Code
 
 - [greeter-server.go](greeter-server.go)

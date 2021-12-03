@@ -226,3 +226,18 @@ func GetJwtToken(ctx *gin.Context) *jwt.Token {
 
 	return nil
 }
+
+// GetCsrfToken return csrf token if exists
+func GetCsrfToken(ctx *gin.Context) string {
+	if ctx == nil {
+		return ""
+	}
+
+	if raw, ok := ctx.Get(rkgininter.RpcCsrfTokenKey); ok {
+		if res, ok := raw.(string); ok {
+			return res
+		}
+	}
+
+	return ""
+}
