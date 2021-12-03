@@ -18,6 +18,7 @@ import (
 	"github.com/rookie-ninja/rk-entry/entry"
 	"github.com/rookie-ninja/rk-gin/interceptor/auth"
 	"github.com/rookie-ninja/rk-gin/interceptor/cors"
+	rkgincsrf "github.com/rookie-ninja/rk-gin/interceptor/csrf"
 	"github.com/rookie-ninja/rk-gin/interceptor/gzip"
 	"github.com/rookie-ninja/rk-gin/interceptor/jwt"
 	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
@@ -168,6 +169,18 @@ type BootConfigGin struct {
 					ReqPerSec int    `yaml:"reqPerSec" json:"reqPerSec"`
 				} `yaml:"paths" json:"paths"`
 			} `yaml:"rateLimit" json:"rateLimit"`
+			Csrf struct {
+				Enabled        bool     `yaml:"enabled" json:"enabled"`
+				IgnorePrefix   []string `yaml:"ignorePrefix" json:"ignorePrefix"`
+				TokenLength    int      `yaml:"tokenLength" json:"tokenLength"`
+				TokenLookup    string   `yaml:"tokenLookup" json:"tokenLookup"`
+				CookieName     string   `yaml:"cookieName" json:"cookieName"`
+				CookieDomain   string   `yaml:"cookieDomain" json:"cookieDomain"`
+				CookiePath     string   `yaml:"cookiePath" json:"cookiePath"`
+				CookieMaxAge   int      `yaml:"cookieMaxAge" json:"cookieMaxAge"`
+				CookieHttpOnly bool     `yaml:"cookieHttpOnly" json:"cookieHttpOnly"`
+				CookieSameSite string   `yaml:"cookieSameSite" json:"cookieSameSite"`
+			} `yaml:"csrf" yaml:"csrf"`
 			Gzip struct {
 				Enabled bool   `yaml:"enabled" json:"enabled"`
 				Level   string `yaml:"level" json:"level"`
@@ -571,6 +584,39 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 			}
 
 			inters = append(inters, rkginsec.Interceptor(opts...))
+		}
+
+		// Did we enabled csrf interceptor?
+		if element.Interceptors.Csrf.Enabled {
+			opts := []rkgincsrf.Option{
+				rkgincsrf.WithEntryNameAndType(element.Name, GinEntryType),
+				rkgincsrf.WithTokenLength(element.Interceptors.Csrf.TokenLength),
+				rkgincsrf.WithTokenLookup(element.Interceptors.Csrf.TokenLookup),
+				rkgincsrf.WithCookieName(element.Interceptors.Csrf.CookieName),
+				rkgincsrf.WithCookieDomain(element.Interceptors.Csrf.CookieDomain),
+				rkgincsrf.WithCookiePath(element.Interceptors.Csrf.CookiePath),
+				rkgincsrf.WithCookieMaxAge(element.Interceptors.Csrf.CookieMaxAge),
+				rkgincsrf.WithCookieHTTPOnly(element.Interceptors.Csrf.CookieHttpOnly),
+				rkgincsrf.WithIgnorePrefix(element.Interceptors.Csrf.IgnorePrefix...),
+			}
+
+			// convert to string to cookie same sites
+			sameSite := http.SameSiteDefaultMode
+
+			switch strings.ToLower(element.Interceptors.Csrf.CookieSameSite) {
+			case "lax":
+				sameSite = http.SameSiteLaxMode
+			case "strict":
+				sameSite = http.SameSiteStrictMode
+			case "none":
+				sameSite = http.SameSiteNoneMode
+			default:
+				sameSite = http.SameSiteDefaultMode
+			}
+
+			opts = append(opts, rkgincsrf.WithCookieSameSite(sameSite))
+
+			inters = append(inters, rkgincsrf.Interceptor(opts...))
 		}
 
 		// Did we enabled cors interceptor?

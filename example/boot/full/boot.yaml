@@ -138,4 +138,15 @@ gin:
 #        cspReportOnly: false                              # Optional, default: false
 #        referrerPolicy: ""                                # Optional, default: ""
 #        ignorePrefix: []                                  # Optional, default: []
+#      csrf:
+#        enabled: true
+#        tokenLength: 32                                   # Optional, default: 32
+#        tokenLookup: "header:X-CSRF-Token"                # Optional, default: "header:X-CSRF-Token"
+#        cookieName: "_csrf"                               # Optional, default: _csrf
+#        cookieDomain: ""                                  # Optional, default: ""
+#        cookiePath: ""                                    # Optional, default: ""
+#        cookieMaxAge: 86400                               # Optional, default: 86400
+#        cookieHttpOnly: false                             # Optional, default: false
+#        cookieSameSite: "default"                         # Optional, default: "default", options: lax, strict, none, default
+#        ignorePrefix: []                                  # Optional, default: []
 
