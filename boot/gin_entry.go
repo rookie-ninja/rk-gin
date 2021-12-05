@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/markbates/pkger"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rookie-ninja/rk-common/common"
@@ -33,6 +34,8 @@ import (
 	"github.com/rookie-ninja/rk-query"
 	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/sdk/trace"
+	"os"
+	"path/filepath"
 	"reflect"
 	"runtime"
 
@@ -108,6 +111,7 @@ type BootConfigGin struct {
 		CommonService BootConfigCommonService `yaml:"commonService" json:"commonService"`
 		TV            BootConfigTv            `yaml:"tv" json:"tv"`
 		Prom          BootConfigProm          `yaml:"prom" json:"prom"`
+		Static        BootConfigStaticHandler `yaml:"static" json:"static"`
 		Interceptors  struct {
 			LoggingZap struct {
 				Enabled                bool     `yaml:"enabled" json:"enabled"`
@@ -254,6 +258,7 @@ type GinEntry struct {
 	CertEntry          *rkentry.CertEntry        `json:"certEntry" yaml:"certEntry"`
 	CommonServiceEntry *CommonServiceEntry       `json:"commonServiceEntry" yaml:"commonServiceEntry"`
 	PromEntry          *PromEntry                `json:"promEntry" yaml:"promEntry"`
+	StaticFileEntry    *StaticFileHandlerEntry   `json:"staticFileHandlerEntry" yaml:"staticFileHandlerEntry"`
 	TvEntry            *TvEntry                  `json:"tvEntry" yaml:"tvEntry"`
 }
 
@@ -307,6 +312,13 @@ func WithCommonServiceEntryGin(commonServiceEntry *CommonServiceEntry) GinEntryO
 func WithTVEntryGin(tvEntry *TvEntry) GinEntryOption {
 	return func(entry *GinEntry) {
 		entry.TvEntry = tvEntry
+	}
+}
+
+// WithStaticFileHandlerEntryGin provide StaticFileHandlerEntry.
+func WithStaticFileHandlerEntryGin(staticEntry *StaticFileHandlerEntry) GinEntryOption {
+	return func(entry *GinEntry) {
+		entry.StaticFileEntry = staticEntry
 	}
 }
 
@@ -729,6 +741,29 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 				WithEventLoggerEntryTv(eventLoggerEntry))
 		}
 
+		// DId we enabled static file handler?
+		var staticEntry *StaticFileHandlerEntry
+		if element.Static.Enabled {
+			var fs http.FileSystem
+			switch element.Static.SourceType {
+			case "pkger":
+				fs = pkger.Dir(element.Static.SourcePath)
+			case "local":
+				if !filepath.IsAbs(element.Static.SourcePath) {
+					wd, _ := os.Getwd()
+					element.Static.SourcePath = path.Join(wd, element.Static.SourcePath)
+				}
+				fs = http.Dir(element.Static.SourcePath)
+			}
+
+			staticEntry = NewStaticFileHandlerEntry(
+				WithZapLoggerEntryStatic(zapLoggerEntry),
+				WithEventLoggerEntryStatic(eventLoggerEntry),
+				WithNameStatic(fmt.Sprintf("%s-static", element.Name)),
+				WithPathStatic(element.Static.Path),
+				WithFileSystemStatic(fs))
+		}
+
 		certEntry := rkentry.GlobalAppCtx.GetCertEntry(element.Cert.Ref)
 
 		entry := RegisterGinEntry(
@@ -742,6 +777,7 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 			WithCommonServiceEntryGin(commonServiceEntry),
 			WithCertEntryGin(certEntry),
 			WithTVEntryGin(tvEntry),
+			WithStaticFileHandlerEntryGin(staticEntry),
 			WithInterceptorsGin(inters...))
 
 		res[name] = entry
@@ -870,6 +906,15 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 		entry.SwEntry.Bootstrap(ctx)
 	}
 
+	// Is static file handler enabled?
+	if entry.IsStaticFileHandlerEnabled() {
+		// Register path into Router.
+		entry.Router.GET(path.Join(entry.StaticFileEntry.Path, "*any"), entry.StaticFileEntry.GetFileHandler())
+
+		// Bootstrap entry.
+		entry.StaticFileEntry.Bootstrap(ctx)
+	}
+
 	// Is prometheus enabled?
 	if entry.IsPromEnabled() {
 		// Register prom path into Router.
@@ -954,6 +999,11 @@ func (entry *GinEntry) Interrupt(ctx context.Context) {
 
 	entry.logBasicInfo(event)
 
+	if entry.IsStaticFileHandlerEnabled() {
+		// Interrupt entry
+		entry.StaticFileEntry.Interrupt(ctx)
+	}
+
 	if entry.IsSwEnabled() {
 		// Interrupt swagger entry
 		entry.SwEntry.Interrupt(ctx)
@@ -994,6 +1044,11 @@ func (entry *GinEntry) AddInterceptor(inters ...gin.HandlerFunc) {
 // IsSwEnabled Is swagger entry enabled?
 func (entry *GinEntry) IsSwEnabled() bool {
 	return entry.SwEntry != nil
+}
+
+// IsStaticFileHandlerEnabled Is static file handler entry enabled?
+func (entry *GinEntry) IsStaticFileHandlerEnabled() bool {
+	return entry.StaticFileEntry != nil
 }
 
 // IsPromEnabled Is prometheus entry enabled?

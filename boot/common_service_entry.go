@@ -135,7 +135,6 @@ func NewCommonServiceEntry(opts ...CommonServiceEntryOption) *CommonServiceEntry
 
 // Bootstrap common service entry.
 func (entry *CommonServiceEntry) Bootstrap(ctx context.Context) {
-	// No op
 	event := entry.EventLoggerEntry.GetEventHelper().Start(
 		"bootstrap",
 		rkquery.WithEntryName(entry.EntryName),
