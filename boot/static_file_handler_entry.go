@@ -297,11 +297,10 @@ func (entry *StaticFileHandlerEntry) GetFileHandler() gin.HandlerFunc {
 		if file, err = entry.Fs.Open(p); err != nil {
 			entry.ZapLoggerEntry.GetLogger().Warn("failed to open file", zap.Error(err))
 
-			res := rkerror.New(
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, rkerror.New(
 				rkerror.WithHttpCode(http.StatusInternalServerError),
 				rkerror.WithMessage("failed to open file"),
-				rkerror.WithDetails(err))
-			http.Error(w, res.Err.Error(), http.StatusInternalServerError)
+				rkerror.WithDetails(err)))
 			return
 		}
 
@@ -310,11 +309,10 @@ func (entry *StaticFileHandlerEntry) GetFileHandler() gin.HandlerFunc {
 		if err != nil {
 			entry.ZapLoggerEntry.GetLogger().Warn("failed to stat file", zap.Error(err))
 
-			res := rkerror.New(
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, rkerror.New(
 				rkerror.WithHttpCode(http.StatusInternalServerError),
 				rkerror.WithMessage("failed to stat file"),
-				rkerror.WithDetails(err))
-			http.Error(w, res.Err.Error(), http.StatusInternalServerError)
+				rkerror.WithDetails(err)))
 			return
 		}
 
@@ -346,11 +344,10 @@ func (entry *StaticFileHandlerEntry) GetFileHandler() gin.HandlerFunc {
 			if err := entry.Template.ExecuteTemplate(buf, "index", resp); err != nil {
 				entry.ZapLoggerEntry.GetLogger().Warn("failed to execute template", zap.Error(err))
 
-				res := rkerror.New(
+				ctx.AbortWithStatusJSON(http.StatusInternalServerError, rkerror.New(
 					rkerror.WithHttpCode(http.StatusInternalServerError),
 					rkerror.WithMessage("failed to execute template"),
-					rkerror.WithDetails(err))
-				http.Error(w, res.Err.Error(), http.StatusInternalServerError)
+					rkerror.WithDetails(err)))
 				return
 			}
 
