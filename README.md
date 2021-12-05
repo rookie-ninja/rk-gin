@@ -14,6 +14,7 @@ Interceptor & bootstrapper designed for gin framework. Currently, supports bello
 | Swagger Service | Swagger UI. |
 | Common Service | List of common API available on Gin. |
 | TV Service | A Web UI shows application and environment information. |
+| Static file handler | A Web UI shows files could be downloaded from server, currently support source of local and pkger. |
 | Metrics interceptor | Collect RPC metrics and export as prometheus client. |
 | Log interceptor | Log every RPC requests as event with rk-query. |
 | Trace interceptor | Collect RPC trace and export it to stdout, file or jaeger. |
@@ -48,6 +49,7 @@ Interceptor & bootstrapper designed for gin framework. Currently, supports bello
   - [Swagger Service](#swagger-service-1)
   - [Prom Client](#prom-client)
   - [TV Service](#tv-service-1)
+  - [Static file handler Service](#static-file-handler-service)
   - [Interceptors](#interceptors)
     - [Log](#log)
     - [Metrics](#metrics-1)
@@ -232,13 +234,13 @@ User can start multiple gin servers at the same time. Please make sure use diffe
 ### Gin Service
 | name | description | type | default value |
 | ------ | ------ | ------ | ------ |
-| gin.name | The name of gin server | string | N/A |
-| gin.port | The port of gin server | integer | nil, server won't start |
-| gin.enabled | Enable Gin entry or not | bool | false |
-| gin.description | Description of gin entry. | string | "" |
-| gin.cert.ref | Reference of cert entry declared in [cert entry](https://github.com/rookie-ninja/rk-entry#certentry) | string | "" |
-| gin.logger.zapLogger.ref | Reference of zapLoggerEntry declared in [zapLoggerEntry](https://github.com/rookie-ninja/rk-entry#zaploggerentry) | string | "" |
-| gin.logger.eventLogger.ref | Reference of eventLoggerEntry declared in [eventLoggerEntry](https://github.com/rookie-ninja/rk-entry#eventloggerentry) | string | "" |
+| gin.name | Required, The name of gin server | string | N/A |
+| gin.port | Required, The port of gin server | integer | nil, server won't start |
+| gin.enabled | Optional, Enable Gin entry or not | bool | false |
+| gin.description | Optional, Description of gin entry. | string | "" |
+| gin.cert.ref | Optional, Reference of cert entry declared in [cert entry](https://github.com/rookie-ninja/rk-entry#certentry) | string | "" |
+| gin.logger.zapLogger.ref | Optional, Reference of zapLoggerEntry declared in [zapLoggerEntry](https://github.com/rookie-ninja/rk-entry#zaploggerentry) | string | "" |
+| gin.logger.eventLogger.ref | Optional, Reference of eventLoggerEntry declared in [eventLoggerEntry](https://github.com/rookie-ninja/rk-entry#eventloggerentry) | string | "" |
 
 ### Common Service
 | Path | Description |
@@ -261,32 +263,45 @@ User can start multiple gin servers at the same time. Please make sure use diffe
 
 | name | description | type | default value |
 | ------ | ------ | ------ | ------ |
-| gin.commonService.enabled | Enable embedded common service | boolean | false |
+| gin.commonService.enabled | Optional, Enable embedded common service | boolean | false |
 
 ### Swagger Service
 | name | description | type | default value |
 | ------ | ------ | ------ | ------ |
-| gin.sw.enabled | Enable swagger service over gin server | boolean | false |
-| gin.sw.path | The path access swagger service from web | string | /sw |
-| gin.sw.jsonPath | Where the swagger.json files are stored locally | string | "" |
-| gin.sw.headers | Headers would be sent to caller as scheme of [key:value] | []string | [] |
+| gin.sw.enabled | Optional, Enable swagger service over gin server | boolean | false |
+| gin.sw.path | Optional, The path access swagger service from web | string | /sw |
+| gin.sw.jsonPath | Optional, Where the swagger.json files are stored locally | string | "" |
+| gin.sw.headers | Optional, Headers would be sent to caller as scheme of [key:value] | []string | [] |
 
 ### Prom Client
 | name | description | type | default value |
 | ------ | ------ | ------ | ------ |
-| gin.prom.enabled | Enable prometheus | boolean | false |
-| gin.prom.path | Path of prometheus | string | /metrics |
-| gin.prom.pusher.enabled | Enable prometheus pusher | bool | false |
-| gin.prom.pusher.jobName | Job name would be attached as label while pushing to remote pushgateway | string | "" |
-| gin.prom.pusher.remoteAddress | PushGateWay address, could be form of http://x.x.x.x or x.x.x.x | string | "" |
-| gin.prom.pusher.intervalMs | Push interval in milliseconds | string | 1000 |
-| gin.prom.pusher.basicAuth | Basic auth used to interact with remote pushgateway, form of [user:pass] | string | "" |
-| gin.prom.pusher.cert.ref | Reference of rkentry.CertEntry | string | "" |
+| gin.prom.enabled | Optional, Enable prometheus | boolean | false |
+| gin.prom.path | Optional, Path of prometheus | string | /metrics |
+| gin.prom.pusher.enabled | Optional, Enable prometheus pusher | bool | false |
+| gin.prom.pusher.jobName | Optional, Job name would be attached as label while pushing to remote pushgateway | string | "" |
+| gin.prom.pusher.remoteAddress | Optional, PushGateWay address, could be form of http://x.x.x.x or x.x.x.x | string | "" |
+| gin.prom.pusher.intervalMs | Optional, Push interval in milliseconds | string | 1000 |
+| gin.prom.pusher.basicAuth | Optional, Basic auth used to interact with remote pushgateway, form of [user:pass] | string | "" |
+| gin.prom.pusher.cert.ref | Optional, Reference of rkentry.CertEntry | string | "" |
 
 ### TV Service
 | name | description | type | default value |
 | ------ | ------ | ------ | ------ |
-| gin.tv.enabled | Enable RK TV | boolean | false |
+| gin.tv.enabled | Optional, Enable RK TV | boolean | false |
+
+### Static file handler Service
+| name | description | type | default value |
+| ------ | ------ | ------ | ------ |
+| gin.static.enabled | Optional, Enable static file handler | boolean | false |
+| gin.static.path | Optional, path of static file handler | string | /rk/v1/static |
+| gin.static.sourceType | Required, local and pkger supported | string | "" |
+| gin.static.sourcePath | Required, full path of source directory | string | "" |
+
+- About [pkger](https://github.com/markbates/pkger)
+User can use pkger command line tool to embed static files into .go files.
+
+Please use sourcePath like: github.com/rookie-ninja/rk-gin:/boot/assets
 
 ### Interceptors
 #### Log
