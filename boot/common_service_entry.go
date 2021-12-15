@@ -457,6 +457,12 @@ func doReq(ctx *gin.Context) *rkentry.ReqResponse {
 	}
 
 	vector := metricsSet.GetSummary(rkginmetrics.ElapsedNano)
+	if vector == nil {
+		return &rkentry.ReqResponse{
+			Metrics: make([]*rkentry.ReqMetricsRK, 0),
+		}
+	}
+
 	reqMetrics := rkentry.NewPromMetricsInfo(vector)
 
 	// Fill missed metrics
