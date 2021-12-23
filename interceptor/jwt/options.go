@@ -9,7 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/rookie-ninja/rk-common/error"
 	"github.com/rookie-ninja/rk-gin/interceptor"
 	"net/http"

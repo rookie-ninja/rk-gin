@@ -8,7 +8,7 @@ package rkgininter
 
 import (
 	"github.com/gin-gonic/gin"
-	rkcommon "github.com/rookie-ninja/rk-common/common"
+	"github.com/rookie-ninja/rk-common/common"
 	"go.uber.org/zap"
 	"net"
 	"strings"

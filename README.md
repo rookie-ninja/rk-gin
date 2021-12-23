@@ -436,6 +436,8 @@ Send application metadata as header to client.
 | gin.interceptors.cors.maxAge | Provide max age returns as response header of OPTIONS request. | int | 0 |
 
 #### JWT
+> rk-gin using github.com/golang-jwt/jwt/v4, please beware of version compatibility.
+
 In order to make swagger UI and RK tv work under JWT without JWT token, we need to ignore prefixes of paths as bellow.
 
 ```yaml
