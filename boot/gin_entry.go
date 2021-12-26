@@ -247,19 +247,19 @@ type BootConfigGin struct {
 type GinEntry struct {
 	EntryName          string                    `json:"entryName" yaml:"entryName"`
 	EntryType          string                    `json:"entryType" yaml:"entryType"`
-	EntryDescription   string                    `json:"entryDescription" yaml:"entryDescription"`
-	ZapLoggerEntry     *rkentry.ZapLoggerEntry   `json:"zapLoggerEntry" yaml:"zapLoggerEntry"`
-	EventLoggerEntry   *rkentry.EventLoggerEntry `json:"eventLoggerEntry" yaml:"eventLoggerEntry"`
+	EntryDescription   string                    `json:"-" yaml:"-"`
+	ZapLoggerEntry     *rkentry.ZapLoggerEntry   `json:"-" yaml:"-"`
+	EventLoggerEntry   *rkentry.EventLoggerEntry `json:"-" yaml:"-"`
 	Router             *gin.Engine               `json:"-" yaml:"-"`
 	Server             *http.Server              `json:"-" yaml:"-"`
 	Port               uint64                    `json:"port" yaml:"port"`
 	Interceptors       []gin.HandlerFunc         `json:"-" yaml:"-"`
-	SwEntry            *SwEntry                  `json:"swEntry" yaml:"swEntry"`
-	CertEntry          *rkentry.CertEntry        `json:"certEntry" yaml:"certEntry"`
-	CommonServiceEntry *CommonServiceEntry       `json:"commonServiceEntry" yaml:"commonServiceEntry"`
-	PromEntry          *PromEntry                `json:"promEntry" yaml:"promEntry"`
-	StaticFileEntry    *StaticFileHandlerEntry   `json:"staticFileHandlerEntry" yaml:"staticFileHandlerEntry"`
-	TvEntry            *TvEntry                  `json:"tvEntry" yaml:"tvEntry"`
+	SwEntry            *SwEntry                  `json:"-" yaml:"-"`
+	CertEntry          *rkentry.CertEntry        `json:"-" yaml:"-"`
+	CommonServiceEntry *CommonServiceEntry       `json:"-" yaml:"-"`
+	PromEntry          *PromEntry                `json:"-" yaml:"-"`
+	StaticFileEntry    *StaticFileHandlerEntry   `json:"-" yaml:"-"`
+	TvEntry            *TvEntry                  `json:"-" yaml:"-"`
 }
 
 // GinEntryOption Gin entry option.
@@ -859,42 +859,72 @@ func (entry *GinEntry) String() string {
 }
 
 // Add basic fields into event.
-func (entry *GinEntry) logBasicInfo(event rkquery.Event) {
+func (entry *GinEntry) logBasicInfo(operation string) (rkquery.Event, *zap.Logger) {
+	event := entry.EventLoggerEntry.GetEventHelper().Start(
+		operation,
+		rkquery.WithEntryName(entry.GetName()),
+		rkquery.WithEntryType(entry.GetType()))
+	logger := entry.ZapLoggerEntry.GetLogger().With(
+		zap.String("eventId", event.GetEventId()),
+		zap.String("entryName", entry.EntryName))
+
+	// add GinEntry info
 	event.AddPayloads(
 		zap.String("entryName", entry.EntryName),
 		zap.String("entryType", entry.EntryType),
-		zap.Uint64("port", entry.Port),
-		zap.Int("interceptorsCount", len(entry.Interceptors)),
-		zap.Bool("swEnabled", entry.IsSwEnabled()),
-		zap.Bool("tlsEnabled", entry.IsTlsEnabled()),
-		zap.Bool("commonServiceEnabled", entry.IsCommonServiceEnabled()),
-		zap.Bool("tvEnabled", entry.IsTvEnabled()),
+		zap.Uint64("entryPort", entry.Port),
 	)
 
+	// add SwEntry info
 	if entry.IsSwEnabled() {
-		event.AddPayloads()
-		event.AddPayloads(zap.String("swPath", entry.SwEntry.Path))
+		event.AddPayloads(
+			zap.Bool("swEnabled", true),
+			zap.String("swPath", entry.SwEntry.Path))
 	}
 
+	// add CommonServiceEntry info
+	if entry.IsCommonServiceEnabled() {
+		event.AddPayloads(
+			zap.Bool("commonServiceEnabled", true),
+			zap.String("commonServicePathPrefix", "/rk/v1/"))
+	}
+
+	// add TvEntry info
+	if entry.IsTvEnabled() {
+		event.AddPayloads(
+			zap.Bool("tvEnabled", true),
+			zap.String("tvPath", "/rk/v1/tv/"))
+	}
+
+	// add PromEntry info
 	if entry.IsPromEnabled() {
 		event.AddPayloads(
-			zap.String("promPath", entry.PromEntry.Path),
-			zap.Uint64("promPort", entry.PromEntry.Port))
+			zap.Bool("promEnabled", true),
+			zap.Uint64("promPort", entry.PromEntry.Port),
+			zap.String("promPath", entry.PromEntry.Path))
 	}
 
+	// add StaticFileHandlerEntry info
+	if entry.IsStaticFileHandlerEnabled() {
+		event.AddPayloads(
+			zap.Bool("staticFileHandlerEnabled", true),
+			zap.String("staticFileHandlerPath", entry.StaticFileEntry.Path))
+	}
+
+	// add tls info
+	if entry.IsTlsEnabled() {
+		event.AddPayloads(
+			zap.Bool("tlsEnabled", true))
+	}
+
+	logger.Info(fmt.Sprintf("%s ginEntry", operation))
+
+	return event, logger
 }
 
 // Bootstrap GinEntry.
 func (entry *GinEntry) Bootstrap(ctx context.Context) {
-	event := entry.EventLoggerEntry.GetEventHelper().Start(
-		"bootstrap",
-		rkquery.WithEntryName(entry.EntryName),
-		rkquery.WithEntryType(entry.EntryType))
-
-	entry.logBasicInfo(event)
-
-	ctx = context.WithValue(context.Background(), bootstrapEventIdKey, event.GetEventId())
-	logger := entry.ZapLoggerEntry.GetLogger().With(zap.String("eventId", event.GetEventId()))
+	event, logger := entry.logBasicInfo("Bootstrap")
 
 	// Is swagger enabled?
 	if entry.IsSwEnabled() {
@@ -956,7 +986,6 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 	}
 
 	// Start gin server
-	logger.Info("Bootstrapping GinEntry.", event.ListPayloads()...)
 	go func(*GinEntry) {
 		if entry.Server != nil {
 			// If TLS was enabled, we need to load server certificate and key and start http server with ListenAndServeTLS()
@@ -989,15 +1018,7 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 
 // Interrupt GinEntry.
 func (entry *GinEntry) Interrupt(ctx context.Context) {
-	event := entry.EventLoggerEntry.GetEventHelper().Start(
-		"interrupt",
-		rkquery.WithEntryName(entry.EntryName),
-		rkquery.WithEntryType(entry.EntryType))
-
-	ctx = context.WithValue(context.Background(), bootstrapEventIdKey, event.GetEventId())
-	logger := entry.ZapLoggerEntry.GetLogger().With(zap.String("eventId", event.GetEventId()))
-
-	entry.logBasicInfo(event)
+	event, logger := entry.logBasicInfo("Interrupt")
 
 	if entry.IsStaticFileHandlerEnabled() {
 		// Interrupt entry
@@ -1025,7 +1046,6 @@ func (entry *GinEntry) Interrupt(ctx context.Context) {
 	}
 
 	if entry.Router != nil && entry.Server != nil {
-		logger.Info("Interrupting GinEntry.", event.ListPayloads()...)
 		if err := entry.Server.Shutdown(context.Background()); err != nil {
 			event.AddErr(err)
 			logger.Warn("Error occurs while stopping gin-server.", event.ListPayloads()...)
