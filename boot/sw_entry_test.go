@@ -66,8 +66,7 @@ func TestSwEntry_Bootstrap(t *testing.T) {
 		WithEventLoggerEntrySw(rkentry.NoopEventLoggerEntry()),
 		WithEnableCommonServiceSw(true))
 
-	ctx := context.WithValue(context.Background(), bootstrapEventIdKey, "ut")
-	entry.Bootstrap(ctx)
+	entry.Bootstrap(context.TODO())
 }
 
 func TestSwEntry_Interrupt(t *testing.T) {
@@ -85,9 +84,8 @@ func TestSwEntry_Interrupt(t *testing.T) {
 		WithEventLoggerEntrySw(rkentry.NoopEventLoggerEntry()),
 		WithEnableCommonServiceSw(true))
 
-	ctx := context.WithValue(context.Background(), bootstrapEventIdKey, "ut")
-	entry.Bootstrap(ctx)
-	entry.Interrupt(ctx)
+	entry.Bootstrap(context.TODO())
+	entry.Interrupt(context.TODO())
 }
 
 func TestSwEntry_UnmarshalJSON(t *testing.T) {
