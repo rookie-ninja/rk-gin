@@ -4,57 +4,47 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/rookie-ninja/rk-gin)](https://goreportcard.com/report/github.com/rookie-ninja/rk-gin)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Interceptor & bootstrapper designed for gin framework. Currently, supports bellow functionalities.
+Interceptor & bootstrapper designed for [gin-gonic/gin](https://github.com/gin-gonic/gin) web framework. [Documentation](https://rkdev.info/docs/bootstrapper/user-guide/gin-golang/).
 
-| Name | Description |
-| ---- | ---- |
-| Start with YAML | Start service with YAML config. |
-| Start with code | Start service from code. |
-| Gin Service | Gin service. |
-| Swagger Service | Swagger UI. |
-| Common Service | List of common API available on Gin. |
-| TV Service | A Web UI shows application and environment information. |
-| Static file handler | A Web UI shows files could be downloaded from server, currently support source of local and pkger. |
-| Metrics interceptor | Collect RPC metrics and export as prometheus client. |
-| Log interceptor | Log every RPC requests as event with rk-query. |
-| Trace interceptor | Collect RPC trace and export it to stdout, file or jaeger. |
-| Panic interceptor | Recover from panic for RPC requests and log it. |
-| Meta interceptor | Send application metadata as header to client. |
-| Auth interceptor | Support [Basic Auth] and [API Key] authorization types. |
-| RateLimit interceptor | Limiting RPC rate |
-| Timeout interceptor | Timing out request by configuration. |
-| Gzip interceptor | Compress and Decompress message body based on request header. |
-| CORS interceptor | Server side CORS interceptor. |
-| JWT interceptor | Server side JWT interceptor. |
-| Secure interceptor | Server side secure interceptor. |
-| CSRF interceptor | Server side csrf interceptor. |
+This belongs to [rk-boot](https://github.com/rookie-ninja/rk-boot) family. We suggest use this lib from [rk-boot](https://github.com/rookie-ninja/rk-boot).
+
+![image](img/boot-arch.png)
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
+- [Architecture](#architecture)
+- [Supported bootstrap](#supported-bootstrap)
+- [Supported instances](#supported-instances)
+- [Supported middlewares](#supported-middlewares)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
-  - [Start Gin Service](#start-gin-service)
-  - [Output](#output)
-    - [Gin Service](#gin-service)
-    - [Swagger Service](#swagger-service)
-    - [TV Service](#tv-service)
-    - [Metrics](#metrics)
-    - [Logging](#logging)
-    - [Meta](#meta)
-- [YAML Config](#yaml-config)
-  - [Gin Service](#gin-service-1)
-  - [Common Service](#common-service)
-  - [Swagger Service](#swagger-service-1)
+  - [1.Create boot.yaml](#1create-bootyaml)
+  - [2.Create main.go](#2create-maingo)
+  - [3.Start server](#3start-server)
+  - [4.Validation](#4validation)
+    - [4.1 Gin server](#41-gin-server)
+    - [4.2 Swagger UI](#42-swagger-ui)
+    - [4.3 TV](#43-tv)
+    - [4.4 Prometheus Metrics](#44-prometheus-metrics)
+    - [4.5 Logging](#45-logging)
+    - [4.6 Meta](#46-meta)
+    - [4.7 Send request](#47-send-request)
+    - [4.8 RPC logs](#48-rpc-logs)
+    - [4.9 RPC prometheus metrics](#49-rpc-prometheus-metrics)
+- [YAML Options](#yaml-options)
+  - [Gin](#gin)
+  - [CommonService](#commonservice)
+  - [Swagger](#swagger)
   - [Prom Client](#prom-client)
-  - [TV Service](#tv-service-1)
-  - [Static file handler Service](#static-file-handler-service)
-  - [Interceptors](#interceptors)
+  - [TV](#tv)
+  - [Static file handler](#static-file-handler)
+  - [Middlewares](#middlewares)
     - [Log](#log)
-    - [Metrics](#metrics-1)
+    - [Metrics](#metrics)
     - [Auth](#auth)
-    - [Meta](#meta-1)
+    - [Meta](#meta)
     - [Tracing](#tracing)
     - [RateLimit](#ratelimit)
     - [Timeout](#timeout)
@@ -63,28 +53,78 @@ Interceptor & bootstrapper designed for gin framework. Currently, supports bello
     - [JWT](#jwt)
     - [Secure](#secure)
     - [CSRF](#csrf)
+  - [Full YAML](#full-yaml)
   - [Development Status: Stable](#development-status-stable)
   - [Contributing](#contributing)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+## Architecture
+![image](img/gin-arch.png)
+
+## Supported bootstrap
+| Bootstrap | Description |
+| --- | --- |
+| YAML based | Start [gin-gonic/gin](https://github.com/gin-gonic/gin) microservice from YAML |
+| Code based | Start [gin-gonic/gin](https://github.com/gin-gonic/gin) microservice from code |
+
+## Supported instances
+All instances could be configured via YAML or Code.
+
+**User can enable anyone of those as needed! No mandatory binding!**
+
+| Instance | Description |
+| --- | --- |
+| gin.Router | Compatible with original [gin-gonic/gin](https://github.com/gin-gonic/gin) service functionalities |
+| Config | Configure [spf13/viper](https://github.com/spf13/viper) as config instance and reference it from YAML |
+| Logger | Configure [uber-go/zap](https://github.com/uber-go/zap) logger configuration and reference it from YAML |
+| EventLogger | Configure logging of RPC with [rk-query](https://github.com/rookie-ninja/rk-query) and reference it from YAML |
+| Credential | Fetch credentials from remote datastore like ETCD. |
+| Cert | Fetch TLS/SSL certificates from remote datastore like ETCD and start microservice. |
+| Prometheus | Start prometheus client at client side and push metrics to pushgateway as needed. |
+| Swagger | Builtin swagger UI handler. |
+| CommonService | List of common APIs. |
+| TV | A Web UI shows microservice and environment information. |
+| StaticFileHandler | A Web UI shows files could be downloaded from server, currently support source of local and pkger. |
+
+## Supported middlewares
+All middlewares could be configured via YAML or Code.
+
+**User can enable anyone of those as needed! No mandatory binding!**
+
+| Middleware | Description |
+| --- | --- |
+| Metrics | Collect RPC metrics and export to [prometheus](https://github.com/prometheus/client_golang) client. |
+| Log | Log every RPC requests as event with [rk-query](https://github.com/rookie-ninja/rk-query). |
+| Trace | Collect RPC trace and export it to stdout, file or jaeger with [open-telemetry/opentelemetry-go](https://github.com/open-telemetry/opentelemetry-go). |
+| Panic | Recover from panic for RPC requests and log it. |
+| Meta | Send micsroservice metadata as header to client. |
+| Auth | Support [Basic Auth] and [API Key] authorization types. |
+| RateLimit | Limiting RPC rate globally or per path. |
+| Timeout | Timing out request by configuration. |
+| Gzip | Compress and Decompress message body based on request header with gzip format . |
+| CORS | Server side CORS validation. |
+| JWT | Server side JWT validation. |
+| Secure | Server side secure validation. |
+| CSRF | Server side csrf validation. |
+
 ## Installation
-`go get -u github.com/rookie-ninja/rk-gin`
+`go get github.com/rookie-ninja/rk-gin`
 
 ## Quick Start
-Bootstrapper can be used with YAML config. In the bellow example, we will start bellow services automatically.
-- Gin Service
-- Swagger Service
-- Common Service
-- TV Service
-- Metrics
-- Logging
-- Meta
+In the bellow example, we will start microservice with bellow functionality and middlewares enabled via YAML.
+
+- [gin-gonic/gin](https://github.com/gin-gonic/gin) server
+- Swagger UI
+- CommonService
+- TV
+- Prometheus Metrics (middleware)
+- Logging (middleware)
+- Meta (middleware)
 
 Please refer example at [example/boot/simple](example/boot/simple).
 
-### Start Gin Service
-
+### 1.Create boot.yaml
 - [boot.yaml](example/boot/simple/boot.yaml)
 
 ```yaml
@@ -110,128 +150,221 @@ gin:
         enabled: true
 ```
 
+### 2.Create main.go
 - [main.go](example/boot/simple/main.go)
 
 ```go
+// Copyright (c) 2021 rookie-ninja
+//
+// Use of this source code is governed by an Apache-style
+// license that can be found in the LICENSE file.
+package main
+
+import (
+	"context"
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/rookie-ninja/rk-entry/entry"
+	"github.com/rookie-ninja/rk-gin/boot"
+	"net/http"
+)
+
 func main() {
-    // Bootstrap basic entries from boot config.
-    rkentry.RegisterInternalEntriesFromConfig("example/boot/simple/boot.yaml")
+	// Bootstrap basic entries from boot config.
+	rkentry.RegisterInternalEntriesFromConfig("example/boot/simple/boot.yaml")
 
-    // Bootstrap gin entry from boot config
-    res := rkgin.RegisterGinEntriesWithConfig("example/boot/simple/boot.yaml")
+	// Bootstrap gin entry from boot config
+	res := rkgin.RegisterGinEntriesWithConfig("example/boot/simple/boot.yaml")
 
-    // Bootstrap gin entry
-    res["greeter"].Bootstrap(context.Background())
+	// Get GinEntry
+	ginEntry := res["greeter"].(*rkgin.GinEntry)
+	// Use *gin.Router adding handler.
+	ginEntry.Router.GET("/v1/greeter", Greeter)
 
-    // Wait for shutdown signal
-    rkentry.GlobalAppCtx.WaitForShutdownSig()
+	// Bootstrap gin entry
+	ginEntry.Bootstrap(context.Background())
 
-    // Interrupt gin entry
-    res["greeter"].Interrupt(context.Background())
+	// Wait for shutdown signal
+	rkentry.GlobalAppCtx.WaitForShutdownSig()
+
+	// Interrupt gin entry
+	ginEntry.Interrupt(context.Background())
+}
+
+// @Summary Greeter service
+// @Id 1
+// @version 1.0
+// @produce application/json
+// @Param name query string true "Input name"
+// @Success 200 {object} GreeterResponse
+// @Router /v1/greeter [get]
+func Greeter(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, &GreeterResponse{
+		Message: fmt.Sprintf("Hello %s!", ctx.Query("name")),
+	})
+}
+
+// Response.
+type GreeterResponse struct {
+	Message string
 }
 ```
+
+### 3.Start server
 
 ```go
 $ go run main.go
 ```
 
-### Output
-#### Gin Service
+### 4.Validation
+#### 4.1 Gin server
 Try to test Gin Service with [curl](https://curl.se/)
+
 ```shell script
 # Curl to common service
 $ curl localhost:8080/rk/v1/healthy
 {"healthy":true}
 ```
 
-#### Swagger Service
+#### 4.2 Swagger UI
+Please refer [documentation](https://rkdev.info/docs/bootstrapper/user-guide/gin-golang/basic/swagger-ui/) for details of configuration.
+
 By default, we could access swagger UI at [/sw].
 - http://localhost:8080/sw
 
 ![sw](docs/img/simple-sw.png)
 
-#### TV Service
+#### 4.3 TV
+Please refer [documentation](https://rkdev.info/docs/bootstrapper/user-guide/gin-golang/basic/tv/) for details of configuration.
+
 By default, we could access TV at [/tv].
 
 ![tv](docs/img/simple-tv.png)
 
-#### Metrics
+#### 4.4 Prometheus Metrics
+Please refer [documentation](https://rkdev.info/docs/bootstrapper/user-guide/gin-golang/basic/middleware-metrics/) for details of configuration.
+
 By default, we could access prometheus client at [/metrics]
 - http://localhost:8080/metrics
 
 ![prom](docs/img/simple-prom.png)
 
-#### Logging
-By default, we enable zap logger and event logger with console encoding type.
+#### 4.5 Logging
+Please refer [documentation](https://rkdev.info/docs/bootstrapper/user-guide/gin-golang/basic/middleware-logging/) for details of configuration.
+
+By default, we enable zap logger and event logger with encoding type of [console]. Encoding type of [json] is also supported.
+
 ```shell script
-2021-06-25T01:22:23.907+0800    INFO    Bootstrapping SwEntry.  {"eventId": "0f056bf9-0811-4fdb-b1eb-8d01b3b2a576", "entryName": "greeter-sw", "entryType": "GinSwEntry", "jsonPath": "", "path": "/sw/", "port": 8080}
-2021-06-25T01:22:23.907+0800    INFO    Bootstrapping promEntry.        {"eventId": "0f056bf9-0811-4fdb-b1eb-8d01b3b2a576", "entryName": "greeter-prom", "entryType": "GinPromEntry", "entryDescription": "Internal RK entry which implements prometheus client with Gin framework.", "path": "/metrics", "port": 8080}
-2021-06-25T01:22:23.907+0800    INFO    Bootstrapping CommonServiceEntry.       {"eventId": "0f056bf9-0811-4fdb-b1eb-8d01b3b2a576", "entryName": "greeter-commonService", "entryType": "GinCommonServiceEntry"}
-2021-06-25T01:22:23.909+0800    INFO    Bootstrapping tvEntry.  {"eventId": "0f056bf9-0811-4fdb-b1eb-8d01b3b2a576", "entryName": "greeter-tv", "entryType": "GinTvEntry", "path": "/rk/v1/tv/*item"}
-2021-06-25T01:22:23.909+0800    INFO    Bootstrapping GinEntry. {"eventId": "0f056bf9-0811-4fdb-b1eb-8d01b3b2a576", "entryName": "greeter", "entryType": "GinEntry", "port": 8080, "interceptorsCount": 6, "swEnabled": true, "tlsEnabled": false, "commonServiceEnabled": true, "tvEnabled": true, "swPath": "/sw/", "promPath": "/metrics", "promPort": 8080}
-```
-```shell script
+2021-12-28T02:14:48.303+0800    INFO    boot/gin_entry.go:920   Bootstrap ginEntry      {"eventId": "65b03dbc-c10e-4998-8d49-26775dafc78b", "entryName": "greeter"}
 ------------------------------------------------------------------------
-endTime=2021-06-25T01:22:23.90783+08:00
-startTime=2021-06-25T01:22:23.90781+08:00
-elapsedNano=20378
+endTime=2021-12-28T02:14:48.305036+08:00
+startTime=2021-12-28T02:14:48.30306+08:00
+elapsedNano=1977443
 timezone=CST
-ids={"eventId":"0f056bf9-0811-4fdb-b1eb-8d01b3b2a576"}
-app={"appName":"rk-gin","appVersion":"master-xxx","entryName":"greeter-sw","entryType":"GinSwEntry"}
+ids={"eventId":"65b03dbc-c10e-4998-8d49-26775dafc78b"}
+app={"appName":"rk","appVersion":"","entryName":"greeter","entryType":"GinEntry"}
 env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.2","os":"darwin","realm":"*","region":"*"}
-payloads={"entryName":"greeter-sw","entryType":"GinSwEntry","jsonPath":"","path":"/sw/","port":8080}
+payloads={"commonServiceEnabled":true,"commonServicePathPrefix":"/rk/v1/","entryName":"greeter","entryPort":8080,"entryType":"GinEntry","promEnabled":true,"promPath":"/metrics","promPort":8080,"swEnabled":true,"swPath":"/sw/","tvEnabled":true,"tvPath":"/rk/v1/tv/"}
 error={}
 counters={}
 pairs={}
 timing={}
 remoteAddr=localhost
-operation=bootstrap
-resCode=OK
-eventStatus=Ended
-EOE
-...
-------------------------------------------------------------------------
-endTime=2021-06-25T01:22:23.909337+08:00
-startTime=2021-06-25T01:22:23.907776+08:00
-elapsedNano=1560406
-timezone=CST
-ids={"eventId":"0f056bf9-0811-4fdb-b1eb-8d01b3b2a576"}
-app={"appName":"rk-gin","appVersion":"master-xxx","entryName":"greeter","entryType":"GinEntry"}
-env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.2","os":"darwin","realm":"*","region":"*"}
-payloads={"commonServiceEnabled":true,"entryName":"greeter","entryType":"GinEntry","interceptorsCount":6,"port":8080,"promPath":"/metrics","promPort":8080,"swEnabled":true,"swPath":"/sw/","tlsEnabled":false,"tvEnabled":true}
-error={}
-counters={}
-pairs={}
-timing={}
-remoteAddr=localhost
-operation=bootstrap
+operation=Bootstrap
 resCode=OK
 eventStatus=Ended
 EOE
 ```
 
-#### Meta
+#### 4.6 Meta
+Please refer [documentation](https://rkdev.info/docs/bootstrapper/user-guide/gin-golang/basic/middleware-meta/) for details of configuration.
+
 By default, we will send back some metadata to client including gateway with headers.
+
 ```shell script
 $ curl -vs localhost:8080/rk/v1/healthy
-...
+*   Trying ::1...
+* TCP_NODELAY set
+* Connected to localhost (::1) port 8080 (#0)
+> GET /rk/v1/healthy HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/7.64.1
+> Accept: */*
+> 
 < HTTP/1.1 200 OK
 < Content-Type: application/json; charset=utf-8
-< X-Request-Id: 3332e575-43d8-4bfe-84dd-45b5fc5fb104
-< X-Rk-App-Name: rk-gin
-< X-Rk-App-Unix-Time: 2021-06-25T01:30:45.143869+08:00
-< X-Rk-App-Version: master-xxx
-< X-Rk-Received-Time: 2021-06-25T01:30:45.143869+08:00
-< X-Trace-Id: 65b9aa7a9705268bba492fdf4a0e5652
-< Date: Thu, 24 Jun 2021 17:30:45 GMT
-...
+< X-Request-Id: f3f0212e-5d99-4851-ae79-ea88818f0ed6
+< X-Rk-App-Name: rk
+< X-Rk-App-Unix-Time: 2021-12-28T02:20:48.207716+08:00
+< X-Rk-Received-Time: 2021-12-28T02:20:48.207716+08:00
+< Date: Mon, 27 Dec 2021 18:20:48 GMT
+< Content-Length: 16
+< 
+* Connection #0 to host localhost left intact
+{"healthy":true}
 ```
 
-## YAML Config
-Available configuration
-User can start multiple gin servers at the same time. Please make sure use different port and name.
+#### 4.7 Send request
+We registered /v1/greeter API in [gin-gonic/gin](https://github.com/gin-gonic/gin) server and let's validate it!
 
-### Gin Service
+```shell script
+$ curl -vs "localhost:8080/v1/greeter?name=rk-dev"
+*   Trying ::1...
+* TCP_NODELAY set
+* Connected to localhost (::1) port 8080 (#0)
+> GET /v1/greeter?name=rk-dev HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/7.64.1
+> Accept: */*
+> 
+< HTTP/1.1 200 OK
+< Content-Type: application/json; charset=utf-8
+< X-Request-Id: a96ab531-e28f-47ca-a082-fc3f8ef14187
+< X-Rk-App-Name: rk
+< X-Rk-App-Unix-Time: 2021-12-28T02:22:03.289469+08:00
+< X-Rk-Received-Time: 2021-12-28T02:22:03.289469+08:00
+< Date: Mon, 27 Dec 2021 18:22:03 GMT
+< Content-Length: 27
+< 
+* Connection #0 to host localhost left intact
+{"Message":"Hello rk-dev!"}
+```
+
+#### 4.8 RPC logs
+Bellow logs would be printed in stdout.
+
+```
+------------------------------------------------------------------------
+endTime=2021-12-28T02:22:03.289585+08:00
+startTime=2021-12-28T02:22:03.289457+08:00
+elapsedNano=128210
+timezone=CST
+ids={"eventId":"a96ab531-e28f-47ca-a082-fc3f8ef14187","requestId":"a96ab531-e28f-47ca-a082-fc3f8ef14187"}
+app={"appName":"rk","appVersion":"","entryName":"greeter","entryType":"GinEntry"}
+env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.2","os":"darwin","realm":"*","region":"*"}
+payloads={"apiMethod":"GET","apiPath":"/v1/greeter","apiProtocol":"HTTP/1.1","apiQuery":"name=rk-dev","userAgent":"curl/7.64.1"}
+error={}
+counters={}
+pairs={}
+timing={}
+remoteAddr=localhost:54028
+operation=/v1/greeter
+resCode=200
+eventStatus=Ended
+EOE
+```
+
+#### 4.9 RPC prometheus metrics
+Prometheus client will automatically register into [gin-gonic/gin](https://github.com/gin-gonic/gin) instance at /metrics.
+
+Access [http://localhost:8080/metrics](http://localhost:8080/metrics)
+
+![image](img/prom-inter.png)
+
+## YAML Options
+User can start multiple [gin-gonic/gin](https://github.com/gin-gonic/gin) instances at the same time. Please make sure use different port and name.
+
+### Gin
 | name | description | type | default value |
 | ------ | ------ | ------ | ------ |
 | gin.name | Required, The name of gin server | string | N/A |
@@ -242,7 +375,7 @@ User can start multiple gin servers at the same time. Please make sure use diffe
 | gin.logger.zapLogger.ref | Optional, Reference of zapLoggerEntry declared in [zapLoggerEntry](https://github.com/rookie-ninja/rk-entry#zaploggerentry) | string | "" |
 | gin.logger.eventLogger.ref | Optional, Reference of eventLoggerEntry declared in [eventLoggerEntry](https://github.com/rookie-ninja/rk-entry#eventloggerentry) | string | "" |
 
-### Common Service
+### CommonService
 | Path | Description |
 | ---- | ---- |
 | /rk/v1/apis | List APIs in current GinEntry. |
@@ -265,7 +398,7 @@ User can start multiple gin servers at the same time. Please make sure use diffe
 | ------ | ------ | ------ | ------ |
 | gin.commonService.enabled | Optional, Enable embedded common service | boolean | false |
 
-### Swagger Service
+### Swagger
 | name | description | type | default value |
 | ------ | ------ | ------ | ------ |
 | gin.sw.enabled | Optional, Enable swagger service over gin server | boolean | false |
@@ -285,12 +418,12 @@ User can start multiple gin servers at the same time. Please make sure use diffe
 | gin.prom.pusher.basicAuth | Optional, Basic auth used to interact with remote pushgateway, form of [user:pass] | string | "" |
 | gin.prom.pusher.cert.ref | Optional, Reference of rkentry.CertEntry | string | "" |
 
-### TV Service
+### TV
 | name | description | type | default value |
 | ------ | ------ | ------ | ------ |
 | gin.tv.enabled | Optional, Enable RK TV | boolean | false |
 
-### Static file handler Service
+### Static file handler
 | name | description | type | default value |
 | ------ | ------ | ------ | ------ |
 | gin.static.enabled | Optional, Enable static file handler | boolean | false |
@@ -303,7 +436,7 @@ User can use pkger command line tool to embed static files into .go files.
 
 Please use sourcePath like: github.com/rookie-ninja/rk-gin:/boot/assets
 
-### Interceptors
+### Middlewares
 #### Log
 | name | description | type | default value |
 | ------ | ------ | ------ | ------ |
@@ -501,6 +634,169 @@ The supported scheme of **tokenLookup**
 | gin.interceptors.csrf.cookieHttpOnly | Indicates if CSRF cookie is HTTP only. | bool | false |
 | gin.interceptors.csrf.cookieSameSite | Indicates SameSite mode of the CSRF cookie. Options: lax, strict, none, default | string | default |
 | gin.interceptors.csrf.ignorePrefix | Ignoring path prefix. | []string | [] |
+
+### Full YAML
+```yaml
+---
+#app:
+#  description: "this is description"                      # Optional, default: ""
+#  keywords: ["rk", "golang"]                              # Optional, default: []
+#  homeUrl: "http://example.com"                           # Optional, default: ""
+#  iconUrl: "http://example.com"                           # Optional, default: ""
+#  docsUrl: ["http://example.com"]                         # Optional, default: []
+#  maintainers: ["rk-dev"]                                 # Optional, default: []
+#zapLogger:
+#  - name: zap-logger                                      # Required
+#    description: "Description of entry"                   # Optional
+#eventLogger:
+#  - name: event-logger                                    # Required
+#    description: "Description of entry"                   # Optional
+#cred:
+#  - name: "local-cred"                                    # Required
+#    provider: "localFs"                                   # Required, etcd, consul, localFs, remoteFs are supported options
+#    locale: "*::*::*::*"                                  # Required, default: *::*::*::*
+#    description: "Description of entry"                   # Optional
+#    paths:                                                # Optional
+#      - "example/boot/full/cred.yaml"
+#cert:
+#  - name: "local-cert"                                    # Required
+#    provider: "localFs"                                   # Required, etcd, consul, localFs, remoteFs are supported options
+#    locale: "*::*::*::*"                                  # Required, default: *::*::*::*
+#    description: "Description of entry"                   # Optional
+#    serverCertPath: "example/boot/full/server.pem"        # Optional, default: "", path of certificate on local FS
+#    serverKeyPath: "example/boot/full/server-key.pem"     # Optional, default: "", path of certificate on local FS
+#    clientCertPath: "example/client.pem"                  # Optional, default: "", path of certificate on local FS
+#    clientKeyPath: "example/client.pem"                   # Optional, default: "", path of certificate on local FS
+#config:
+#  - name: rk-main                                         # Required
+#    path: "example/boot/full/config.yaml"                 # Required
+#    locale: "*::*::*::*"                                  # Required, default: *::*::*::*
+#    description: "Description of entry"                   # Optional
+gin:
+  - name: greeter                                          # Required
+    port: 8080                                             # Required
+    enabled: true                                          # Required
+#    description: "greeter server"                         # Optional, default: ""
+#    cert:
+#      ref: "local-cert"                                   # Optional, default: "", reference of cert entry declared above
+#    sw:
+#      enabled: true                                       # Optional, default: false
+#      path: "sw"                                          # Optional, default: "sw"
+#      jsonPath: ""                                        # Optional
+#      headers: ["sw:rk"]                                  # Optional, default: []
+#    commonService:
+#      enabled: true                                       # Optional, default: false
+#    static:
+#      enabled: true                                       # Optional, default: false
+#      path: "/rk/v1/static"                               # Optional, default: /rk/v1/static
+#      sourceType: local                                   # Required, options: pkger, local
+#      sourcePath: "."                                     # Required, full path of source directory
+#    tv:
+#      enabled:  true                                      # Optional, default: false
+#    prom:
+#      enabled: true                                       # Optional, default: false
+#      path: ""                                            # Optional, default: "metrics"
+#      pusher:
+#        enabled: false                                    # Optional, default: false
+#        jobName: "greeter-pusher"                         # Required
+#        remoteAddress: "localhost:9091"                   # Required
+#        basicAuth: "user:pass"                            # Optional, default: ""
+#        intervalMs: 10000                                 # Optional, default: 1000
+#        cert:                                             # Optional
+#          ref: "local-test"                               # Optional, default: "", reference of cert entry declared above
+#    logger:
+#      zapLogger:
+#        ref: zap-logger                                   # Optional, default: logger of STDOUT, reference of logger entry declared above
+#      eventLogger:
+#        ref: event-logger                                 # Optional, default: logger of STDOUT, reference of logger entry declared above
+#    interceptors:
+#      loggingZap:
+#        enabled: true                                     # Optional, default: false
+#        zapLoggerEncoding: "json"                         # Optional, default: "console"
+#        zapLoggerOutputPaths: ["logs/app.log"]            # Optional, default: ["stdout"]
+#        eventLoggerEncoding: "json"                       # Optional, default: "console"
+#        eventLoggerOutputPaths: ["logs/event.log"]        # Optional, default: ["stdout"]
+#      metricsProm:
+#        enabled: true                                     # Optional, default: false
+#      auth:
+#        enabled: true                                     # Optional, default: false
+#        basic:
+#          - "user:pass"                                   # Optional, default: []
+#        ignorePrefix:
+#          - "/rk/v1"                                      # Optional, default: []
+#        apiKey:
+#          - "keys"                                        # Optional, default: []
+#      meta:
+#        enabled: true                                     # Optional, default: false
+#        prefix: "rk"                                      # Optional, default: "rk"
+#      tracingTelemetry:
+#        enabled: true                                     # Optional, default: false
+#        exporter:                                         # Optional, default will create a stdout exporter
+#          file:
+#            enabled: true                                 # Optional, default: false
+#            outputPath: "logs/trace.log"                  # Optional, default: stdout
+#          jaeger:
+#            agent:
+#              enabled: false                              # Optional, default: false
+#              host: ""                                    # Optional, default: localhost
+#              port: 0                                     # Optional, default: 6831
+#            collector:
+#              enabled: true                               # Optional, default: false
+#              endpoint: ""                                # Optional, default: http://localhost:14268/api/traces
+#              username: ""                                # Optional, default: ""
+#              password: ""                                # Optional, default: ""
+#      rateLimit:
+#        enabled: false                                    # Optional, default: false
+#        algorithm: "leakyBucket"                          # Optional, default: "tokenBucket"
+#        reqPerSec: 100                                    # Optional, default: 1000000
+#        paths:
+#          - path: "/rk/v1/healthy"                        # Optional, default: ""
+#            reqPerSec: 0                                  # Optional, default: 1000000
+#      timeout:
+#        enabled: false                                    # Optional, default: false
+#        timeoutMs: 5000                                   # Optional, default: 5000
+#        paths:
+#          - path: "/rk/v1/healthy"                        # Optional, default: ""
+#            timeoutMs: 1000                               # Optional, default: 5000
+#      jwt:
+#        enabled: true                                     # Optional, default: false
+#        signingKey: "my-secret"                           # Required
+#        ignorePrefix:                                     # Optional, default: []
+#          - "/rk/v1/tv"
+#          - "/sw"
+#          - "/rk/v1/assets"
+#        signingKeys:                                      # Optional
+#          - "key:value"
+#        signingAlgo: ""                                   # Optional, default: "HS256"
+#        tokenLookup: "header:<name>"                      # Optional, default: "header:Authorization"
+#        authScheme: "Bearer"                              # Optional, default: "Bearer"
+#      secure:
+#        enabled: true                                     # Optional, default: false
+#        xssProtection: ""                                 # Optional, default: "1; mode=block"
+#        contentTypeNosniff: ""                            # Optional, default: nosniff
+#        xFrameOptions: ""                                 # Optional, default: SAMEORIGIN
+#        hstsMaxAge: 0                                     # Optional, default: 0
+#        hstsExcludeSubdomains: false                      # Optional, default: false
+#        hstsPreloadEnabled: false                         # Optional, default: false
+#        contentSecurityPolicy: ""                         # Optional, default: ""
+#        cspReportOnly: false                              # Optional, default: false
+#        referrerPolicy: ""                                # Optional, default: ""
+#        ignorePrefix: []                                  # Optional, default: []
+#      csrf:
+#        enabled: true
+#        tokenLength: 32                                   # Optional, default: 32
+#        tokenLookup: "header:X-CSRF-Token"                # Optional, default: "header:X-CSRF-Token"
+#        cookieName: "_csrf"                               # Optional, default: _csrf
+#        cookieDomain: ""                                  # Optional, default: ""
+#        cookiePath: ""                                    # Optional, default: ""
+#        cookieMaxAge: 86400                               # Optional, default: 86400
+#        cookieHttpOnly: false                             # Optional, default: false
+#        cookieSameSite: "default"                         # Optional, default: "default", options: lax, strict, none, default
+#        ignorePrefix: []                                  # Optional, default: []
+#      gzip:
+#        enabled: true
+#        level: bestSpeed                                  # Optional, options: [noCompression, bestSpeed， bestCompression, defaultCompression, huffmanOnly]
+```
 
 ### Development Status: Stable
 
