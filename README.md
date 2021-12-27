@@ -55,7 +55,9 @@ This belongs to [rk-boot](https://github.com/rookie-ninja/rk-boot) family. We su
     - [CSRF](#csrf)
   - [Full YAML](#full-yaml)
   - [Development Status: Stable](#development-status-stable)
-  - [Contributing](#contributing)
+- [Build instruction](#build-instruction)
+- [Test instruction](#test-instruction)
+- [Contributing](#contributing)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -800,7 +802,27 @@ gin:
 
 ### Development Status: Stable
 
-### Contributing
+## Build instruction
+Simply run make all to validate your changes. Or run codes in example/ folder.
+
+- make all
+
+Run unit-test, golangci-lint, doctoc and gofmt.
+
+- make swag
+
+Generate swagger config for CommonService
+
+- make pkger
+
+If files in boot/assets have been modified, then we need to run it.
+
+## Test instruction
+Run unit test with **make test** command.
+
+github workflow will automatically run unit test and golangci-lint for testing and lint validation.
+
+## Contributing
 We encourage and support an active, healthy community of contributors &mdash;
 including you! Details are in the [contribution guide](CONTRIBUTING.md) and
 the [code of conduct](CODE_OF_CONDUCT.md). The rk maintainers keep an eye on
