@@ -231,22 +231,21 @@ $ curl localhost:8080/rk/v1/healthy
 #### 4.2 Swagger UI
 Please refer [documentation](https://rkdev.info/docs/bootstrapper/user-guide/gin-golang/basic/swagger-ui/) for details of configuration.
 
-By default, we could access swagger UI at [/sw].
-- http://localhost:8080/sw
+By default, we could access swagger UI at [http://localhost:8080/sw](http://localhost:8080/sw)
 
 ![sw](docs/img/simple-sw.png)
 
 #### 4.3 TV
 Please refer [documentation](https://rkdev.info/docs/bootstrapper/user-guide/gin-golang/basic/tv/) for details of configuration.
 
-By default, we could access TV at [/tv].
+By default, we could access TV at [http://localhost:8080/rk/v1/tv](http://localhost:8080/rk/v1/tv)
 
 ![tv](docs/img/simple-tv.png)
 
 #### 4.4 Prometheus Metrics
 Please refer [documentation](https://rkdev.info/docs/bootstrapper/user-guide/gin-golang/basic/middleware-metrics/) for details of configuration.
 
-By default, we could access prometheus client at [/metrics]
+By default, we could access prometheus client at [http://localhost:8080/metrics](http://localhost:8080/metrics)
 - http://localhost:8080/metrics
 
 ![prom](docs/img/simple-prom.png)
