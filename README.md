@@ -797,6 +797,15 @@ gin:
 #      gzip:
 #        enabled: true
 #        level: bestSpeed                                  # Optional, options: [noCompression, bestSpeed， bestCompression, defaultCompression, huffmanOnly]
+#      cors:
+#        enabled: true                                     # Optional, default: false
+#        allowOrigins:
+#          - "http://localhost:*"                          # Optional, default: *
+#        allowCredentials: false                           # Optional, default: false
+#        allowHeaders: []                                  # Optional, default: []
+#        allowMethods: []                                  # Optional, default: []
+#        exposeHeaders: []                                 # Optional, default: []
+#        maxAge: 0                                         # Optional, default: 0
 ```
 
 ### Development Status: Stable
