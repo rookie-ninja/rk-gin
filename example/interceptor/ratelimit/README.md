@@ -1,5 +1,5 @@
-# Rate limit interceptor
-In this example, we will try to create gin server rate limit interceptor enabled.
+# Rate limit middleware
+In this example, we will try to create gin server rate limit middleware enabled.
 
 Rate limit interceptor contains bellow algorithm
 
@@ -34,9 +34,6 @@ go get -u github.com/rookie-ninja/rk-gin
 Add rkginlimit.Interceptor() with option.
 
 ```go
-import     "github.com/rookie-ninja/rk-gin/interceptor/ratelimit"
-```
-```go
     // ********************************************
     // ********** Enable interceptors *************
     // ********************************************
@@ -48,12 +45,12 @@ import     "github.com/rookie-ninja/rk-gin/interceptor/ratelimit"
 ## Options
 | Name | Default | Description |
 | ---- | ---- | ---- |
-| WithEntryNameAndType(entryName, entryType string) | entryName=gin, entryType=gin | entryName and entryType will be used to distinguish options if there are multiple interceptors in single process. |
-| WithReqPerSec(int) | int | Global rate limit per second. |
-| WithReqPerSecByPath(path string, reqPerSec int) | "", 0 | Request limiter by gin method. |
-| WithAlgorithm(algo string) | tokenBucket | Algorithm of rate limiter. |
-| WithGlobalLimiter(l Limiter) | nil | Provider user defined limiter. |
-| WithLimiterByPath(path string, l Limiter) | "", nil | Provider user defined limiter by gin method. |
+| rkmidlimit.WithEntryNameAndType(entryName, entryType string) | entryName=gin, entryType=gin | entryName and entryType will be used to distinguish options if there are multiple interceptors in single process. |
+| rkmidlimit.WithReqPerSec(int) | int | Global rate limit per second. |
+| rkmidlimit.WithReqPerSecByPath(path string, reqPerSec int) | "", 0 | Request limiter by gin method. |
+| rkmidlimit.WithAlgorithm(algo string) | tokenBucket | Algorithm of rate limiter. |
+| rkmidlimit.WithGlobalLimiter(l Limiter) | nil | Provider user defined limiter. |
+| rkmidlimit.WithLimiterByPath(path string, l Limiter) | "", nil | Provider user defined limiter by gin method. |
 
 ```go
 	// ********************************************
@@ -62,31 +59,31 @@ import     "github.com/rookie-ninja/rk-gin/interceptor/ratelimit"
 	interceptors := []gin.HandlerFunc{
 		rkginlog.Interceptor(),
 		rkginlimit.Interceptor(
-			// Entry name and entry type will be used for distinguishing interceptors. Recommended.
-			// rkginmeta.WithEntryNameAndType("greeter", "gin"),
-			//
-			// Provide algorithm, rkginlimit.LeakyBucket and rkginlimit.TokenBucket was available, default is TokenBucket.
-			//rkginlimit.WithAlgorithm(rkginlimit.LeakyBucket),
-			//
-			// Provide request per second, if provide value of zero, then no requests will be pass through and user will receive an error with
-			// resource exhausted.
-			//rkginlimit.WithReqPerSec(10),
-			//
-			// Provide request per second with path name.
-			// The name should be full path name. if provide value of zero,
-			// then no requests will be pass through and user will receive an error with resource exhausted.
-			//rkginlimit.WithReqPerSecByPath("/rk/v1/greeter", 0),
-			//
-			// Provide user function of limiter
-			//rkginlimit.WithGlobalLimiter(func(ctx *gin.Context) error {
-			//	 return nil
-			//}),
-			//
-			// Provide user function of limiter by path name.
-			// The name should be full path name.
-			//rkginlimit.WithLimiterByPath("/rk/v1/greeter", func(ctx *gin.Context) error {
-			//	 return nil
-			//}),
+		// Entry name and entry type will be used for distinguishing interceptors. Recommended.
+		// rkmidlimit.WithEntryNameAndType("greeter", "gin"),
+		//
+		// Provide algorithm, rkmidlimit.LeakyBucket and rkmidlimit.TokenBucket was available, default is TokenBucket.
+		//rkmidlimit.WithAlgorithm(rkmidlimit.LeakyBucket),
+		//
+		// Provide request per second, if provide value of zero, then no requests will be pass through and user will receive an error with
+		// resource exhausted.
+		//rkmidlimit.WithReqPerSec(10),
+		//
+		// Provide request per second with path name.
+		// The name should be full path name. if provide value of zero,
+		// then no requests will be pass through and user will receive an error with resource exhausted.
+		//rkmidlimit.WithReqPerSecByPath("/rk/v1/greeter", 0),
+		//
+		// Provide user function of limiter
+		//rkmidlimit.WithGlobalLimiter(func() error {
+		//	 return nil
+		//}),
+		//
+		// Provide user function of limiter by path name.
+		// The name should be full path name.
+		//rkmidlimit.WithLimiterByPath("/rk/v1/greeter", func() error {
+		//	 return nil
+		//}),
 		),
 	}
 ```

@@ -6,9 +6,12 @@
 package rkginpanic
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/rookie-ninja/rk-entry/middleware/panic"
 	"github.com/stretchr/testify/assert"
-	httptest "github.com/stretchr/testify/http"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 )
@@ -16,12 +19,15 @@ import (
 func TestInterceptor(t *testing.T) {
 	defer assertNotPanic(t)
 
-	handler := Interceptor(
-		WithEntryNameAndType("ut-entry", "ut-type"))
-	ctx, _ := gin.CreateTestContext(&httptest.TestResponseWriter{})
+	ctx, router := gin.CreateTestContext(httptest.NewRecorder())
+	router.Use(Interceptor(
+		rkmidpanic.WithEntryNameAndType("ut-entry", "ut-type")))
+	router.Handle(http.MethodGet, "/ut", func(context *gin.Context) {
+		panic(errors.New("ut panic"))
+	})
 
-	// call interceptor
-	handler(ctx)
+	ctx.Request = httptest.NewRequest(http.MethodGet, "/ut", nil)
+	router.HandleContext(ctx)
 }
 
 func assertNotPanic(t *testing.T) {

@@ -1,5 +1,5 @@
-# Panic interceptor
-In this example, we will try to create gin server with panic interceptor enabled.
+# Panic middleware
+In this example, we will try to create gin server with panic middleware enabled.
 
 Panic interceptor will add do the bellow actions.
 - Recover from panic

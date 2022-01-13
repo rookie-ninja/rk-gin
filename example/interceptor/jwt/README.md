@@ -1,5 +1,5 @@
-# JWT interceptor
-In this example, we will try to create gin server jwt interceptor enabled.
+# JWT middleware
+In this example, we will try to create gin server jwt middleware enabled.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -27,16 +27,13 @@ go get -u github.com/rookie-ninja/rk-gin
 Add rkginjwt.Interceptor() meta with option.
 
 ```go
-import     "github.com/rookie-ninja/rk-gin/interceptor/jwt"
-```
-```go
     // ********************************************
     // ********** Enable interceptors *************
     // ********************************************
     interceptors := []gin.HandlerFunc{
         rkginjwt.Interceptor(
 			// Required, provide signing key.
-			rkginjwt.WithSigningKey([]byte("my-secret")),
+			rkmidjwt.WithSigningKey([]byte("my-secret")),
         ),
     }
 ```
@@ -44,17 +41,17 @@ import     "github.com/rookie-ninja/rk-gin/interceptor/jwt"
 ## Options
 | Name | Description | Default Values |
 | ---- | ---- | ---- |
-| rkginjwt.WithEntryNameAndType(entryName, entryType string) | Optional. Provide entry name and type if there are multiple jwt interceptors needs to be used. | gin, gin |
-| rkginjwt.WithSkipper(skipper function) | Optional. Provide skipper function | function always returns false |
-| rkginjwt.WithSigningKey(interface{}) | Required. Provide signing key | nil |
-| rkginjwt.WithSigningKeys(string, interface{}) | Optional. Provide signing key value pairs | empty |
-| rkginjwt.WithSigningAlgorithm(string) | Optional, Provide signing algorithm. | HS256 |
-| rkginjwt.WithClaims(jwt.Claims) | Optional, provide jwt.Claims. | jwt.MapClaims{} |
-| rkginjwt.WithTokenLookup(string) | Optional, provide jwt token lookup rules, please see code comments for details. | "header:Authorization" |
-| rkginjwt.WithAuthScheme(string) | Optional, provide auth scheme. | Bearer |
-| rkginjwt.WithKeyFunc(jwt.Keyfunc) | Optional, provide key function. | default function will be assigned. |
-| rkginjwt.WithParseTokenFunc(func) | Optional, provide token parse function. | default function will be assigned. | 
-| rkginjwt.WithIgnorePrefix([]string) | Optional, provide ignoring path prefix. | [] |
+| rkmidjwt.WithEntryNameAndType(entryName, entryType string) | Optional. Provide entry name and type if there are multiple jwt interceptors needs to be used. | gin, gin |
+| rkmidjwt.WithIgnorePrefix(string...) | Optional. Provide ignore path | [] |
+| rkmidjwt.WithSigningKey(interface{}) | Required. Provide signing key | nil |
+| rkmidjwt.WithSigningKeys(string, interface{}) | Optional. Provide signing key value pairs | empty |
+| rkmidjwt.WithSigningAlgorithm(string) | Optional, Provide signing algorithm. | HS256 |
+| rkmidjwt.WithClaims(jwt.Claims) | Optional, provide jwt.Claims. | jwt.MapClaims{} |
+| rkmidjwt.WithTokenLookup(string) | Optional, provide jwt token lookup rules, please see code comments for details. | "header:Authorization" |
+| rkmidjwt.WithAuthScheme(string) | Optional, provide auth scheme. | Bearer |
+| rkmidjwt.WithKeyFunc(jwt.Keyfunc) | Optional, provide key function. | default function will be assigned. |
+| rkmidjwt.WithParseTokenFunc(func) | Optional, provide token parse function. | default function will be assigned. | 
+| rkmidjwt.WithIgnorePrefix([]string) | Optional, provide ignoring path prefix. | [] |
 
 ```go
     // ********************************************
@@ -62,35 +59,37 @@ import     "github.com/rookie-ninja/rk-gin/interceptor/jwt"
     // ********************************************
     interceptors := []gin.HandlerFunc{
         rkginjwt.Interceptor(
-			// Required, entry name and entry type will be used for distinguishing interceptors. Recommended.
-			//rkginjwt.WithEntryNameAndType("greeter", "gin"),
+			// Entry name and entry type will be used for distinguishing interceptors. Recommended.
+			// rkginjwt.WithEntryNameAndType("greeter", "gin"),
 			//
 			// Required, provide signing key.
-			rkginjwt.WithSigningKey([]byte("my-secret")),
+			rkmidjwt.WithSigningKey([]byte("my-secret")),
+			//
+			// rkmidjwt.WithIgnorePrefix(""),
 			//
 			// Optional, provide skipper function
-			//rkginjwt.WithSkipper(func(e *gin.Context) bool {
+			//rkmidjwt.WithSkipper(func(e *gin.Context) bool {
 			//	return true
 			//}),
 			//
 			// Optional, provide token parse function, default one will be assigned.
-			//rkginjwt.WithParseTokenFunc(func(auth string, ctx *gin.Context) (*jwt.Token, error) {
+			//rkmidjwt.WithParseTokenFunc(func(auth string, ctx *gin.Context) (*jwt.Token, error) {
 			//	return nil, nil
 			//}),
 			//
 			// Optional, provide key function, default one will be assigned.
-			//rkginjwt.WithKeyFunc(func(token *jwt.Token) (interface{}, error) {
+			//rkmidjwt.WithKeyFunc(func(token *jwt.Token) (interface{}, error) {
 			//	return nil, nil
 			//}),
 			//
 			// Optional, default is Bearer
-			//rkginjwt.WithAuthScheme("Bearer"),
+			//rkmidjwt.WithAuthScheme("Bearer"),
 			//
 			// Optional
-			//rkginjwt.WithTokenLookup("header:my-jwt-header-key"),
+			//rkmidjwt.WithTokenLookup("header:my-jwt-header-key"),
 			//
 			// Optional, default is HS256
-			//rkginjwt.WithSigningAlgorithm(rkginjwt.AlgorithmHS256),
+			//rkmidjwt.WithSigningAlgorithm(rkginjwt.AlgorithmHS256),
         ),
     }
 ```

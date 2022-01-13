@@ -9,7 +9,7 @@ import (
 	"bytes"
 	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-common/error"
-	"github.com/rookie-ninja/rk-gin/interceptor"
+	"github.com/rookie-ninja/rk-entry/middleware"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -25,7 +25,7 @@ func Interceptor(opts ...Option) gin.HandlerFunc {
 	set := newOptionSet(opts...)
 
 	return func(ctx *gin.Context) {
-		ctx.Set(rkgininter.RpcEntryNameKey, set.EntryName)
+		ctx.Set(rkmid.EntryNameKey.String(), set.EntryName)
 
 		if set.Skipper(ctx) {
 			ctx.Next()

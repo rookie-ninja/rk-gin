@@ -6,95 +6,48 @@
 package rkginlog
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
-	rkentry "github.com/rookie-ninja/rk-entry/entry"
-	rkginctx "github.com/rookie-ninja/rk-gin/interceptor/context"
-	rkquery "github.com/rookie-ninja/rk-query"
+	"github.com/rookie-ninja/rk-entry/entry"
+	"github.com/rookie-ninja/rk-entry/middleware"
+	"github.com/rookie-ninja/rk-entry/middleware/log"
+	"github.com/rookie-ninja/rk-query"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"net/http"
-	"net/url"
+	"net/http/httptest"
+	"os"
 	"testing"
 )
 
-func init() {
-	gin.SetMode(gin.ReleaseMode)
-}
-
-func NewMockResponseWriter() *MockResponseWriter {
-	return &MockResponseWriter{
-		data:   make([]byte, 0),
-		header: http.Header{},
-	}
-}
-
-type MockResponseWriter struct {
-	data       []byte
-	statusCode int
-	header     http.Header
-}
-
-func (m *MockResponseWriter) Header() http.Header {
-	return m.header
-}
-
-func (m *MockResponseWriter) Write(bytes []byte) (int, error) {
-	m.data = bytes
-	return len(bytes), nil
-}
-
-func (m *MockResponseWriter) WriteHeader(statusCode int) {
-	m.statusCode = statusCode
-}
-
-func TestInterceptor_WithShouldNotLog(t *testing.T) {
-	defer assertNotPanic(t)
-	handler := Interceptor(
-		WithEntryNameAndType("ut-entry", "ut-type"),
-		WithZapLoggerEntry(rkentry.NoopZapLoggerEntry()),
-		WithEventLoggerEntry(rkentry.NoopEventLoggerEntry()))
-
-	ctx, _ := gin.CreateTestContext(NewMockResponseWriter())
-	ctx.Request = &http.Request{
-		URL: &url.URL{
-			Path: "/rk/v1/assets",
-		},
-	}
-
-	handler(ctx)
+func newCtx() *gin.Context {
+	ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
+	ctx.Request = httptest.NewRequest(http.MethodGet, "/ut-path", nil)
+	return ctx
 }
 
 func TestInterceptor_HappyCase(t *testing.T) {
 	defer assertNotPanic(t)
-	handler := Interceptor(
-		WithEntryNameAndType("ut-entry", "ut-type"),
-		WithZapLoggerEntry(rkentry.NoopZapLoggerEntry()),
-		WithEventLoggerEntry(rkentry.NoopEventLoggerEntry()))
 
-	ctx, _ := gin.CreateTestContext(NewMockResponseWriter())
-	ctx.Request = &http.Request{
-		URL: &url.URL{
-			Path: "ut-path",
-		},
-	}
+	beforeCtx := rkmidlog.NewBeforeCtx()
+	afterCtx := rkmidlog.NewAfterCtx()
+	mock := rkmidlog.NewOptionSetMock(beforeCtx, afterCtx)
+	inter := Interceptor(rkmidlog.WithMockOptionSet(mock))
+	ctx := newCtx()
 
-	ctx.Error(errors.New("ut error"))
-	ctx.Writer.Header().Set(rkginctx.RequestIdKey, "ut-request-id")
-	ctx.Writer.Header().Set(rkginctx.TraceIdKey, "ut-trace-id")
+	// happy case
+	event := rkentry.NoopEventLoggerEntry().GetEventFactory().CreateEventNoop()
+	logger := rkentry.NoopZapLoggerEntry().GetLogger()
+	beforeCtx.Output.Event = event
+	beforeCtx.Output.Logger = logger
 
-	handler(ctx)
+	inter(ctx)
 
-	event := rkginctx.GetEvent(ctx)
-	assert.NotEmpty(t, event.GetRemoteAddr())
-	assert.NotEmpty(t, event.ListPayloads())
-	assert.NotEmpty(t, event.GetOperation())
-	assert.NotZero(t, event.GetErrCount(errors.New("ut error")))
-	assert.NotEmpty(t, event.GetRequestId())
-	assert.NotEmpty(t, event.GetTraceId())
-	assert.NotEmpty(t, event.GetResCode())
-	assert.Equal(t, rkquery.Ended, event.GetEventStatus())
+	eventFromCtx, _ := ctx.Get(rkmid.EventKey.String())
+	loggerFromCtx, _ := ctx.Get(rkmid.LoggerKey.String())
+	assert.Equal(t, event, eventFromCtx.(rkquery.Event))
+	assert.Equal(t, logger, loggerFromCtx.(*zap.Logger))
 
-	assert.False(t, ctx.IsAborted())
+	assert.Equal(t, http.StatusOK, ctx.Writer.Status())
 }
 
 func assertNotPanic(t *testing.T) {
@@ -105,4 +58,9 @@ func assertNotPanic(t *testing.T) {
 		// This should never be called in case of a bug
 		assert.True(t, true)
 	}
+}
+
+func TestMain(m *testing.M) {
+	gin.SetMode(gin.ReleaseMode)
+	os.Exit(m.Run())
 }

@@ -33,28 +33,28 @@ func main() {
 		rkginlog.Interceptor(),
 		rkginlimit.Interceptor(
 		// Entry name and entry type will be used for distinguishing interceptors. Recommended.
-		// rkginmeta.WithEntryNameAndType("greeter", "gin"),
+		// rkmidlimit.WithEntryNameAndType("greeter", "gin"),
 		//
-		// Provide algorithm, rkginlimit.LeakyBucket and rkginlimit.TokenBucket was available, default is TokenBucket.
-		//rkginlimit.WithAlgorithm(rkginlimit.LeakyBucket),
+		// Provide algorithm, rkmidlimit.LeakyBucket and rkmidlimit.TokenBucket was available, default is TokenBucket.
+		//rkmidlimit.WithAlgorithm(rkmidlimit.LeakyBucket),
 		//
 		// Provide request per second, if provide value of zero, then no requests will be pass through and user will receive an error with
 		// resource exhausted.
-		//rkginlimit.WithReqPerSec(10),
+		//rkmidlimit.WithReqPerSec(10),
 		//
 		// Provide request per second with path name.
 		// The name should be full path name. if provide value of zero,
 		// then no requests will be pass through and user will receive an error with resource exhausted.
-		//rkginlimit.WithReqPerSecByPath("/rk/v1/greeter", 0),
+		//rkmidlimit.WithReqPerSecByPath("/rk/v1/greeter", 0),
 		//
 		// Provide user function of limiter
-		//rkginlimit.WithGlobalLimiter(func(ctx *gin.Context) error {
+		//rkmidlimit.WithGlobalLimiter(func() error {
 		//	 return nil
 		//}),
 		//
 		// Provide user function of limiter by path name.
 		// The name should be full path name.
-		//rkginlimit.WithLimiterByPath("/rk/v1/greeter", func(ctx *gin.Context) error {
+		//rkmidlimit.WithLimiterByPath("/rk/v1/greeter", func() error {
 		//	 return nil
 		//}),
 		),
@@ -97,14 +97,6 @@ type GreeterResponse struct {
 
 // Greeter Handler.
 func Greeter(ctx *gin.Context) {
-	// ******************************************
-	// ********** rpc-scoped logger *************
-	// ******************************************
-	//
-	// RequestId will be printed if enabled by bellow codes.
-	// 1: Enable rkginmeta.Interceptor() in server side.
-	// 2: rkginctx.AddHeaderToClient(ctx, rkginctx.RequestIdKey, rkcommon.GenerateRequestId())
-	//
 	rkginctx.GetLogger(ctx).Info("Received request from client.")
 
 	// Set request id with X-Request-Id to outgoing headers.

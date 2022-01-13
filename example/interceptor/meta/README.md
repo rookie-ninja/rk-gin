@@ -1,5 +1,5 @@
-# Meta interceptor
-In this example, we will try to create gin server meta interceptor enabled.
+# Meta middleware
+In this example, we will try to create gin server meta middleware enabled.
 
 Meta interceptor will send bellow headers to client by default.
 
@@ -39,9 +39,6 @@ go get -u github.com/rookie-ninja/rk-gin
 Add rkginmeta.Interceptor() meta with option.
 
 ```go
-import     "github.com/rookie-ninja/rk-gin/interceptor/meta"
-```
-```go
     // ********************************************
     // ********** Enable interceptors *************
     // ********************************************
@@ -58,13 +55,14 @@ Meta interceptor is only available on server side. The interceptor will send bel
 - X-RK-App-Version: Retrieved from [rkentry.GlobalAppCtx.GetAppInfoEntry().Version](https://github.com/rookie-ninja/rk-entry#appinfoentry)
 - X-RK-Unix-Time: Server time when request arrives.
 - X-RK-Received-Time: Server time when request arrives.
+- X-RK-Locale: Environment variables for REALM::REGION::AZ::DOMAIN
 
 ![arch](img/arch.png)
 
 | Name | Description | Default Values |
 | ---- | ---- | ---- |
-| rkginmeta.WithEntryNameAndType(entryName, entryType string) | Provide entry name and type if there are multiple meta interceptors needs to be used. | gin, gin |
-| rkginmeta.WithPrefix(prefix string) | Provide prefix of meta header | RK |
+| rkmidmeta.WithEntryNameAndType(entryName, entryType string) | Provide entry name and type if there are multiple meta interceptors needs to be used. | gin, gin |
+| rkmidmeta.WithPrefix(prefix string) | Provide prefix of meta header | RK |
 
 ```go
     // ********************************************
@@ -73,20 +71,20 @@ Meta interceptor is only available on server side. The interceptor will send bel
     interceptors := []gin.HandlerFunc{
         rkginmeta.Interceptor(
             // Entry name and entry type will be used for distinguishing interceptors. Recommended.
-            // rkginmeta.WithEntryNameAndType("greeter", "gin"),
+            // rkmidmeta.WithEntryNameAndType("greeter", "gin"),
             //
             // We will replace X-<Prefix>-XXX with prefix user provided.
-            // rkginmeta.WithPrefix("Dog"),
+            // rkmidmeta.WithPrefix("Dog"),
         ),
     }
 ```
 ```shell script
 # Print out headers from server on client side.
-< X-Request-Id: 861adbd1-6b98-446b-8fa0-3699a37bd7f1
+< X-Request-Id: d3313df1-4cad-4bc8-a1ce-118fbf75bd6d
+< X-Rk-App-Locale: *::*::*::*
 < X-Rk-App-Name: rk
-< X-Rk-App-Unix-Time: 2021-06-24T21:29:24.877293+08:00
-< X-Rk-App-Version: v0.0.0
-< X-Rk-Received-Time: 2021-06-24T21:29:24.877293+08:00
+< X-Rk-App-Unix-Time: 2022-01-13T20:07:50.285305+08:00
+< X-Rk-Received-Time: 2022-01-13T20:07:50.285305+08:00
 ```
 
 ### Context Usage
@@ -105,7 +103,7 @@ requestId to client.
 Otherwise, if log interceptor was enabled, we will pick the latest one and attach to event logger and zap logger.
 
 ```go
-    rkginctx.SetHeaderToClient(ctx, rkginctx.RequestIdKey, "this-is-my-request-id-overridden")
+    rkginctx.SetHeaderToClient(ctx, rkmid.HeaderRequestId, "this-is-my-request-id-overridden")
 ```
 
 ```shell script
@@ -116,6 +114,7 @@ Otherwise, if log interceptor was enabled, we will pick the latest one and attac
 < X-Rk-App-Version: v0.0.0
 < X-Rk-Received-Time: 2021-06-24T21:38:33.561189+08:00
 ```
+
 ```shell script
 # Event logger
 ------------------------------------------------------------------------
@@ -159,10 +158,11 @@ func main() {
 ```shell script
 # Headers sent from server
 < X-Request-Id: 48bcce4d-d828-42a6-a836-f699c1268ace
+< X-Rk-App-Locale: *::*::*::*
 < X-Rk-App-Name: demo-app
-< X-Rk-App-Unix-Time: 2021-06-24T21:41:27.807217+08:00
+< X-Rk-App-Unix-Time: 2022-01-13T20:12:26.061407+08:00
 < X-Rk-App-Version: demo-version
-< X-Rk-Received-Time: 2021-06-24T21:41:27.807217+08:00
+< X-Rk-Received-Time: 2022-01-13T20:12:26.061407+08:00
 ```
 
 ## Example
@@ -176,23 +176,24 @@ $ go run greeter-server.go
 #### Output
 - Server side (zap & event)
 ```shell script
-2021-06-24T21:43:18.959+0800    INFO    meta/greeter-server.go:84       Received request from client.   {"requestId": "6696cfbd-0060-4318-a564-75fa71415f0a"}
+2022-01-13T20:13:30.449+0800    INFO    meta/greeter-server.go:83       Received request from client.   {"requestId": "8505229d-0171-424d-bdf2-88ab1f514305"}
 ```
+
 ```shell script
 ------------------------------------------------------------------------
-endTime=2021-06-24T21:43:18.960052+08:00
-startTime=2021-06-24T21:43:18.959886+08:00
-elapsedNano=165739
+endTime=2022-01-13T20:13:30.449302+08:00
+startTime=2022-01-13T20:13:30.449179+08:00
+elapsedNano=123138
 timezone=CST
-ids={"eventId":"6696cfbd-0060-4318-a564-75fa71415f0a","requestId":"6696cfbd-0060-4318-a564-75fa71415f0a"}
-app={"appName":"rk","appVersion":"v0.0.0","entryName":"gin","entryType":"gin"}
-env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.2","os":"darwin","realm":"*","region":"*"}
+ids={"eventId":"8505229d-0171-424d-bdf2-88ab1f514305","requestId":"8505229d-0171-424d-bdf2-88ab1f514305"}
+app={"appName":"rk","appVersion":"","entryName":"c7g1eqjd0cvjbcb73qug","entryType":""}
+env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.6","os":"darwin","realm":"*","region":"*"}
 payloads={"apiMethod":"GET","apiPath":"/rk/v1/greeter","apiProtocol":"HTTP/1.1","apiQuery":"name=rk-dev","userAgent":"curl/7.64.1"}
 error={}
 counters={}
 pairs={}
 timing={}
-remoteAddr=localhost:53396
+remoteAddr=localhost:65202
 operation=/rk/v1/greeter
 resCode=200
 eventStatus=Ended
@@ -205,11 +206,11 @@ $ curl -vs "localhost:8080/rk/v1/greeter?name=rk-dev"
 ...
 < HTTP/1.1 200 OK
 < Content-Type: application/json; charset=utf-8
-< X-Request-Id: 6696cfbd-0060-4318-a564-75fa71415f0a
+< X-Request-Id: 8505229d-0171-424d-bdf2-88ab1f514305
+< X-Rk-App-Locale: *::*::*::*
 < X-Rk-App-Name: rk
-< X-Rk-App-Unix-Time: 2021-06-24T21:43:18.959902+08:00
-< X-Rk-App-Version: v0.0.0
-< X-Rk-Received-Time: 2021-06-24T21:43:18.959902+08:00
+< X-Rk-App-Unix-Time: 2022-01-13T20:13:30.449189+08:00
+< X-Rk-Received-Time: 2022-01-13T20:13:30.449189+08:00
 ...
 {"Message":"Hello rk-dev!"}
 ```

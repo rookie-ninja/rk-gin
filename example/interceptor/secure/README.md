@@ -1,4 +1,4 @@
-# Secure interceptor
+# Secure middleware
 In this example, we will try to create Gin server with Secure middleware enabled.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -27,9 +27,6 @@ go get -u github.com/rookie-ninja/rk-gin
 Add rkginsec.Interceptor() with option.
 
 ```go
-import     "github.com/rookie-ninja/rk-gin/interceptor/secure"
-```
-```go
     // ********************************************
     // ********** Enable interceptors *************
     // ********************************************
@@ -41,17 +38,17 @@ import     "github.com/rookie-ninja/rk-gin/interceptor/secure"
 ## Options
 | Name | Description | Default Values |
 | ---- | ---- | ---- |
-| rkginsec.WithEntryNameAndType(entryName, entryType string) | Optional. Provide entry name and type if there are multiple secure interceptors needs to be used. | gin, gin |
-| rkginsec.WithXSSProtection(string) | Optional. X-XSS-Protection header value | "1; mode=block" |
-| rkginsec.WithContentTypeNosniff(string) | Optional. X-Content-Type-Options header value | nosniff |
-| rkginsec.WithXFrameOptions(string) | Optional. X-Frame-Options header value | SAMEORIGIN |
-| rkginsec.WithHSTSMaxAge(int) | Optional, Strict-Transport-Security header value | 0 |
-| rkginsec.WithHSTSExcludeSubdomains(bool) | Optional, excluding subdomains of HSTS | false |
-| rkginsec.WithHSTSPreloadEnabled(bool) | Optional, enabling HSTS preload | false |
-| rkginsec.WithContentSecurityPolicy(string) | Optional, Content-Security-Policy header value | "" |
-| rkginsec.WithCSPReportOnly(bool) | Optional, Content-Security-Policy-Report-Only header value | false |
-| rkginsec.WithReferrerPolicy(string) | Optional, Referrer-Policy header value | "" | 
-| rkginsec.WithIgnorePrefix([]string) | Optional, provide ignoring path prefix. | [] |
+| rkmidsec.WithEntryNameAndType(entryName, entryType string) | Optional. Provide entry name and type if there are multiple secure interceptors needs to be used. | gin, gin |
+| rkmidsec.WithXSSProtection(string) | Optional. X-XSS-Protection header value | "1; mode=block" |
+| rkmidsec.WithContentTypeNosniff(string) | Optional. X-Content-Type-Options header value | nosniff |
+| rkmidsec.WithXFrameOptions(string) | Optional. X-Frame-Options header value | SAMEORIGIN |
+| rkmidsec.WithHSTSMaxAge(int) | Optional, Strict-Transport-Security header value | 0 |
+| rkmidsec.WithHSTSExcludeSubdomains(bool) | Optional, excluding subdomains of HSTS | false |
+| rkmidsec.WithHSTSPreloadEnabled(bool) | Optional, enabling HSTS preload | false |
+| rkmidsec.WithContentSecurityPolicy(string) | Optional, Content-Security-Policy header value | "" |
+| rkmidsec.WithCSPReportOnly(bool) | Optional, Content-Security-Policy-Report-Only header value | false |
+| rkmidsec.WithReferrerPolicy(string) | Optional, Referrer-Policy header value | "" | 
+| rkmidsec.WithIgnorePrefix([]string) | Optional, provide ignoring path prefix. | [] |
 
 ```go
     // ********************************************
@@ -60,43 +57,43 @@ import     "github.com/rookie-ninja/rk-gin/interceptor/secure"
 	interceptors := []gin.HandlerFunc{
 		rkginsec.Interceptor(
 			// Required, entry name and entry type will be used for distinguishing interceptors. Recommended.
-			rkginsec.WithEntryNameAndType("greeter", "gin"),
+			rkmidsec.WithEntryNameAndType("greeter", "gin"),
 			//
 			// X-XSS-Protection header value.
 			// Optional. Default value "1; mode=block".
-			//rkginsec.WithXSSProtection("my-value"),
+			//rkmidsec.WithXSSProtection("my-value"),
 			//
 			// X-Content-Type-Options header value.
 			// Optional. Default value "nosniff".
-			//rkginsec.WithContentTypeNosniff("my-value"),
+			//rkmidsec.WithContentTypeNosniff("my-value"),
 			//
 			// X-Frame-Options header value.
 			// Optional. Default value "SAMEORIGIN".
-			//rkginsec.WithXFrameOptions("my-value"),
+			//rkmidsec.WithXFrameOptions("my-value"),
 			//
 			// Optional, Strict-Transport-Security header value.
-			//rkginsec.WithHSTSMaxAge(1),
+			//rkmidsec.WithHSTSMaxAge(1),
 			//
 			// Optional, excluding subdomains of HSTS, default is false
-			//rkginsec.WithHSTSExcludeSubdomains(true),
+			//rkmidsec.WithHSTSExcludeSubdomains(true),
 			//
 			// Optional, enabling HSTS preload, default is false
-			//rkginsec.WithHSTSPreloadEnabled(true),
+			//rkmidsec.WithHSTSPreloadEnabled(true),
 			//
 			// Content-Security-Policy header value.
 			// Optional. Default value "".
-			//rkginsec.WithContentSecurityPolicy("my-value"),
+			//rkmidsec.WithContentSecurityPolicy("my-value"),
 			//
 			// Content-Security-Policy-Report-Only header value.
 			// Optional. Default value false.
-			//rkginsec.WithCSPReportOnly(true),
+			//rkmidsec.WithCSPReportOnly(true),
 			//
 			// Referrer-Policy header value.
 			// Optional. Default value "".
-			//rkginsec.WithReferrerPolicy("my-value"),
+			//rkmidsec.WithReferrerPolicy("my-value"),
 			//
 			// Ignoring path prefix.
-			//rkginsec.WithIgnorePrefix("/rk/v1"),
+			//rkmidsec.WithIgnorePrefix("/rk/v1"),
 		),
 	}
 ```

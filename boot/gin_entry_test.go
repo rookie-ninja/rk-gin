@@ -9,17 +9,28 @@ package rkgin
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rookie-ninja/rk-entry/entry"
-	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
-	"github.com/rookie-ninja/rk-gin/interceptor/metrics/prom"
+	rkmidmetrics "github.com/rookie-ninja/rk-entry/middleware/metrics"
+	"github.com/rookie-ninja/rk-gin/interceptor/meta"
+	rkginmetrics "github.com/rookie-ninja/rk-gin/interceptor/metrics/prom"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
+	"math/big"
 	"net"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 )
@@ -28,230 +39,206 @@ const (
 	defaultBootConfigStr = `
 ---
 gin:
-  - name: greeter
-    port: 1949
-    enabled: true
-    sw:
-      enabled: true
-      path: "sw"
-    commonService:
-      enabled: true
-    tv:
-      enabled: true
-    prom:
-      enabled: true
-      pusher:
-        enabled: false
-    interceptors:
-      loggingZap:
-        enabled: true
-      metricsProm:
-        enabled: true
-      auth:
-        enabled: true
-        basic:
-          - "user:pass"
-      meta:
-        enabled: true
-      tracingTelemetry:
-        enabled: true
-      ratelimit:
-        enabled: true
-      timeout:
-        enabled: true
-      cors:
-        enabled: true
-      jwt:
-        enabled: true
-      secure:
-        enabled: true
-      csrf:
-        enabled: true
-  - name: greeter2
-    port: 2008
-    enabled: true
-    sw:
-      enabled: true
-      path: "sw"
-    commonService:
-      enabled: true
-    tv:
-      enabled: true
-    interceptors:
-      loggingZap:
-        enabled: true
-      metricsProm:
-        enabled: true
-      auth:
-        enabled: true
-        basic:
-          - "user:pass"
+ - name: greeter
+   port: 1949
+   enabled: true
+   sw:
+     enabled: true
+     path: "sw"
+   commonService:
+     enabled: true
+   tv:
+     enabled: true
+   prom:
+     enabled: true
+     pusher:
+       enabled: false
+   interceptors:
+     loggingZap:
+       enabled: true
+     metricsProm:
+       enabled: true
+     auth:
+       enabled: true
+       basic:
+         - "user:pass"
+     meta:
+       enabled: true
+     tracingTelemetry:
+       enabled: true
+     ratelimit:
+       enabled: true
+     timeout:
+       enabled: true
+     cors:
+       enabled: true
+     jwt:
+       enabled: true
+     secure:
+       enabled: true
+     csrf:
+       enabled: true
+     gzip:
+       enabled: true
+ - name: greeter2
+   port: 2008
+   enabled: true
+   sw:
+     enabled: true
+     path: "sw"
+   commonService:
+     enabled: true
+   tv:
+     enabled: true
+   interceptors:
+     loggingZap:
+       enabled: true
+     metricsProm:
+       enabled: true
+     auth:
+       enabled: true
+       basic:
+         - "user:pass"
+ - name: greeter3
+   port: 2022
+   enabled: false
 `
 )
 
-func TestWithZapLoggerEntryGin_HappyCase(t *testing.T) {
-	loggerEntry := rkentry.NoopZapLoggerEntry()
+func TestGetGinEntry(t *testing.T) {
+	// expect nil
+	assert.Nil(t, GetGinEntry("entry-name"))
+
+	// happy case
+	ginEntry := RegisterGinEntry(WithNameGin("ut-gin"))
+	assert.Equal(t, ginEntry, GetGinEntry("ut-gin"))
+
+	rkentry.GlobalAppCtx.RemoveEntry("ut-gin")
+}
+
+func TestRegisterGinEntry(t *testing.T) {
+	// without options
 	entry := RegisterGinEntry()
+	assert.NotNil(t, RegisterGinEntry())
+	assert.NotEmpty(t, entry.GetName())
+	assert.NotEmpty(t, entry.GetType())
+	assert.NotEmpty(t, entry.GetDescription())
+	assert.NotEmpty(t, entry.String())
+	rkentry.GlobalAppCtx.RemoveEntry(entry.GetName())
 
-	option := WithZapLoggerEntryGin(loggerEntry)
-	option(entry)
+	// with options
+	entry = RegisterGinEntry(
+		WithZapLoggerEntryGin(nil),
+		WithEventLoggerEntryGin(nil),
+		WithCommonServiceEntryGin(rkentry.RegisterCommonServiceEntry()),
+		WithTvEntryGin(rkentry.RegisterTvEntry()),
+		WithStaticFileHandlerEntryGin(rkentry.RegisterStaticFileHandlerEntry()),
+		WithCertEntryGin(rkentry.RegisterCertEntry()),
+		WithSwEntryGin(rkentry.RegisterSwEntry()),
+		WithPortGin(8080),
+		WithNameGin("ut-entry"),
+		WithDescriptionGin("ut-desc"),
+		WithPromEntryGin(rkentry.RegisterPromEntry()))
 
-	assert.Equal(t, loggerEntry, entry.ZapLoggerEntry)
+	assert.NotEmpty(t, entry.GetName())
+	assert.NotEmpty(t, entry.GetType())
+	assert.NotEmpty(t, entry.GetDescription())
+	assert.NotEmpty(t, entry.String())
+	assert.True(t, entry.IsSwEnabled())
+	assert.True(t, entry.IsStaticFileHandlerEnabled())
+	assert.True(t, entry.IsPromEnabled())
+	assert.True(t, entry.IsCommonServiceEnabled())
+	assert.True(t, entry.IsTvEnabled())
+	assert.True(t, entry.IsTlsEnabled())
+
+	bytes, err := entry.MarshalJSON()
+	assert.NotEmpty(t, bytes)
+	assert.Nil(t, err)
+	assert.Nil(t, entry.UnmarshalJSON([]byte{}))
 }
 
-func TestWithEventLoggerEntryGin_HappyCase(t *testing.T) {
+func TestGinEntry_AddInterceptor(t *testing.T) {
+	defer assertNotPanic(t)
 	entry := RegisterGinEntry()
-
-	eventLoggerEntry := rkentry.NoopEventLoggerEntry()
-
-	option := WithEventLoggerEntryGin(eventLoggerEntry)
-	option(entry)
-
-	assert.Equal(t, eventLoggerEntry, entry.EventLoggerEntry)
+	inter := rkginmeta.Interceptor()
+	entry.AddInterceptor(inter)
 }
 
-func TestWithInterceptorsGin_WithNilInterceptorList(t *testing.T) {
-	entry := RegisterGinEntry()
+func TestGinEntry_Bootstrap(t *testing.T) {
+	defer assertNotPanic(t)
 
-	option := WithInterceptorsGin(nil)
-	option(entry)
+	// without enable sw, static, prom, common, tv, tls
+	entry := RegisterGinEntry(WithPortGin(8080))
+	entry.Bootstrap(context.TODO())
+	validateServerIsUp(t, 8080, entry.IsTlsEnabled())
+	assert.Empty(t, entry.Router.Routes())
 
-	assert.NotNil(t, entry.Interceptors)
+	entry.Interrupt(context.TODO())
+
+	// with enable sw, static, prom, common, tv, tls
+	certEntry := rkentry.RegisterCertEntry()
+	certEntry.Store.ServerCert, certEntry.Store.ServerKey = generateCerts()
+
+	entry = RegisterGinEntry(
+		WithPortGin(8080),
+		WithCommonServiceEntryGin(rkentry.RegisterCommonServiceEntry()),
+		WithTvEntryGin(rkentry.RegisterTvEntry()),
+		WithStaticFileHandlerEntryGin(rkentry.RegisterStaticFileHandlerEntry()),
+		WithCertEntryGin(certEntry),
+		WithSwEntryGin(rkentry.RegisterSwEntry()),
+		WithPromEntryGin(rkentry.RegisterPromEntry()))
+	entry.Bootstrap(context.TODO())
+	validateServerIsUp(t, 8080, entry.IsTlsEnabled())
+	assert.NotEmpty(t, entry.Router.Routes())
+
+	entry.Interrupt(context.TODO())
 }
 
-func TestWithInterceptorsGin_HappyCase(t *testing.T) {
-	entry := RegisterGinEntry()
+func TestGinEntry_startServer_InvalidTls(t *testing.T) {
+	defer assertPanic(t)
 
-	loggingInterceptor := rkginlog.Interceptor()
-	metricsInterceptor := rkginmetrics.Interceptor()
+	// with invalid tls
+	entry := RegisterGinEntry(
+		WithPortGin(8080),
+		WithCertEntryGin(rkentry.RegisterCertEntry()))
+	event := rkentry.NoopEventLoggerEntry().GetEventFactory().CreateEventNoop()
+	logger := rkentry.NoopZapLoggerEntry().GetLogger()
 
-	interceptors := []gin.HandlerFunc{
-		loggingInterceptor,
-		metricsInterceptor,
-	}
-
-	option := WithInterceptorsGin(interceptors...)
-	option(entry)
-
-	assert.NotNil(t, entry.Interceptors)
-	// should contains logging, metrics and panic interceptor
-	// where panic interceptor is inject by default
-	assert.Len(t, entry.Interceptors, 3)
+	entry.startServer(event, logger)
 }
 
-func TestWithCommonServiceEntryGin_WithEntry(t *testing.T) {
-	entry := RegisterGinEntry()
+func TestGinEntry_startServer_TlsServerFail(t *testing.T) {
+	defer assertPanic(t)
 
-	option := WithCommonServiceEntryGin(NewCommonServiceEntry())
-	option(entry)
+	certEntry := rkentry.RegisterCertEntry()
+	certEntry.Store.ServerCert, certEntry.Store.ServerKey = generateCerts()
 
-	assert.NotNil(t, entry.CommonServiceEntry)
+	// let's give an invalid port
+	entry := RegisterGinEntry(
+		WithPortGin(808080),
+		WithCertEntryGin(certEntry))
+
+	event := rkentry.NoopEventLoggerEntry().GetEventFactory().CreateEventNoop()
+	logger := rkentry.NoopZapLoggerEntry().GetLogger()
+
+	entry.startServer(event, logger)
 }
 
-func TestWithCommonServiceEntryGin_WithoutEntry(t *testing.T) {
-	entry := RegisterGinEntry()
+func TestGinEntry_startServer_ServerFail(t *testing.T) {
+	defer assertPanic(t)
 
-	assert.Nil(t, entry.CommonServiceEntry)
+	// let's give an invalid port
+	entry := RegisterGinEntry(
+		WithPortGin(808080))
+
+	event := rkentry.NoopEventLoggerEntry().GetEventFactory().CreateEventNoop()
+	logger := rkentry.NoopZapLoggerEntry().GetLogger()
+
+	entry.startServer(event, logger)
 }
 
-func TestWithTVEntryGin_WithEntry(t *testing.T) {
-	entry := RegisterGinEntry()
-
-	option := WithTVEntryGin(NewTvEntry())
-	option(entry)
-
-	assert.NotNil(t, entry.TvEntry)
-}
-
-func TestWithTVEntry_WithoutEntry(t *testing.T) {
-	entry := RegisterGinEntry()
-
-	assert.Nil(t, entry.TvEntry)
-}
-
-func TestWithCertEntryGin_HappyCase(t *testing.T) {
-	entry := RegisterGinEntry()
-	certEntry := &rkentry.CertEntry{}
-
-	option := WithCertEntryGin(certEntry)
-	option(entry)
-
-	assert.Equal(t, entry.CertEntry, certEntry)
-}
-
-func TestWithSWEntryGin_HappyCase(t *testing.T) {
-	entry := RegisterGinEntry()
-	sw := NewSwEntry()
-
-	option := WithSwEntryGin(sw)
-	option(entry)
-
-	assert.Equal(t, entry.SwEntry, sw)
-}
-
-func TestWithPortGin_HappyCase(t *testing.T) {
-	entry := RegisterGinEntry()
-	port := uint64(1111)
-
-	option := WithPortGin(port)
-	option(entry)
-
-	assert.Equal(t, entry.Port, port)
-}
-
-func TestWithNameGin_HappyCase(t *testing.T) {
-	entry := RegisterGinEntry()
-	name := "unit-test-entry"
-
-	option := WithNameGin(name)
-	option(entry)
-
-	assert.Equal(t, entry.EntryName, name)
-}
-
-func TestRegisterGinEntriesWithConfig_WithInvalidConfigFilePath(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			// expect panic to be called with non nil error
-			assert.True(t, true)
-		} else {
-			// this should never be called in case of a bug
-			assert.True(t, false)
-		}
-	}()
-
-	RegisterGinEntriesWithConfig("/invalid-path")
-}
-
-func TestRegisterGinEntriesWithConfig_WithNilFactory(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			// expect panic to be called with non nil error
-			assert.True(t, false)
-		} else {
-			// this should never be called in case of a bug
-			assert.True(t, true)
-		}
-	}()
-
-	// write config file in unit test temp directory
-	tempDir := path.Join(t.TempDir(), "boot.yaml")
-	assert.Nil(t, ioutil.WriteFile(tempDir, []byte(defaultBootConfigStr), os.ModePerm))
-	entries := RegisterGinEntriesWithConfig(tempDir)
-	assert.NotNil(t, entries)
-	assert.Len(t, entries, 2)
-}
-
-func TestRegisterGinEntriesWithConfig_HappyCase(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			// expect panic to be called with non nil error
-			assert.True(t, false)
-		} else {
-			// this should never be called in case of a bug
-			assert.True(t, true)
-		}
-	}()
+func TestRegisterGinEntriesWithConfig(t *testing.T) {
+	assertNotPanic(t)
 
 	// write config file in unit test temp directory
 	tempDir := path.Join(t.TempDir(), "boot.yaml")
@@ -263,240 +250,221 @@ func TestRegisterGinEntriesWithConfig_HappyCase(t *testing.T) {
 	// validate entry element based on boot.yaml config defined in defaultBootConfigStr
 	greeter := entries["greeter"].(*GinEntry)
 	assert.NotNil(t, greeter)
-	assert.Equal(t, uint64(1949), greeter.Port)
-	assert.NotNil(t, greeter.SwEntry)
-	assert.NotNil(t, greeter.CommonServiceEntry)
-	assert.NotNil(t, greeter.TvEntry)
-	// logging, metrics, auth and panic interceptor should be included
-	assert.True(t, len(greeter.Interceptors) > 0)
-	greeter.Bootstrap(context.TODO())
 
 	greeter2 := entries["greeter2"].(*GinEntry)
 	assert.NotNil(t, greeter2)
-	assert.Equal(t, uint64(2008), greeter2.Port)
-	assert.NotNil(t, greeter2.SwEntry)
-	assert.NotNil(t, greeter2.CommonServiceEntry)
-	assert.NotNil(t, greeter2.TvEntry)
-	// logging, metrics, auth and panic interceptor should be included
-	assert.Len(t, greeter2.Interceptors, 4)
+
+	greeter3 := entries["greeter3"]
+	assert.Nil(t, greeter3)
 }
 
-func TestRegisterGinEntry_WithZapLoggerEntry(t *testing.T) {
-	loggerEntry := rkentry.NoopZapLoggerEntry()
-	entry := RegisterGinEntry(WithZapLoggerEntryGin(loggerEntry))
-	assert.Equal(t, loggerEntry, entry.ZapLoggerEntry)
-}
-
-func TestRegisterGinEntry_WithEventLoggerEntry(t *testing.T) {
-	loggerEntry := rkentry.NoopEventLoggerEntry()
-
-	entry := RegisterGinEntry(WithEventLoggerEntryGin(loggerEntry))
-	assert.Equal(t, loggerEntry, entry.EventLoggerEntry)
-}
-
-func TestNewGinEntry_WithInterceptors(t *testing.T) {
-	loggingInterceptor := rkginlog.Interceptor()
-	entry := RegisterGinEntry(WithInterceptorsGin(loggingInterceptor))
-	assert.Len(t, entry.Interceptors, 2)
-}
-
-func TestNewGinEntry_WithCommonServiceEntry(t *testing.T) {
-	entry := RegisterGinEntry(WithCommonServiceEntryGin(NewCommonServiceEntry()))
-	assert.NotNil(t, entry.CommonServiceEntry)
-}
-
-func TestNewGinEntry_WithTVEntry(t *testing.T) {
-	entry := RegisterGinEntry(WithTVEntryGin(NewTvEntry()))
-	assert.NotNil(t, entry.TvEntry)
-}
-
-func TestNewGinEntry_WithCertStore(t *testing.T) {
-	certEntry := &rkentry.CertEntry{}
-
-	entry := RegisterGinEntry(WithCertEntryGin(certEntry))
-	assert.Equal(t, certEntry, entry.CertEntry)
-}
-
-func TestNewGinEntry_WithSWEntry(t *testing.T) {
-	sw := NewSwEntry()
-	entry := RegisterGinEntry(WithSwEntryGin(sw))
-	assert.Equal(t, sw, entry.SwEntry)
-}
-
-func TestNewGinEntry_WithPort(t *testing.T) {
-	entry := RegisterGinEntry(WithPortGin(1949))
-	assert.Equal(t, uint64(1949), entry.Port)
-}
-
-func TestNewGinEntry_WithName(t *testing.T) {
-	entry := RegisterGinEntry(WithNameGin("unit-test-greeter"))
-	assert.Equal(t, "unit-test-greeter", entry.GetName())
-}
-
-func TestNewGinEntry_WithDefaultValue(t *testing.T) {
-	entry := RegisterGinEntry()
-	assert.True(t, strings.HasPrefix(entry.GetName(), "GinServer-"))
-	assert.NotNil(t, entry.ZapLoggerEntry)
-	assert.NotNil(t, entry.EventLoggerEntry)
-	assert.Len(t, entry.Interceptors, 1)
-	assert.NotNil(t, entry.Router)
-	assert.Nil(t, entry.SwEntry)
-	assert.Nil(t, entry.CertEntry)
-	assert.False(t, entry.IsSwEnabled())
-	assert.False(t, entry.IsTlsEnabled())
-	assert.Nil(t, entry.CommonServiceEntry)
-	assert.Nil(t, entry.TvEntry)
-	assert.Equal(t, "GinEntry", entry.GetType())
-}
-
-func TestGinEntry_GetName_HappyCase(t *testing.T) {
-	entry := RegisterGinEntry(WithNameGin("unit-test-entry"))
-	assert.Equal(t, "unit-test-entry", entry.GetName())
-}
-
-func TestGinEntry_GetType_HappyCase(t *testing.T) {
-	assert.Equal(t, "GinEntry", RegisterGinEntry().GetType())
-}
-
-func TestGinEntry_String_HappyCase(t *testing.T) {
-	assert.NotEmpty(t, RegisterGinEntry().String())
-}
-
-func TestGinEntry_IsSWEnabled_ExpectTrue(t *testing.T) {
-	sw := NewSwEntry()
-	entry := RegisterGinEntry(WithSwEntryGin(sw))
-	assert.True(t, entry.IsSwEnabled())
-}
-
-func TestGinEntry_IsSWEnabled_ExpectFalse(t *testing.T) {
-	entry := RegisterGinEntry()
-	assert.False(t, entry.IsSwEnabled())
-}
-
-func TestGinEntry_IsTLSEnabled_ExpectTrue(t *testing.T) {
-	certEntry := &rkentry.CertEntry{
-		Store: &rkentry.CertStore{},
+func TestGinEntry_constructSwUrl(t *testing.T) {
+	// happy case
+	writer := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(writer)
+	ctx.Request = &http.Request{
+		Host: "8.8.8.8:1111",
 	}
 
-	entry := RegisterGinEntry(WithCertEntryGin(certEntry))
-	assert.True(t, entry.IsTlsEnabled())
+	path := "ut-sw"
+	port := 1111
+
+	sw := rkentry.RegisterSwEntry(rkentry.WithPathSw(path), rkentry.WithPortSw(uint64(port)))
+	entry := RegisterGinEntry(WithSwEntryGin(sw), WithPortGin(uint64(port)))
+
+	assert.Equal(t, fmt.Sprintf("http://8.8.8.8:%s/%s/", strconv.Itoa(port), path), entry.constructSwUrl(ctx))
+
+	// with tls
+	ctx.Request.TLS = &tls.ConnectionState{}
+	assert.Equal(t, fmt.Sprintf("https://8.8.8.8:%s/%s/", strconv.Itoa(port), path), entry.constructSwUrl(ctx))
+
+	// without swagger
+	entry = RegisterGinEntry(WithPortGin(uint64(port)))
+	assert.Equal(t, "N/A", entry.constructSwUrl(ctx))
 }
 
-func TestGinEntry_IsTLSEnabled_ExpectFalse(t *testing.T) {
-	entry := RegisterGinEntry()
-	assert.False(t, entry.IsTlsEnabled())
-}
+func TestGinEntry_API(t *testing.T) {
+	defer assertNotPanic(t)
 
-func TestGinEntry_GetServer_HappyCase(t *testing.T) {
-	entry := RegisterGinEntry()
-	assert.NotNil(t, entry.Server)
-	assert.NotNil(t, entry.Server.Handler)
-	assert.Equal(t, "0.0.0.0:80", entry.Server.Addr)
-}
+	writer := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(writer)
 
-func TestGinEntry_Bootstrap_WithSwagger(t *testing.T) {
-	sw := NewSwEntry(
-		WithPathSw("sw"),
-		WithZapLoggerEntrySw(rkentry.NoopZapLoggerEntry()),
-		WithEventLoggerEntrySw(rkentry.NoopEventLoggerEntry()))
 	entry := RegisterGinEntry(
-		WithNameGin("unit-test-entry"),
-		WithPortGin(8080),
-		WithZapLoggerEntryGin(rkentry.NoopZapLoggerEntry()),
-		WithEventLoggerEntryGin(rkentry.NoopEventLoggerEntry()),
-		WithSwEntryGin(sw))
+		WithCommonServiceEntryGin(rkentry.RegisterCommonServiceEntry()),
+		WithNameGin("unit-test-gin"))
 
-	go entry.Bootstrap(context.Background())
-	time.Sleep(time.Second)
-	// endpoint should be accessible with 8080 port
-	validateServerIsUp(t, entry.Port)
-	assert.Len(t, entry.Router.Routes(), 2)
+	entry.Router.GET("ut-test")
 
-	entry.Interrupt(context.Background())
+	entry.ListApis(ctx)
+	assert.Equal(t, 200, writer.Code)
+	assert.NotEmpty(t, writer.Body.String())
+
+	entry.Interrupt(context.TODO())
 }
 
-func TestGinEntry_Bootstrap_WithoutSwagger(t *testing.T) {
+func TestGinEntry_Req_HappyCase(t *testing.T) {
+	defer assertNotPanic(t)
+
+	writer := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(writer)
+
 	entry := RegisterGinEntry(
-		WithNameGin("unit-test-entry"),
+		WithCommonServiceEntryGin(rkentry.RegisterCommonServiceEntry()),
 		WithPortGin(8080),
-		WithZapLoggerEntryGin(rkentry.NoopZapLoggerEntry()),
-		WithEventLoggerEntryGin(rkentry.NoopEventLoggerEntry()))
+		WithNameGin("ut-gin"))
 
-	go entry.Bootstrap(context.Background())
-	time.Sleep(time.Second)
-	// endpoint should be accessible with 8080 port
-	validateServerIsUp(t, entry.Port)
-	assert.Empty(t, entry.Router.Routes())
+	entry.AddInterceptor(rkginmetrics.Interceptor(
+		rkmidmetrics.WithEntryNameAndType("ut-gin", "Gin"),
+		rkmidmetrics.WithRegisterer(prometheus.NewRegistry())))
 
-	entry.Interrupt(context.Background())
-	time.Sleep(time.Second)
+	entry.Bootstrap(context.TODO())
+
+	entry.Req(ctx)
+	assert.Equal(t, 200, writer.Code)
+	assert.NotEmpty(t, writer.Body.String())
+
+	entry.Interrupt(context.TODO())
 }
 
-func TestGinEntry_Bootstrap_WithoutTLS(t *testing.T) {
+func TestGinEntry_Req_WithEmpty(t *testing.T) {
+	defer assertNotPanic(t)
+
+	writer := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(writer)
+
 	entry := RegisterGinEntry(
-		WithNameGin("unit-test-entry"),
+		WithCommonServiceEntryGin(rkentry.RegisterCommonServiceEntry()),
 		WithPortGin(8080),
-		WithZapLoggerEntryGin(rkentry.NoopZapLoggerEntry()),
-		WithEventLoggerEntryGin(rkentry.NoopEventLoggerEntry()))
+		WithNameGin("ut-gin"))
 
-	go entry.Bootstrap(context.Background())
-	time.Sleep(time.Second)
-	// endpoint should be accessible with 8080 port
-	validateServerIsUp(t, entry.Port)
+	entry.AddInterceptor(rkginmetrics.Interceptor(
+		rkmidmetrics.WithRegisterer(prometheus.NewRegistry())))
 
-	entry.Interrupt(context.Background())
+	entry.Bootstrap(context.TODO())
+
+	entry.Req(ctx)
+	assert.Equal(t, 200, writer.Code)
+	assert.NotEmpty(t, writer.Body.String())
+
+	entry.Interrupt(context.TODO())
 }
 
-func TestGinEntry_Shutdown_WithBootstrap(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			// expect panic to be called with non nil error
-			assert.True(t, false)
-		} else {
-			// this should never be called in case of a bug
-			assert.True(t, true)
+func TestGinEntry_TV(t *testing.T) {
+	defer assertNotPanic(t)
+
+	entry := RegisterGinEntry(
+		WithCommonServiceEntryGin(rkentry.RegisterCommonServiceEntry()),
+		WithTvEntryGin(rkentry.RegisterTvEntry()),
+		WithPortGin(8080),
+		WithNameGin("ut-gin"))
+
+	entry.AddInterceptor(rkginmetrics.Interceptor(
+		rkmidmetrics.WithEntryNameAndType("ut-gin", "Gin")))
+
+	entry.Bootstrap(context.TODO())
+
+	// for /api
+	writer := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(writer)
+	ctx.Params = append(ctx.Params, gin.Param{
+		Key:   "item",
+		Value: "/apis",
+	})
+
+	entry.TV(ctx)
+	assert.Equal(t, 200, writer.Code)
+	assert.NotEmpty(t, writer.Body.String())
+
+	// for default
+	writer = httptest.NewRecorder()
+	ctx, _ = gin.CreateTestContext(writer)
+	ctx.Params = append(ctx.Params, gin.Param{
+		Key:   "item",
+		Value: "/other",
+	})
+
+	entry.TV(ctx)
+	assert.Equal(t, 200, writer.Code)
+	assert.NotEmpty(t, writer.Body.String())
+
+	entry.Interrupt(context.TODO())
+}
+
+func generateCerts() ([]byte, []byte) {
+	// Create certs and return as []byte
+	ca := &x509.Certificate{
+		Subject: pkix.Name{
+			Organization: []string{"Fake cert."},
+		},
+		SerialNumber:          big.NewInt(42),
+		NotAfter:              time.Now().Add(2 * time.Hour),
+		IsCA:                  true,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
+		BasicConstraintsValid: true,
+	}
+
+	// Create a Private Key
+	key, _ := rsa.GenerateKey(rand.Reader, 4096)
+
+	// Use CA Cert to sign a CSR and create a Public Cert
+	csr := &key.PublicKey
+	cert, _ := x509.CreateCertificate(rand.Reader, ca, ca, csr, key)
+
+	// Convert keys into pem.Block
+	c := &pem.Block{Type: "CERTIFICATE", Bytes: cert}
+	k := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)}
+
+	return pem.EncodeToMemory(c), pem.EncodeToMemory(k)
+}
+
+func validateServerIsUp(t *testing.T, port uint64, isTls bool) {
+	// sleep for 2 seconds waiting server startup
+	time.Sleep(2 * time.Second)
+
+	if !isTls {
+		conn, err := net.DialTimeout("tcp", net.JoinHostPort("0.0.0.0", strconv.FormatUint(port, 10)), time.Second)
+		assert.Nil(t, err)
+		assert.NotNil(t, conn)
+		if conn != nil {
+			assert.Nil(t, conn.Close())
 		}
-	}()
+		return
+	}
 
-	entry := RegisterGinEntry(
-		WithNameGin("unit-test-entry"),
-		WithPortGin(8080),
-		WithZapLoggerEntryGin(rkentry.NoopZapLoggerEntry()),
-		WithEventLoggerEntryGin(rkentry.NoopEventLoggerEntry()))
+	tlsConf := &tls.Config{
+		InsecureSkipVerify: true,
+	}
 
-	go entry.Bootstrap(context.Background())
-	time.Sleep(time.Second)
-	// endpoint should be accessible with 8080 port
-	validateServerIsUp(t, entry.Port)
-
-	entry.Interrupt(context.Background())
-}
-
-func TestGinEntry_Shutdown_WithoutBootstrap(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			// expect panic to be called with non nil error
-			assert.True(t, false)
-		} else {
-			// this should never be called in case of a bug
-			assert.True(t, true)
-		}
-	}()
-
-	entry := RegisterGinEntry(
-		WithNameGin("unit-test-entry"),
-		WithPortGin(8080),
-		WithZapLoggerEntryGin(rkentry.NoopZapLoggerEntry()),
-		WithEventLoggerEntryGin(rkentry.NoopEventLoggerEntry()))
-
-	entry.Interrupt(context.Background())
-}
-
-func validateServerIsUp(t *testing.T, port uint64) {
-	conn, err := net.DialTimeout("tcp", net.JoinHostPort("0.0.0.0", strconv.FormatUint(port, 10)), time.Second)
+	tlsConn, err := tls.Dial("tcp", net.JoinHostPort("0.0.0.0", strconv.FormatUint(port, 10)), tlsConf)
 	assert.Nil(t, err)
-	assert.NotNil(t, conn)
-	if conn != nil {
-		assert.Nil(t, conn.Close())
+	assert.NotNil(t, tlsConn)
+	if tlsConn != nil {
+		assert.Nil(t, tlsConn.Close())
 	}
+}
+
+func assertNotPanic(t *testing.T) {
+	if r := recover(); r != nil {
+		// Expect panic to be called with non nil error
+		assert.True(t, false)
+	} else {
+		// This should never be called in case of a bug
+		assert.True(t, true)
+	}
+}
+
+func assertPanic(t *testing.T) {
+	if r := recover(); r != nil {
+		// Expect panic to be called with non nil error
+		assert.True(t, true)
+	} else {
+		// This should never be called in case of a bug
+		assert.True(t, false)
+	}
+}
+
+func TestMain(m *testing.M) {
+	gin.SetMode(gin.ReleaseMode)
+	os.Exit(m.Run())
 }

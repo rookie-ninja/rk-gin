@@ -6,51 +6,38 @@
 package rkginjwt
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/rookie-ninja/rk-common/error"
+	"github.com/rookie-ninja/rk-entry/middleware/jwt"
 	"github.com/stretchr/testify/assert"
 	"net/http"
-	"strings"
+	"net/http/httptest"
+	"os"
 	"testing"
 )
 
+func newCtx() *gin.Context {
+	ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
+	ctx.Request = httptest.NewRequest(http.MethodGet, "/ut-path", nil)
+	return ctx
+}
+
 func TestInterceptor(t *testing.T) {
 	defer assertNotPanic(t)
+	beforeCtx := rkmidjwt.NewBeforeCtx()
+	mock := rkmidjwt.NewOptionSetMock(beforeCtx)
+	inter := Interceptor(rkmidjwt.WithMockOptionSet(mock))
 
-	// with skipper
-	handler := Interceptor(WithSkipper(func(context *gin.Context) bool {
-		return true
-	}))
+	// case 1: error response
+	beforeCtx.Output.ErrResp = rkerror.New(rkerror.WithHttpCode(http.StatusUnauthorized))
 	ctx := newCtx()
-	handler(ctx)
-	assert.Equal(t, http.StatusOK, ctx.Writer.Status())
-
-	// without options
-	handler = Interceptor()
-	ctx = newCtx()
-	handler(ctx)
+	inter(ctx)
 	assert.Equal(t, http.StatusUnauthorized, ctx.Writer.Status())
 
-	// with parse token error
-	parseTokenErrFunc := func(auth string, c *gin.Context) (*jwt.Token, error) {
-		return nil, errors.New("ut-error")
-	}
-	handler = Interceptor(
-		WithParseTokenFunc(parseTokenErrFunc))
+	// case 2: happy case
+	beforeCtx.Output.ErrResp = nil
 	ctx = newCtx()
-	handler(ctx)
-	assert.Equal(t, http.StatusUnauthorized, ctx.Writer.Status())
-
-	// happy case
-	parseTokenErrFunc = func(auth string, c *gin.Context) (*jwt.Token, error) {
-		return &jwt.Token{}, nil
-	}
-	handler = Interceptor(
-		WithParseTokenFunc(parseTokenErrFunc))
-	ctx = newCtx()
-	ctx.Request.Header.Set(headerAuthorization, strings.Join([]string{"Bearer", "ut-auth"}, " "))
-	handler(ctx)
+	inter(ctx)
 	assert.Equal(t, http.StatusOK, ctx.Writer.Status())
 }
 
@@ -62,4 +49,9 @@ func assertNotPanic(t *testing.T) {
 		// This should never be called in case of a bug
 		assert.True(t, true)
 	}
+}
+
+func TestMain(m *testing.M) {
+	gin.SetMode(gin.ReleaseMode)
+	os.Exit(m.Run())
 }

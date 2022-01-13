@@ -1,5 +1,5 @@
-# Trace interceptor
-In this example, we will try to create gin server with trace interceptor enabled.
+# Trace middleware
+In this example, we will try to create gin server with trace middleware enabled.
 
 Trace interceptor has bellow options currently while exporting tracing information.
 
@@ -36,26 +36,27 @@ Get rk-gin package from the remote repository.
 ```go
 go get -u github.com/rookie-ninja/rk-gin
 ```
+
 ```go
     // ********************************************
     // ********** Enable interceptors *************
     // ********************************************
     interceptors := []gin.HandlerFunc{
         rkgintrace.Interceptor(
-            // Entry name and entry type will be used for distinguishing interceptors. Recommended.
-            // rkgintrace.WithEntryNameAndType("greeter", "gin"),
-            //
-            // Provide an exporter.
-            // rkgintrace.WithExporter(exporter),
-            //
-            // Provide propagation.TextMapPropagator
-            // rkgintrace.WithPropagator(<propagator>),
-            //
-            // Provide SpanProcessor
-            // rkgintrace.WithSpanProcessor(<span processor>),
-            //
-            // Provide TracerProvider
-            // rkgintrace.WithTracerProvider(<trace provider>),
+			// Entry name and entry type will be used for distinguishing interceptors. Recommended.
+			// rkmidtrace.WithEntryNameAndType("greeter", "gin"),
+			//
+			// Provide an exporter.
+			rkmidtrace.WithExporter(exporter),
+			//
+			// Provide propagation.TextMapPropagator
+			// rkmidtrace.WithPropagator(<propagator>),
+			//
+			// Provide SpanProcessor
+			// rkmidtrace.WithSpanProcessor(<span processor>),
+			//
+			// Provide TracerProvider
+			// rkmidtrace.WithTracerProvider(<trace provider>),
         ),
     }
 ```
@@ -66,10 +67,10 @@ then server will use the same traceId.
 
 | Name | Description | Default |
 | ---- | ---- | ---- |
-| WithEntryNameAndType(entryName, entryType string) | Provide entryName and entryType, recommended. | entryName=gin, entryType=gin |
-| WithExporter(exporter sdktrace.SpanExporter) | User defined exporter. | [Stdout exporter](https://pkg.go.dev/go.opentelemetry.io/otel/exporters/stdout) with pretty print and disabled metrics |
-| WithSpanProcessor(processor sdktrace.SpanProcessor) | User defined span processor. | [NewBatchSpanProcessor](https://pkg.go.dev/go.opentelemetry.io/otel/sdk/trace#NewBatchSpanProcessor) |
-| WithPropagator(propagator propagation.TextMapPropagator) | User defined propagator. | [NewCompositeTextMapPropagator](https://pkg.go.dev/go.opentelemetry.io/otel/propagation#TextMapPropagator) |
+| rkmidtrace.WithEntryNameAndType(entryName, entryType string) | Provide entryName and entryType, recommended. | entryName=gin, entryType=gin |
+| rkmidtrace.WithExporter(exporter sdktrace.SpanExporter) | User defined exporter. | [Stdout exporter](https://pkg.go.dev/go.opentelemetry.io/otel/exporters/stdout) with pretty print and disabled metrics |
+| rkmidtrace.WithSpanProcessor(processor sdktrace.SpanProcessor) | User defined span processor. | [NewBatchSpanProcessor](https://pkg.go.dev/go.opentelemetry.io/otel/sdk/trace#NewBatchSpanProcessor) |
+| rkmidtrace.WithPropagator(propagator propagation.TextMapPropagator) | User defined propagator. | [NewCompositeTextMapPropagator](https://pkg.go.dev/go.opentelemetry.io/otel/propagation#TextMapPropagator) |
 
 ![arch](img/arch.png)
 
@@ -86,7 +87,7 @@ then server will use the same traceId.
     // set.Exporter, _ = stdout.NewExporter(
     //     stdout.WithPrettyPrint(),
     //     stdout.WithoutMetricExport())
-    exporter := rkgintrace.CreateFileExporter("stdout")
+	exporter := rkmidtrace.NewFileExporter("stdout")
 
     // Users can define own stdout exporter by themselves.
 	exporter, _ := stdouttrace.New(stdouttrace.WithPrettyPrint())
@@ -99,7 +100,7 @@ then server will use the same traceId.
     // ****************************************
 
     // Export trace to local file system
-    exporter := rkgintrace.CreateFileExporter("logs/trace.log")
+    exporter := rkmidtrace.NewFileExporter("logs/trace.log")
 ```
 
 #### Jaeger exporter
@@ -109,7 +110,7 @@ then server will use the same traceId.
     // ****************************************
 
 	// Export trace to jaeger agent
-	exporter := rkgintrace.CreateJaegerExporter(jaeger.WithAgentEndpoint())
+	exporter := rkmidtrace.NewJaegerExporter(jaeger.WithAgentEndpoint())
 ```
 
 ## Example

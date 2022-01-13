@@ -8,6 +8,7 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-entry/entry"
+	"github.com/rookie-ninja/rk-entry/middleware/secure"
 	"github.com/rookie-ninja/rk-gin/interceptor/context"
 	"github.com/rookie-ninja/rk-gin/interceptor/secure"
 	"log"
@@ -30,43 +31,43 @@ func main() {
 	interceptors := []gin.HandlerFunc{
 		rkginsec.Interceptor(
 			// Required, entry name and entry type will be used for distinguishing interceptors. Recommended.
-			rkginsec.WithEntryNameAndType("greeter", "gin"),
+			rkmidsec.WithEntryNameAndType("greeter", "gin"),
 			//
 			// X-XSS-Protection header value.
 			// Optional. Default value "1; mode=block".
-			//rkginsec.WithXSSProtection("my-value"),
+			//rkmidsec.WithXSSProtection("my-value"),
 			//
 			// X-Content-Type-Options header value.
 			// Optional. Default value "nosniff".
-			//rkginsec.WithContentTypeNosniff("my-value"),
+			//rkmidsec.WithContentTypeNosniff("my-value"),
 			//
 			// X-Frame-Options header value.
 			// Optional. Default value "SAMEORIGIN".
-			//rkginsec.WithXFrameOptions("my-value"),
+			//rkmidsec.WithXFrameOptions("my-value"),
 			//
 			// Optional, Strict-Transport-Security header value.
-			//rkginsec.WithHSTSMaxAge(1),
+			//rkmidsec.WithHSTSMaxAge(1),
 			//
 			// Optional, excluding subdomains of HSTS, default is false
-			//rkginsec.WithHSTSExcludeSubdomains(true),
+			//rkmidsec.WithHSTSExcludeSubdomains(true),
 			//
 			// Optional, enabling HSTS preload, default is false
-			//rkginsec.WithHSTSPreloadEnabled(true),
+			//rkmidsec.WithHSTSPreloadEnabled(true),
 			//
 			// Content-Security-Policy header value.
 			// Optional. Default value "".
-			//rkginsec.WithContentSecurityPolicy("my-value"),
+			//rkmidsec.WithContentSecurityPolicy("my-value"),
 			//
 			// Content-Security-Policy-Report-Only header value.
 			// Optional. Default value false.
-			//rkginsec.WithCSPReportOnly(true),
+			//rkmidsec.WithCSPReportOnly(true),
 			//
 			// Referrer-Policy header value.
 			// Optional. Default value "".
-			//rkginsec.WithReferrerPolicy("my-value"),
+			//rkmidsec.WithReferrerPolicy("my-value"),
 			//
 			// Ignoring path prefix.
-			//rkginsec.WithIgnorePrefix("/rk/v1"),
+			//rkmidsec.WithIgnorePrefix("/rk/v1"),
 		),
 	}
 

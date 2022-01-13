@@ -8,29 +8,22 @@ package rkginlimit
 
 import (
 	"github.com/gin-gonic/gin"
-	rkerror "github.com/rookie-ninja/rk-common/error"
-	"github.com/rookie-ninja/rk-gin/interceptor"
-	"github.com/rookie-ninja/rk-gin/interceptor/context"
-	"net/http"
+	"github.com/rookie-ninja/rk-entry/middleware"
+	"github.com/rookie-ninja/rk-entry/middleware/ratelimit"
 )
 
 // Interceptor Add rate limit interceptors.
-func Interceptor(opts ...Option) gin.HandlerFunc {
-	set := newOptionSet(opts...)
+func Interceptor(opts ...rkmidlimit.Option) gin.HandlerFunc {
+	set := rkmidlimit.NewOptionSet(opts...)
 
 	return func(ctx *gin.Context) {
-		ctx.Set(rkgininter.RpcEntryNameKey, set.EntryName)
+		ctx.Set(rkmid.EntryNameKey.String(), set.GetEntryName())
 
-		event := rkginctx.GetEvent(ctx)
+		beforeCtx := set.BeforeCtx(ctx.Request)
+		set.Before(beforeCtx)
 
-		if duration, err := set.Wait(ctx, ctx.Request.URL.Path); err != nil {
-			event.SetCounter("rateLimitWaitMs", duration.Milliseconds())
-			event.AddErr(err)
-
-			ctx.AbortWithStatusJSON(http.StatusTooManyRequests, rkerror.New(
-				rkerror.WithHttpCode(http.StatusTooManyRequests),
-				rkerror.WithDetails(err)))
-
+		if beforeCtx.Output.ErrResp != nil {
+			ctx.AbortWithStatusJSON(beforeCtx.Output.ErrResp.Err.Code, beforeCtx.Output.ErrResp)
 			return
 		}
 

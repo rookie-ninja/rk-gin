@@ -8,38 +8,24 @@ package rkginmetrics
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-gin/interceptor"
-	"time"
+	"github.com/rookie-ninja/rk-entry/middleware"
+	"github.com/rookie-ninja/rk-entry/middleware/metrics"
+	"strconv"
 )
 
 // Interceptor create a new prometheus metrics interceptor with options.
-func Interceptor(opts ...Option) gin.HandlerFunc {
-	set := newOptionSet(opts...)
+func Interceptor(opts ...rkmidmetrics.Option) gin.HandlerFunc {
+	set := rkmidmetrics.NewOptionSet(opts...)
 
 	return func(ctx *gin.Context) {
-		ctx.Set(rkgininter.RpcEntryNameKey, set.EntryName)
+		ctx.Set(rkmid.EntryNameKey.String(), set.GetEntryName())
 
-		// start timer
-		startTime := time.Now()
+		beforeCtx := set.BeforeCtx(ctx.Request)
+		set.Before(set.BeforeCtx(ctx.Request))
 
 		ctx.Next()
 
-		// end timer
-		elapsed := time.Now().Sub(startTime)
-
-		// ignoring /rk/v1/assets, /rk/v1/tv and /sw/ path while logging since these are internal APIs.
-		if rkgininter.ShouldLog(ctx) {
-			if durationMetrics := GetServerDurationMetrics(ctx); durationMetrics != nil {
-				durationMetrics.Observe(float64(elapsed.Nanoseconds()))
-			}
-			if len(ctx.Errors) > 0 {
-				if errorMetrics := GetServerErrorMetrics(ctx); errorMetrics != nil {
-					errorMetrics.Inc()
-				}
-			}
-			if resCodeMetrics := GetServerResCodeMetrics(ctx); resCodeMetrics != nil {
-				resCodeMetrics.Inc()
-			}
-		}
+		afterCtx := set.AfterCtx(strconv.Itoa(ctx.Writer.Status()))
+		set.After(beforeCtx, afterCtx)
 	}
 }

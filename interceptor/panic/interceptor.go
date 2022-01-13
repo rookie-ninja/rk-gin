@@ -7,42 +7,28 @@
 package rkginpanic
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-common/error"
-	rkgininter "github.com/rookie-ninja/rk-gin/interceptor"
+	"github.com/rookie-ninja/rk-entry/middleware"
+	"github.com/rookie-ninja/rk-entry/middleware/panic"
 	"github.com/rookie-ninja/rk-gin/interceptor/context"
-	"go.uber.org/zap"
 	"net/http"
-	"runtime/debug"
 )
 
 // Interceptor returns a gin.HandlerFunc (middleware)
-func Interceptor(opts ...Option) gin.HandlerFunc {
-	set := newOptionSet(opts...)
+func Interceptor(opts ...rkmidpanic.Option) gin.HandlerFunc {
+	set := rkmidpanic.NewOptionSet(opts...)
 
 	return func(ctx *gin.Context) {
-		ctx.Set(rkgininter.RpcEntryNameKey, set.EntryName)
+		ctx.Set(rkmid.EntryNameKey.String(), set.GetEntryName())
 
-		defer func() {
-			if recv := recover(); recv != nil {
-				var res *rkerror.ErrorResp
+		handlerFunc := func(resp *rkerror.ErrorResp) {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, resp)
+		}
+		beforeCtx := set.BeforeCtx(rkginctx.GetEvent(ctx), rkginctx.GetLogger(ctx), handlerFunc)
+		set.Before(beforeCtx)
 
-				if se, ok := recv.(*rkerror.ErrorResp); ok {
-					res = se
-				} else if re, ok := recv.(error); ok {
-					res = rkerror.FromError(re)
-				} else {
-					res = rkerror.New(rkerror.WithMessage(fmt.Sprintf("%v", recv)))
-				}
-
-				rkginctx.GetEvent(ctx).SetCounter("panic", 1)
-				rkginctx.GetEvent(ctx).AddErr(res.Err)
-				rkginctx.GetLogger(ctx).Error(fmt.Sprintf("panic occurs:\n%s", string(debug.Stack())), zap.Error(res.Err))
-
-				ctx.JSON(http.StatusInternalServerError, res)
-			}
-		}()
+		defer beforeCtx.Output.DeferFunc()
 
 		ctx.Next()
 	}

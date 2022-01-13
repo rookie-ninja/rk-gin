@@ -7,37 +7,29 @@ package rkginmetrics
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/prometheus/client_golang/prometheus"
+	"github.com/rookie-ninja/rk-entry/middleware/metrics"
 	"github.com/stretchr/testify/assert"
 	"net/http"
-	"net/url"
+	"net/http/httptest"
+	"os"
 	"testing"
 )
 
 func TestInterceptor(t *testing.T) {
 	defer assertNotPanic(t)
+	beforeCtx := rkmidmetrics.NewBeforeCtx()
+	afterCtx := rkmidmetrics.NewAfterCtx()
+	mock := rkmidmetrics.NewOptionSetMock(beforeCtx, afterCtx)
+	inter := Interceptor(rkmidmetrics.WithMockOptionSet(mock))
 
-	handler := Interceptor(
-		WithEntryNameAndType("ut-entry", "ut-type"),
-		WithRegisterer(prometheus.NewRegistry()))
+	ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
+	ctx.Request = httptest.NewRequest(http.MethodGet, "/ut-path", nil)
 
-	// With ignoring case
-	ctx, _ := gin.CreateTestContext(NewMockResponseWriter())
-	ctx.Request = &http.Request{
-		URL: &url.URL{
-			Path: "/rk/v1/assets",
-		},
-	}
-	handler(ctx)
+	inter(ctx)
 
-	// Happy case
-	ctx.Request = &http.Request{
-		URL: &url.URL{
-			Path: "ut-path",
-		},
-		Method: "ut-method",
-	}
-	handler(ctx)
+	assert.Equal(t, http.StatusOK, ctx.Writer.Status())
+
+	rkmidmetrics.ClearAllMetrics()
 }
 
 func assertNotPanic(t *testing.T) {
@@ -48,4 +40,9 @@ func assertNotPanic(t *testing.T) {
 		// This should never be called in case of a bug
 		assert.True(t, true)
 	}
+}
+
+func TestMain(m *testing.M) {
+	gin.SetMode(gin.ReleaseMode)
+	os.Exit(m.Run())
 }

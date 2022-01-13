@@ -797,6 +797,15 @@ gin:
 #      gzip:
 #        enabled: true
 #        level: bestSpeed                                  # Optional, options: [noCompression, bestSpeed， bestCompression, defaultCompression, huffmanOnly]
+#      cors:
+#        enabled: true                                     # Optional, default: false
+#        allowOrigins:
+#          - "http://localhost:*"                          # Optional, default: *
+#        allowCredentials: false                           # Optional, default: false
+#        allowHeaders: []                                  # Optional, default: []
+#        allowMethods: []                                  # Optional, default: []
+#        exposeHeaders: []                                 # Optional, default: []
+#        maxAge: 0                                         # Optional, default: 0
 ```
 
 ### Development Status: Stable
@@ -805,14 +814,6 @@ gin:
 Simply run make all to validate your changes. Or run codes in example/ folder.
 
 - make all
-
-Run unit-test, golangci-lint, doctoc and gofmt.
-
-- make swag
-
-Generate swagger config for CommonService
-
-- make pkger
 
 If files in boot/assets have been modified, then we need to run it.
 

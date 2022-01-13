@@ -1,5 +1,5 @@
-# Metrics interceptor
-In this example, we will try to create gin server with metrics interceptor enabled.
+# Metrics middleware
+In this example, we will try to create gin server with metrics middleware enabled.
 
 Metrics interceptor will collect bellow metrics with prometheus data format.
 - RPC elapsed
@@ -30,9 +30,7 @@ Users need to start a prometheus client locally export the data.
 Get rk-gin package from the remote repository.
 
 ### Code
-```go
-import     "github.com/rookie-ninja/rk-gin/interceptor/metrics/prom"
-```
+
 ```go
     // ********************************************
     // ********** Enable interceptors *************
@@ -49,8 +47,8 @@ In order to define prometheus style metrics, we need to define <namespace> and <
 
 | Name | Description | Default Values |
 | ---- | ---- | ---- |
-| rkginmetrics.WithEntryNameAndType(entryName, entryType string) | Provide entry name and type if there are multiple extension interceptors needs to be used. | gin, gin |
-| rkginmetrics.WithRegisterer(registerer prometheus.Registerer) | Provide prometheus registerer. | prometheus.DefaultRegisterer |
+| rkmidmetrics.WithEntryNameAndType(entryName, entryType string) | Provide entry name and type if there are multiple extension interceptors needs to be used. | gin, gin |
+| rkmidmetrics.WithRegisterer(registerer prometheus.Registerer) | Provide prometheus registerer. | prometheus.DefaultRegisterer |
 
 ![arch](img/arch.png)
 
@@ -67,7 +65,7 @@ func main() {
         rkginmetrics.Interceptor(
             // Add metrics interceptor with entry name and entry type.
             // subsystem would be replaced with newEntry.
-            rkginmetrics.Interceptor(rkginmetrics.WithEntryNameAndType("newEntry", "gin")),
+            rkmidmetrics.Interceptor(rkginmetrics.WithEntryNameAndType("newEntry", "gin")),
         ),
     }
 
@@ -83,7 +81,7 @@ func main() {
         rkginmetrics.Interceptor(
             // Provide new prometheus registerer.
             // Default value is prometheus.DefaultRegisterer
-            rkginmetrics.WithRegisterer(prometheus.NewRegistry()),
+            rkmidmetrics.WithRegisterer(prometheus.NewRegistry()),
         ),
     }
 ```

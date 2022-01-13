@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-entry/entry"
+	"github.com/rookie-ninja/rk-entry/middleware/jwt"
 	"github.com/rookie-ninja/rk-gin/interceptor/context"
 	"github.com/rookie-ninja/rk-gin/interceptor/jwt"
 	"log"
@@ -34,31 +35,33 @@ func main() {
 			// rkginjwt.WithEntryNameAndType("greeter", "gin"),
 			//
 			// Required, provide signing key.
-			rkginjwt.WithSigningKey([]byte("my-secret")),
+			rkmidjwt.WithSigningKey([]byte("my-secret")),
+			//
+			// rkmidjwt.WithIgnorePrefix(""),
 			//
 			// Optional, provide skipper function
-			//rkginjwt.WithSkipper(func(e *gin.Context) bool {
+			//rkmidjwt.WithSkipper(func(e *gin.Context) bool {
 			//	return true
 			//}),
 			//
 			// Optional, provide token parse function, default one will be assigned.
-			//rkginjwt.WithParseTokenFunc(func(auth string, ctx *gin.Context) (*jwt.Token, error) {
+			//rkmidjwt.WithParseTokenFunc(func(auth string, ctx *gin.Context) (*jwt.Token, error) {
 			//	return nil, nil
 			//}),
 			//
 			// Optional, provide key function, default one will be assigned.
-			//rkginjwt.WithKeyFunc(func(token *jwt.Token) (interface{}, error) {
+			//rkmidjwt.WithKeyFunc(func(token *jwt.Token) (interface{}, error) {
 			//	return nil, nil
 			//}),
 			//
 			// Optional, default is Bearer
-			//rkginjwt.WithAuthScheme("Bearer"),
+			//rkmidjwt.WithAuthScheme("Bearer"),
 			//
 			// Optional
-			//rkginjwt.WithTokenLookup("header:my-jwt-header-key"),
+			//rkmidjwt.WithTokenLookup("header:my-jwt-header-key"),
 			//
 			// Optional, default is HS256
-			//rkginjwt.WithSigningAlgorithm(rkginjwt.AlgorithmHS256),
+			//rkmidjwt.WithSigningAlgorithm(rkginjwt.AlgorithmHS256),
 		),
 	}
 
@@ -105,6 +108,6 @@ func Greeter(ctx *gin.Context) {
 	rkginctx.GetLogger(ctx).Info("Received request from client.")
 
 	ctx.JSON(http.StatusOK, &GreeterResponse{
-		Message: fmt.Sprintf("Is token valid:%v!", rkginctx.GetJwtToken(ctx)),
+		Message: fmt.Sprintf("Is token valid:%v!", rkginctx.GetJwtToken(ctx) != nil),
 	})
 }

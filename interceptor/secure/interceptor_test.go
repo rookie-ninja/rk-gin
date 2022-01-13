@@ -6,104 +6,35 @@
 package rkginsec
 
 import (
-	"crypto/tls"
 	"github.com/gin-gonic/gin"
+	"github.com/rookie-ninja/rk-entry/middleware/secure"
 	"github.com/stretchr/testify/assert"
 	"net/http"
-	"net/url"
+	"net/http/httptest"
+	"os"
 	"testing"
 )
 
-func init() {
-	gin.SetMode(gin.ReleaseMode)
-}
-
 func newCtx() *gin.Context {
-	ctx, _ := gin.CreateTestContext(NewMockResponseWriter())
-	ctx.Request = &http.Request{
-		Header: make(map[string][]string, 0),
-		URL:    &url.URL{},
-	}
-
+	ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
+	ctx.Request = httptest.NewRequest(http.MethodGet, "/ut-path", nil)
 	return ctx
-}
-
-func NewMockResponseWriter() *MockResponseWriter {
-	return &MockResponseWriter{
-		data:   make([]byte, 0),
-		header: http.Header{},
-	}
-}
-
-type MockResponseWriter struct {
-	data       []byte
-	statusCode int
-	header     http.Header
-}
-
-func (m *MockResponseWriter) Header() http.Header {
-	return m.header
-}
-
-func (m *MockResponseWriter) Write(bytes []byte) (int, error) {
-	m.data = bytes
-	return len(bytes), nil
-}
-
-func (m *MockResponseWriter) WriteHeader(statusCode int) {
-	m.statusCode = statusCode
 }
 
 func TestInterceptor(t *testing.T) {
 	defer assertNotPanic(t)
 
-	// with skipper
-	handler := Interceptor(WithSkipper(func(context *gin.Context) bool {
-		return true
-	}))
+	beforeCtx := rkmidsec.NewBeforeCtx()
+	mock := rkmidsec.NewOptionSetMock(beforeCtx)
+
+	// case 1: with error response
+	inter := Interceptor(rkmidsec.WithMockOptionSet(mock))
 	ctx := newCtx()
-	handler(ctx)
+	// assign any of error response
+	beforeCtx.Output.HeadersToReturn["key"] = "value"
+	inter(ctx)
 	assert.Equal(t, http.StatusOK, ctx.Writer.Status())
-
-	// without options
-	handler = Interceptor()
-	ctx = newCtx()
-	handler(ctx)
-	assert.Equal(t, http.StatusOK, ctx.Writer.Status())
-	containsHeader(t, ctx,
-		headerXXSSProtection,
-		headerXContentTypeOptions,
-		headerXFrameOptions)
-
-	// with options
-	handler = Interceptor(
-		WithXSSProtection("ut-xss"),
-		WithContentTypeNosniff("ut-sniff"),
-		WithXFrameOptions("ut-frame"),
-		WithHSTSMaxAge(10),
-		WithHSTSExcludeSubdomains(true),
-		WithHSTSPreloadEnabled(true),
-		WithContentSecurityPolicy("ut-policy"),
-		WithCSPReportOnly(true),
-		WithReferrerPolicy("ut-ref"),
-		WithIgnorePrefix("ut-prefix"))
-	ctx = newCtx()
-	ctx.Request.TLS = &tls.ConnectionState{}
-	handler(ctx)
-	assert.Equal(t, http.StatusOK, ctx.Writer.Status())
-	containsHeader(t, ctx,
-		headerXXSSProtection,
-		headerXContentTypeOptions,
-		headerXFrameOptions,
-		headerStrictTransportSecurity,
-		headerContentSecurityPolicyReportOnly,
-		headerReferrerPolicy)
-}
-
-func containsHeader(t *testing.T, ctx *gin.Context, headers ...string) {
-	for _, v := range headers {
-		assert.Contains(t, ctx.Writer.Header(), v)
-	}
+	assert.Equal(t, "value", ctx.Writer.Header().Get("key"))
 }
 
 func assertNotPanic(t *testing.T) {
@@ -114,4 +45,9 @@ func assertNotPanic(t *testing.T) {
 		// This should never be called in case of a bug
 		assert.True(t, true)
 	}
+}
+
+func TestMain(m *testing.M) {
+	gin.SetMode(gin.ReleaseMode)
+	os.Exit(m.Run())
 }

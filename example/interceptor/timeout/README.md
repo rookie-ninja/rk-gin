@@ -1,5 +1,5 @@
-# Timeout interceptor
-In this example, we will try to create gin server with timeout interceptor enabled.
+# Timeout middleware
+In this example, we will try to create gin server with timeout middleware enabled.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -27,9 +27,6 @@ go get -u github.com/rookie-ninja/rk-gin
 Add rkgintimeout.Interceptor() with option.
 
 ```go
-import     "github.com/rookie-ninja/rk-gin/interceptor/timeout"
-```
-```go
     // ********************************************
     // ********** Enable interceptors *************
     // ********************************************
@@ -41,9 +38,9 @@ import     "github.com/rookie-ninja/rk-gin/interceptor/timeout"
 ## Options
 | Name | Default | Description |
 | ---- | ---- | ---- |
-| WithEntryNameAndType(entryName, entryType string) | entryName=gin, entryType=gin | entryName and entryType will be used to distinguish options if there are multiple interceptors in single process. |
-| WithTimeoutAndResp(time.Duration, gin.HandlerFunc) | 5*time.Second, response with http.StatusRequestTimeout | Set timeout interceptor with all routes. |
-| WithTimeoutAndRespByPath(path string, time.Duration, gin.HandlerFunc) | "", 5*time.Second, response with http.StatusRequestTimeout | Set timeout interceptor with specified path. |
+| rkmidtimeout.WithEntryNameAndType(entryName, entryType string) | entryName=gin, entryType=gin | entryName and entryType will be used to distinguish options if there are multiple interceptors in single process. |
+| rkmidtimeout.WithTimeoutAndResp(time.Duration, gin.HandlerFunc) | 5*time.Second, response with http.StatusRequestTimeout | Set timeout interceptor with all routes. |
+| rkmidtimeout.WithTimeoutAndRespByPath(path string, time.Duration, gin.HandlerFunc) | "", 5*time.Second, response with http.StatusRequestTimeout | Set timeout interceptor with specified path. |
 
 ```go
 	// ********************************************
@@ -53,15 +50,15 @@ import     "github.com/rookie-ninja/rk-gin/interceptor/timeout"
 		rkginpanic.Interceptor(),
 		rkginlog.Interceptor(),
 		rkgintimeout.Interceptor(
-			// Entry name and entry type will be used for distinguishing interceptors. Recommended.
-			// rkgintimeout.WithEntryNameAndType("greeter", "gin"),
-			//
-			// Provide timeout and response handler, a default one would be assigned with http.StatusRequestTimeout
-			// This option impact all routes
-			// rkgintimeout.WithTimeoutAndResp(time.Second, nil),
-			//
-			// Provide timeout and response handler by path, a default one would be assigned with http.StatusRequestTimeout
-			// rkgintimeout.WithTimeoutAndRespByPath("/rk/v1/healthy", time.Second, nil),
+		// Entry name and entry type will be used for distinguishing interceptors. Recommended.
+		// rkmidtimeout.WithEntryNameAndType("greeter", "gin"),
+		//
+		// Provide timeout and response handler, a default one would be assigned with http.StatusRequestTimeout
+		// This option impact all routes
+		//rkmidtimeout.WithTimeout(time.Second),
+		//
+		// Provide timeout and response handler by path, a default one would be assigned with http.StatusRequestTimeout
+		//rkmidtimeout.WithTimeoutByPath("/rk/v1/healthy", time.Second),
 		),
 	}
 ```

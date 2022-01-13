@@ -8,99 +8,36 @@ package rkgincors
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-gin/interceptor"
+	"github.com/rookie-ninja/rk-entry/middleware"
+	"github.com/rookie-ninja/rk-entry/middleware/cors"
 	"net/http"
-	"strconv"
-	"strings"
 )
 
 // Interceptor Add CORS interceptors.
-func Interceptor(opts ...Option) gin.HandlerFunc {
-	set := newOptionSet(opts...)
+func Interceptor(opts ...rkmidcors.Option) gin.HandlerFunc {
+	set := rkmidcors.NewOptionSet(opts...)
 
-	allowMethods := strings.Join(set.AllowMethods, ",")
-	allowHeaders := strings.Join(set.AllowHeaders, ",")
-	exposeHeaders := strings.Join(set.ExposeHeaders, ",")
-	maxAge := strconv.Itoa(set.MaxAge)
 	return func(ctx *gin.Context) {
-		ctx.Set(rkgininter.RpcEntryNameKey, set.EntryName)
+		ctx.Set(rkmid.EntryNameKey.String(), set.GetEntryName())
 
-		if set.Skipper(ctx) {
-			ctx.Next()
-			return
+		beforeCtx := set.BeforeCtx(ctx.Request)
+		set.Before(beforeCtx)
+
+		for k, v := range beforeCtx.Output.HeadersToReturn {
+			ctx.Writer.Header().Set(k, v)
 		}
 
-		originHeader := ctx.Request.Header.Get(headerOrigin)
-		preflight := ctx.Request.Method == http.MethodOptions
+		for _, v := range beforeCtx.Output.HeaderVary {
+			ctx.Writer.Header().Add(rkmid.HeaderVary, v)
+		}
 
-		// 1: if no origin header was provided, we will return 204 if request is not a OPTION method
-		if originHeader == "" {
-			// 1.1: if not a preflight request, then pass through
-			if !preflight {
-				ctx.Next()
-				return
-			}
-
-			// 1.2: if it is a preflight request, then return with 204
+		// case 1: with abort
+		if beforeCtx.Output.Abort {
 			ctx.AbortWithStatus(http.StatusNoContent)
 			return
 		}
 
-		// 2: origin not allowed, we will return 204 if request is not a OPTION method
-		if !set.isOriginAllowed(originHeader) {
-			ctx.AbortWithStatus(http.StatusNoContent)
-			return
-		}
-
-		// 3: not a OPTION method
-		if !preflight {
-			ctx.Writer.Header().Set(headerAccessControlAllowOrigin, originHeader)
-			// 3.1: add Access-Control-Allow-Credentials
-			if set.AllowCredentials {
-				ctx.Writer.Header().Set(headerAccessControlAllowCredentials, "true")
-			}
-			// 3.2: add Access-Control-Expose-Headers
-			if exposeHeaders != "" {
-				ctx.Writer.Header().Set(headerAccessControlExposeHeaders, exposeHeaders)
-			}
-			ctx.Next()
-			return
-		}
-
-		// 4: preflight request, return 204
-		// add related headers including:
-		//
-		// - Vary
-		// - Access-Control-Allow-Origin
-		// - Access-Control-Allow-Methods
-		// - Access-Control-Allow-Credentials
-		// - Access-Control-Allow-Headers
-		// - Access-Control-Max-Age
-		ctx.Writer.Header().Add(headerVary, headerAccessControlRequestMethod)
-		ctx.Writer.Header().Add(headerVary, headerAccessControlRequestHeaders)
-		ctx.Writer.Header().Set(headerAccessControlAllowOrigin, originHeader)
-		ctx.Writer.Header().Set(headerAccessControlAllowMethods, allowMethods)
-
-		// 4.1: Access-Control-Allow-Credentials
-		if set.AllowCredentials {
-			ctx.Writer.Header().Set(headerAccessControlAllowCredentials, "true")
-		}
-
-		// 4.2: Access-Control-Allow-Headers
-		if allowHeaders != "" {
-			ctx.Writer.Header().Set(headerAccessControlAllowHeaders, allowHeaders)
-		} else {
-			h := ctx.Request.Header.Get(headerAccessControlRequestHeaders)
-			if h != "" {
-				ctx.Writer.Header().Set(headerAccessControlAllowHeaders, h)
-			}
-		}
-		if set.MaxAge > 0 {
-			// 4.3: Access-Control-Max-Age
-			ctx.Writer.Header().Set(headerAccessControlMaxAge, maxAge)
-		}
-
-		ctx.AbortWithStatus(http.StatusNoContent)
-		return
+		// case 2: call next
+		ctx.Next()
 	}
 }

@@ -1,5 +1,5 @@
-# CORS interceptor
-In this example, we will try to create gin server with cors interceptor enabled.
+# CORS middleware
+In this example, we will try to create gin server with cors middleware enabled.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -27,10 +27,6 @@ go get -u github.com/rookie-ninja/rk-gin
 Add rkgincors.Interceptor() CORS with option.
 
 ```go
-import     "github.com/rookie-ninja/rk-gin/interceptor/cors"
-```
-
-```go
     // ********************************************
     // ********** Enable interceptors *************
     // ********************************************
@@ -43,14 +39,14 @@ import     "github.com/rookie-ninja/rk-gin/interceptor/cors"
 
 | Name | Description | Default Values |
 | ---- | ---- | ---- |
-| rkgincors.WithEntryNameAndType(entryName, entryType string) | Provide entry name and type if there are multiple CORS interceptors needs to be used. | gin, gin |
-| rkgincors.WithSkipper(func) | Provide skipper function | Function always return false. |
-| rkgincors.WithAllowOrigins(string...) | Provide allowed origins with wildcard enabled | * |
-| rkgincors.WithAllowMethods(string...) | Provide allowed methods returns as response header of OPTIONS request | All http methods |
-| rkgincors.WithAllowHeaders(string...) | Provide allowed headers returns as response header of OPTIONS request | Headers from request |
-| rkgincors.WithAllowCredentials(bool) | Returns as response header of OPTIONS request | false |
-| rkgincors.WithExposeHeaders(string...) | Provide exposed headers returns as response header of OPTIONS request | "" |
-| rkgincors.WithMaxAge(int) | Provide max age returns as response header of OPTIONS request | 0 |
+| rkmidcors.WithEntryNameAndType(entryName, entryType string) | Provide entry name and type if there are multiple CORS interceptors needs to be used. | gin, gin |
+| rkmidcors.WithIgnorePrefix(string...) | Provide path to ignore | [] |
+| rkmidcors.WithAllowOrigins(string...) | Provide allowed origins with wildcard enabled | * |
+| rkmidcors.WithAllowMethods(string...) | Provide allowed methods returns as response header of OPTIONS request | All http methods |
+| rkmidcors.WithAllowHeaders(string...) | Provide allowed headers returns as response header of OPTIONS request | Headers from request |
+| rkmidcors.WithAllowCredentials(bool) | Returns as response header of OPTIONS request | false |
+| rkmidcors.WithExposeHeaders(string...) | Provide exposed headers returns as response header of OPTIONS request | "" |
+| rkmidcors.WithMaxAge(int) | Provide max age returns as response header of OPTIONS request | 0 |
 
 ## Example
 ### With accept CORS for all domains
@@ -104,7 +100,7 @@ In this example, we will enable CORS middleware with rkgincors.WithAllowOrigins(
 			// Bellow section is for CORS policy.
 			// Please refer https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS for details.
 			// Provide allowed origins
-			rkgincors.WithAllowOrigins("http://localhost:8080"),
+			rkmidcors.WithAllowOrigins("http://localhost:8080"),
         ),
 	}
 ```

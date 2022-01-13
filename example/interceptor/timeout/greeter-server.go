@@ -36,14 +36,14 @@ func main() {
 		rkginlog.Interceptor(),
 		rkgintimeout.Interceptor(
 		// Entry name and entry type will be used for distinguishing interceptors. Recommended.
-		// rkgintimeout.WithEntryNameAndType("greeter", "gin"),
+		// rkmidtimeout.WithEntryNameAndType("greeter", "gin"),
 		//
 		// Provide timeout and response handler, a default one would be assigned with http.StatusRequestTimeout
 		// This option impact all routes
-		// rkgintimeout.WithTimeoutAndResp(time.Second, nil),
+		//rkmidtimeout.WithTimeout(time.Second),
 		//
 		// Provide timeout and response handler by path, a default one would be assigned with http.StatusRequestTimeout
-		// rkgintimeout.WithTimeoutAndRespByPath("/rk/v1/healthy", time.Second, nil),
+		//rkmidtimeout.WithTimeoutByPath("/rk/v1/healthy", time.Second),
 		),
 	}
 
@@ -84,18 +84,7 @@ type GreeterResponse struct {
 
 // Greeter Handler.
 func Greeter(ctx *gin.Context) {
-	// ******************************************
-	// ********** rpc-scoped logger *************
-	// ******************************************
-	//
-	// RequestId will be printed if enabled by bellow codes.
-	// 1: Enable rkginmeta.Interceptor() in server side.
-	// 2: rkginctx.AddHeaderToClient(ctx, rkginctx.RequestIdKey, rkcommon.GenerateRequestId())
-	//
 	rkginctx.GetLogger(ctx).Info("Received request from client.")
-
-	// Set request id with X-Request-Id to outgoing headers.
-	// rkginctx.SetHeaderToClient(ctx, rkginctx.RequestIdKey, "this-is-my-request-id-overridden")
 
 	// Sleep for 5 seconds waiting to be timed out by interceptor
 	time.Sleep(10 * time.Second)

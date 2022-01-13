@@ -8,60 +8,34 @@ package rkginjwt
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-common/error"
-	"github.com/rookie-ninja/rk-gin/interceptor"
-	"net/http"
+	"github.com/rookie-ninja/rk-entry/middleware"
+	"github.com/rookie-ninja/rk-entry/middleware/jwt"
 )
 
 // Interceptor Add jwt interceptors.
 //
 // Mainly copied from bellow.
 // https://github.com/labstack/echo/blob/master/middleware/jwt.go
-func Interceptor(opts ...Option) gin.HandlerFunc {
-	set := newOptionSet(opts...)
+func Interceptor(opts ...rkmidjwt.Option) gin.HandlerFunc {
+	set := rkmidjwt.NewOptionSet(opts...)
 
 	return func(ctx *gin.Context) {
-		ctx.Set(rkgininter.RpcEntryNameKey, set.EntryName)
+		ctx.Set(rkmid.EntryNameKey.String(), set.GetEntryName())
 
-		if set.Skipper(ctx) {
-			ctx.Next()
-			return
-		}
+		beforeCtx := set.BeforeCtx(ctx.Request, nil)
+		set.Before(beforeCtx)
 
-		// extract token from extractor
-		var auth string
-		var err error
-		for _, extractor := range set.extractors {
-			// Extract token from extractor, if it's not fail break the loop and
-			// set auth
-			auth, err = extractor(ctx)
-			if err == nil {
-				break
-			}
-		}
-
-		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, rkerror.New(
-				rkerror.WithHttpCode(http.StatusUnauthorized),
-				rkerror.WithMessage("invalid or expired jwt"),
-				rkerror.WithDetails(err)))
-			return
-		}
-
-		// parse token
-		token, err := set.ParseTokenFunc(auth, ctx)
-
-		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, rkerror.New(
-				rkerror.WithHttpCode(http.StatusUnauthorized),
-				rkerror.WithMessage("invalid or expired jwt"),
-				rkerror.WithDetails(err)))
+		// case 1: error response
+		if beforeCtx.Output.ErrResp != nil {
+			ctx.AbortWithStatusJSON(beforeCtx.Output.ErrResp.Err.Code,
+				beforeCtx.Output.ErrResp)
 			return
 		}
 
 		// insert into context
-		ctx.Set(rkgininter.RpcJwtTokenKey, token)
+		ctx.Set(rkmid.JwtTokenKey.String(), beforeCtx.Output.JwtToken)
 
+		// case 2: call next
 		ctx.Next()
 	}
 }
