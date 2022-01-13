@@ -310,6 +310,7 @@ func TestGinEntry_Req_HappyCase(t *testing.T) {
 
 	entry := RegisterGinEntry(
 		WithCommonServiceEntryGin(rkentry.RegisterCommonServiceEntry()),
+		WithPortGin(8080),
 		WithNameGin("ut-gin"))
 
 	entry.AddInterceptor(rkginmetrics.Interceptor(
@@ -333,6 +334,7 @@ func TestGinEntry_Req_WithEmpty(t *testing.T) {
 
 	entry := RegisterGinEntry(
 		WithCommonServiceEntryGin(rkentry.RegisterCommonServiceEntry()),
+		WithPortGin(8080),
 		WithNameGin("ut-gin"))
 
 	entry.AddInterceptor(rkginmetrics.Interceptor(
@@ -353,6 +355,7 @@ func TestGinEntry_TV(t *testing.T) {
 	entry := RegisterGinEntry(
 		WithCommonServiceEntryGin(rkentry.RegisterCommonServiceEntry()),
 		WithTvEntryGin(rkentry.RegisterTvEntry()),
+		WithPortGin(8080),
 		WithNameGin("ut-gin"))
 
 	entry.AddInterceptor(rkginmetrics.Interceptor(
