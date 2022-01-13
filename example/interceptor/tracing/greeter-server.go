@@ -9,9 +9,10 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-entry/entry"
-	rkginctx "github.com/rookie-ninja/rk-gin/interceptor/context"
-	rkginlog "github.com/rookie-ninja/rk-gin/interceptor/log/zap"
-	rkgintrace "github.com/rookie-ninja/rk-gin/interceptor/tracing/telemetry"
+	"github.com/rookie-ninja/rk-entry/middleware/tracing"
+	"github.com/rookie-ninja/rk-gin/interceptor/context"
+	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
+	"github.com/rookie-ninja/rk-gin/interceptor/tracing/telemetry"
 	"log"
 	"net/http"
 )
@@ -24,13 +25,13 @@ func main() {
 	// ****************************************
 
 	// Export trace to stdout
-	exporter := rkgintrace.CreateFileExporter("stdout")
+	exporter := rkmidtrace.NewFileExporter("stdout")
 
 	// Export trace to local file system
-	// exporter := rkgintrace.CreateFileExporter("logs/trace.log")
+	// exporter := rkmidtrace.NewFileExporter("logs/trace.log")
 
 	// Export trace to jaeger agent
-	// exporter := rkgintrace.CreateJaegerExporter(jaeger.WithAgentEndpoint())
+	// exporter := rkmidtrace.NewJaegerExporter(jaeger.WithAgentEndpoint())
 
 	// ********************************************
 	// ********** Enable interceptors *************
@@ -39,19 +40,19 @@ func main() {
 		rkginlog.Interceptor(),
 		rkgintrace.Interceptor(
 			// Entry name and entry type will be used for distinguishing interceptors. Recommended.
-			// rkgintrace.WithEntryNameAndType("greeter", "gin"),
+			// rkmidtrace.WithEntryNameAndType("greeter", "gin"),
 			//
 			// Provide an exporter.
-			rkgintrace.WithExporter(exporter),
-		//
-		// Provide propagation.TextMapPropagator
-		// rkgintrace.WithPropagator(<propagator>),
-		//
-		// Provide SpanProcessor
-		// rkgintrace.WithSpanProcessor(<span processor>),
-		//
-		// Provide TracerProvider
-		// rkgintrace.WithTracerProvider(<trace provider>),
+			rkmidtrace.WithExporter(exporter),
+			//
+			// Provide propagation.TextMapPropagator
+			// rkmidtrace.WithPropagator(<propagator>),
+			//
+			// Provide SpanProcessor
+			// rkmidtrace.WithSpanProcessor(<span processor>),
+			//
+			// Provide TracerProvider
+			// rkmidtrace.WithTracerProvider(<trace provider>),
 		),
 	}
 

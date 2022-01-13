@@ -1,5 +1,5 @@
-# Log interceptor
-In this example, we will try to create gin server with log interceptor enabled.
+# Log middleware
+In this example, we will try to create gin server with log middleware enabled.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -26,9 +26,6 @@ go get -u github.com/rookie-ninja/rk-gin
 ```
 
 ### Code
-```go
-import     "github.com/rookie-ninja/rk-gin/interceptor/log/zap"
-```
 
 ```go
     interceptors := []gin.HandlerFunc{
@@ -38,19 +35,19 @@ import     "github.com/rookie-ninja/rk-gin/interceptor/log/zap"
 
 ## Options
 Log interceptor will init rkquery.Event, zap.Logger and entryName which will be injected into request context before user function.
-As soon as user function returns, interceptor will write the event into files.
+As soon as user function returns, middleware will write the event into files.
 
 ![arch](img/arch.png)
 
 | Name | Default | Description |
 | ---- | ---- | ---- |
-| WithEntryNameAndType(entryName, entryType string) | entryName=grpc, entryType=grpc | entryName and entryType will be used to distinguish options if there are multiple interceptors in single process. |
-| WithZapLoggerEntry(zapLoggerEntry *rkentry.ZapLoggerEntry) | [rkentry.GlobalAppCtx.GetZapLoggerEntryDefault()](https://github.com/rookie-ninja/rk-entry/blob/master/entry/context.go) | Zap logger would print to stdout with console encoding type. |
-| WithEventLoggerEntry(eventLoggerEntry *rkentry.EventLoggerEntry) | [rkentry.GlobalAppCtx.GetEventLoggerEntryDefault()](https://github.com/rookie-ninja/rk-entry/blob/master/entry/context.go) | Event logger would print to stdout with console encoding type. |
-| WithZapLoggerEncoding(ec int) | rkginlog.ENCODING_CONSOLE | rkginlog.ENCODING_CONSOLE and rkginlog.ENCODING_JSON are available options. |
-| WithZapLoggerOutputPaths(path ...string) | stdout | Both absolute path and relative path is acceptable. Current working directory would be used if path is relative. |
-| WithEventLoggerEncoding(ec int) | rkginlog.ENCODING_CONSOLE | rkginlog.ENCODING_CONSOLE and rkginlog.ENCODING_JSON are available options. |
-| WithEventLoggerOutputPaths(path ...string) | stdout | Both absolute path and relative path is acceptable. Current working directory would be used if path is relative. |
+| rkmidlog.WithEntryNameAndType(entryName, entryType string) | entryName=grpc, entryType=grpc | entryName and entryType will be used to distinguish options if there are multiple interceptors in single process. |
+| rkmidlog.WithZapLoggerEntry(zapLoggerEntry *rkentry.ZapLoggerEntry) | [rkentry.GlobalAppCtx.GetZapLoggerEntryDefault()](https://github.com/rookie-ninja/rk-entry/blob/master/entry/context.go) | Zap logger would print to stdout with console encoding type. |
+| rkmidlog.WithEventLoggerEntry(eventLoggerEntry *rkentry.EventLoggerEntry) | [rkentry.GlobalAppCtx.GetEventLoggerEntryDefault()](https://github.com/rookie-ninja/rk-entry/blob/master/entry/context.go) | Event logger would print to stdout with console encoding type. |
+| rkmidlog.WithZapLoggerEncoding(ec int) | rkginlog.ENCODING_CONSOLE | rkginlog.ENCODING_CONSOLE and rkginlog.ENCODING_JSON are available options. |
+| rkmidlog.WithZapLoggerOutputPaths(path ...string) | stdout | Both absolute path and relative path is acceptable. Current working directory would be used if path is relative. |
+| rkmidlog.WithEventLoggerEncoding(ec int) | rkginlog.ENCODING_CONSOLE | rkginlog.ENCODING_CONSOLE and rkginlog.ENCODING_JSON are available options. |
+| rkmidlog.WithEventLoggerOutputPaths(path ...string) | stdout | Both absolute path and relative path is acceptable. Current working directory would be used if path is relative. |
 
 ```go
     // ********************************************
@@ -59,19 +56,19 @@ As soon as user function returns, interceptor will write the event into files.
     interceptors := []gin.HandlerFunc{
         rkginlog.Interceptor(
             // Entry name and entry type will be used for distinguishing interceptors. Recommended.
-            // rkginlog.WithEntryNameAndType("greeter", "grpc"),
+            // rkmidlog.WithEntryNameAndType("greeter", "grpc"),
             //
             // Zap logger would be logged as JSON format.
-            // rkginlog.WithZapLoggerEncoding(rkgrpclog.ENCODING_JSON),
+            // rkmidlog.WithZapLoggerEncoding(rkgrpclog.ENCODING_JSON),
             //
             // Event logger would be logged as JSON format.
-            // rkginlog.WithEventLoggerEncoding(rkgrpclog.ENCODING_JSON),
+            // rkmidlog.WithEventLoggerEncoding(rkgrpclog.ENCODING_JSON),
             //
             // Zap logger would be logged to specified path.
-            // rkginlog.WithZapLoggerOutputPaths("logs/server-zap.log"),
+            // rkmidlog.WithZapLoggerOutputPaths("logs/server-zap.log"),
             //
             // Event logger would be logged to specified path.
-            // rkginlog.WithEventLoggerOutputPaths("logs/server-event.log"),
+            // rkmidlog.WithEventLoggerOutputPaths("logs/server-event.log"),
         ),
     }
 ```
@@ -80,23 +77,24 @@ As soon as user function returns, interceptor will write the event into files.
 - CONSOLE
 No options needs to be provided. 
 ```shell script
-2021-06-24T21:01:24.633+0800    INFO    log/greeter-server.go:84        Received request from client.
+2022-01-13T20:02:31.077+0800    INFO    log/greeter-server.go:89        Received request from client.
 ```
+
 ```shell script
 ------------------------------------------------------------------------
-endTime=2021-06-24T21:01:24.634+08:00
-startTime=2021-06-24T21:01:24.633836+08:00
-elapsedNano=164521
+endTime=2022-01-13T20:02:31.077717+08:00
+startTime=2022-01-13T20:02:31.077606+08:00
+elapsedNano=110953
 timezone=CST
-ids={"eventId":"5cdcb51d-4e92-4d9e-afce-381bea1bf6de"}
-app={"appName":"rk","appVersion":"v0.0.0","entryName":"gin","entryType":"gin"}
-env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.2","os":"darwin","realm":"*","region":"*"}
+ids={"eventId":"137014d4-4869-46ae-a94d-de0d55a1f5a7"}
+app={"appName":"rk","appVersion":"","entryName":"greeter","entryType":"gin"}
+env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.6","os":"darwin","realm":"*","region":"*"}
 payloads={"apiMethod":"GET","apiPath":"/rk/v1/greeter","apiProtocol":"HTTP/1.1","apiQuery":"name=rk-dev","userAgent":"curl/7.64.1"}
 error={}
 counters={}
 pairs={}
 timing={}
-remoteAddr=localhost:59410
+remoteAddr=localhost:55816
 operation=/rk/v1/greeter
 resCode=200
 eventStatus=Ended
@@ -111,10 +109,10 @@ EOE
     interceptors := []gin.HandlerFunc{
         rkginlog.Interceptor(
             // Zap logger would be logged as JSON format.
-            rkginlog.WithZapLoggerEncoding(rkginlog.ENCODING_JSON),
+            rkginlog.WithZapLoggerEncoding("json"),
             //
             // Event logger would be logged as JSON format.
-            rkginlog.WithEventLoggerEncoding(rkginlog.ENCODING_JSON),
+            rkginlog.WithEventLoggerEncoding("json"),
         ),
     }
 ```
@@ -137,10 +135,10 @@ No options needs to be provided.
     interceptors := []gin.HandlerFunc{
         rkginlog.Interceptor(
             // Zap logger would be logged to specified path.
-            rkginlog.WithZapLoggerOutputPaths("logs/server-zap.log"),
+            rkmidlog.WithZapLoggerOutputPaths("logs/server-zap.log"),
             //
             // Event logger would be logged to specified path.
-            rkginlog.WithEventLoggerOutputPaths("logs/server-event.log"),
+            rkmidlog.WithEventLoggerOutputPaths("logs/server-event.log"),
         ),
     }
 ```

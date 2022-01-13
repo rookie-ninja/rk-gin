@@ -22,8 +22,10 @@ func TestWriteHeader(t *testing.T) {
 	writer := writer{}
 	assert.PanicsWithValue(t, errmsg1, func() {
 		writer.WriteHeader(code1)
+		writer.Write([]byte{})
 	})
 	assert.PanicsWithValue(t, errmsg2, func() {
 		writer.WriteHeader(code2)
+		writer.Write([]byte{})
 	})
 }

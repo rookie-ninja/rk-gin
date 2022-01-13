@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-entry/entry"
+	"github.com/rookie-ninja/rk-entry/middleware/cors"
 	"github.com/rookie-ninja/rk-gin/interceptor/context"
 	"github.com/rookie-ninja/rk-gin/interceptor/cors"
 	"log"
@@ -32,25 +33,22 @@ func main() {
 	interceptors := []gin.HandlerFunc{
 		rkgincors.Interceptor(
 			// Entry name and entry type will be used for distinguishing interceptors. Recommended.
-			rkgincors.WithEntryNameAndType("greeter", "gin"),
-			// Provide skipper function
-			// rkgincors.WithSkipper(func(e *gin.Context) bool {
-			//     return false
-			// }),
+			rkmidcors.WithEntryNameAndType("greeter", "gin"),
+			//rkmidcors.WithIgnorePrefix("/v1/greeter"),
 			// Bellow section is for CORS policy.
 			// Please refer https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS for details.
 			// Provide allowed origins
-			rkgincors.WithAllowOrigins("http://localhost:*"),
+			rkmidcors.WithAllowOrigins("http://localhost:*"),
 			// Whether to allow credentials
-			// rkgincors.WithAllowCredentials(true),
+			// rkmidcors.WithAllowCredentials(true),
 			// Provide expose headers
-			// rkgincors.WithExposeHeaders(""),
+			// rkmidcors.WithExposeHeaders(""),
 			// Provide max age
-			// rkgincors.WithMaxAge(1),
+			// rkmidcors.WithMaxAge(1),
 			// Provide allowed headers
-			// rkgincors.WithAllowHeaders(""),
+			// rkmidcors.WithAllowHeaders(""),
 			// Provide allowed headers
-			// rkgincors.WithAllowMethods(""),
+			// rkmidcors.WithAllowMethods(""),
 		),
 	}
 

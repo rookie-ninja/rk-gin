@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-entry/entry"
+	"github.com/rookie-ninja/rk-entry/middleware/auth"
 	"github.com/rookie-ninja/rk-gin/interceptor/auth"
 	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
 	"log"
@@ -24,8 +25,8 @@ func main() {
 	interceptors := []gin.HandlerFunc{
 		rkginlog.Interceptor(),
 		rkginauth.Interceptor(
-			rkginauth.WithBasicAuth("", "rk-user:rk-pass"),
-			rkginauth.WithApiKeyAuth("rk-api-key"),
+			rkmidauth.WithBasicAuth("", "rk-user:rk-pass"),
+			rkmidauth.WithApiKeyAuth("rk-api-key"),
 		),
 	}
 

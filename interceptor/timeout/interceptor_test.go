@@ -8,23 +8,25 @@ package rkgintimeout
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/rookie-ninja/rk-entry/middleware/timeout"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 )
 
-func sleepHandler(ctx *gin.Context) {
+func sleepH(ctx *gin.Context) {
 	time.Sleep(time.Second)
 	ctx.JSON(http.StatusOK, "{}")
 }
 
-func panicHandler(ctx *gin.Context) {
+func panicH(ctx *gin.Context) {
 	panic(fmt.Errorf("ut panic"))
 }
 
-func returnHandler(ctx *gin.Context) {
+func returnH(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, "{}")
 }
 
@@ -41,8 +43,8 @@ func getGinRouter(path string, handler gin.HandlerFunc, middleware gin.HandlerFu
 
 func TestInterceptor_WithTimeout(t *testing.T) {
 	// with global timeout response
-	r := getGinRouter("/", sleepHandler, Interceptor(
-		WithTimeoutAndResp(time.Nanosecond, nil)))
+	r := getGinRouter("/", sleepH, Interceptor(
+		rkmidtimeout.WithTimeout(time.Nanosecond)))
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/", nil)
@@ -51,31 +53,21 @@ func TestInterceptor_WithTimeout(t *testing.T) {
 	assert.Equal(t, http.StatusRequestTimeout, w.Code)
 
 	// with path
-	r = getGinRouter("/ut-path", sleepHandler, Interceptor(
-		WithTimeoutAndRespByPath("/ut-path", time.Nanosecond, nil)))
+	r = getGinRouter("/ut-path", sleepH, Interceptor(
+		rkmidtimeout.WithTimeoutByPath("/ut-path", time.Nanosecond)))
 
 	w = httptest.NewRecorder()
 	req, _ = http.NewRequest("GET", "/ut-path", nil)
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusRequestTimeout, w.Code)
-
-	// with custom response
-	r = getGinRouter("/", sleepHandler, Interceptor(
-		WithTimeoutAndRespByPath("/", time.Nanosecond, customResponse)))
-
-	w = httptest.NewRecorder()
-	req, _ = http.NewRequest("GET", "/", nil)
-	r.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
 func TestInterceptor_WithPanic(t *testing.T) {
 	defer assertPanic(t)
 
-	r := getGinRouter("/", panicHandler, Interceptor(
-		WithTimeoutAndResp(time.Minute, nil)))
+	r := getGinRouter("/", panicH, Interceptor(
+		rkmidtimeout.WithTimeout(time.Minute)))
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/", nil)
@@ -87,11 +79,11 @@ func TestInterceptor_HappyCase(t *testing.T) {
 	// We expect interceptor acts as the name describes
 	r := gin.New()
 	r.Use(Interceptor(
-		WithTimeoutAndRespByPath("/timeout", time.Nanosecond, nil),
-		WithTimeoutAndRespByPath("/happy", time.Minute, nil)))
+		rkmidtimeout.WithTimeoutByPath("/timeout", time.Nanosecond),
+		rkmidtimeout.WithTimeoutByPath("/happy", time.Minute)))
 
-	r.GET("/timeout", sleepHandler)
-	r.GET("/happy", returnHandler)
+	r.GET("/timeout", sleepH)
+	r.GET("/happy", returnH)
 
 	// timeout on /timeout
 	w := httptest.NewRecorder()
@@ -116,4 +108,9 @@ func assertPanic(t *testing.T) {
 		// This should never be called in case of a bug
 		assert.True(t, false)
 	}
+}
+
+func TestMain(m *testing.M) {
+	gin.SetMode(gin.ReleaseMode)
+	os.Exit(m.Run())
 }

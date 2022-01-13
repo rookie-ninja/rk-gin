@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-entry/entry"
+	"github.com/rookie-ninja/rk-entry/middleware/log"
 	"github.com/rookie-ninja/rk-gin/interceptor/context"
 	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
 	"log"
@@ -23,20 +24,20 @@ func main() {
 	// ********************************************
 	interceptors := []gin.HandlerFunc{
 		rkginlog.Interceptor(
-		// Entry name and entry type will be used for distinguishing interceptors. Recommended.
-		// rkginlog.WithEntryNameAndType("greeter", "gin"),
+			// Entry name and entry type will be used for distinguishing interceptors. Recommended.
+			rkmidlog.WithEntryNameAndType("greeter", "gin"),
 		//
 		// Zap logger would be logged as JSON format.
-		// rkginlog.WithZapLoggerEncoding(rkginlog.ENCODING_JSON),
+		// rkmidlog.WithZapLoggerEncoding("json"),
 		//
 		// Event logger would be logged as JSON format.
-		// rkginlog.WithEventLoggerEncoding(rkginlog.ENCODING_JSON),
+		// rkmidlog.WithEventLoggerEncoding("json"),
 		//
 		// Zap logger would be logged to specified path.
-		// rkginlog.WithZapLoggerOutputPaths("logs/server-zap.log"),
+		// rkmidlog.WithZapLoggerOutputPaths("logs/server-zap.log"),
 		//
 		// Event logger would be logged to specified path.
-		// rkginlog.WithEventLoggerOutputPaths("logs/server-event.log"),
+		// rkmidlog.WithEventLoggerOutputPaths("logs/server-event.log"),
 		),
 	}
 
@@ -120,7 +121,7 @@ func Greeter(ctx *gin.Context) {
 	//
 	// RequestId will be printed on both client and server side.
 	//
-	// rkginctx.SetHeaderToClient(ctx, rkginctx.RequestIdKey, rkcommon.GenerateRequestId())
+	// rkginctx.SetHeaderToClient(ctx, rkmid.HeaderRequestId, rkcommon.GenerateRequestId())
 
 	ctx.JSON(http.StatusOK, &GreeterResponse{
 		Message: fmt.Sprintf("Hello %s!", ctx.Query("name")),

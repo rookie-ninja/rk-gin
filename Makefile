@@ -26,19 +26,6 @@ doctoc:
 	@doctoc . 2>&1
 	@echo "------------------------------------[Done]"
 
-.PHONY: swag
-swag:
-	@echo "[swag] Running swag..."
-	@swag init --generalInfo boot/common_service_entry.go --output boot/assets/sw/config --parseDependency 2 --propertyStrategy camelcase
-	@rm -rf boot/assets/sw/config/docs.go
-	@echo "------------------------------------[Done]"
-
-.PHONY: pkger
-pkger:
-	@echo "[pkger] Running pkger..."
-	@pkger -o boot
-	@echo "------------------------------------[Done]"
-
 .PHONY: gomod
 gomod:
 	@echo "[gomod] Running go mod tidy..."

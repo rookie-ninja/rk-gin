@@ -1,5 +1,5 @@
-# Gzip interceptor
-In this example, we will try to create gin server gzip interceptor enabled.
+# Gzip middleware
+In this example, we will try to create gin server gzip middleware enabled.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->

@@ -815,14 +815,6 @@ Simply run make all to validate your changes. Or run codes in example/ folder.
 
 - make all
 
-Run unit-test, golangci-lint, doctoc and gofmt.
-
-- make swag
-
-Generate swagger config for CommonService
-
-- make pkger
-
 If files in boot/assets have been modified, then we need to run it.
 
 ## Test instruction

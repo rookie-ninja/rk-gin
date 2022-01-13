@@ -1,5 +1,5 @@
-# Auth interceptor (middleware)
-In this example, we will try to create gin server with auth interceptor enabled.
+# Auth middleware
+In this example, we will try to create gin server with auth middleware enabled.
 
 Auth interceptor will validate bellow authorizations.
 
@@ -34,9 +34,7 @@ go get -u github.com/rookie-ninja/rk-gin
 ```
 
 ### Code
-```go
-import    "github.com/rookie-ninja/rk-gin/interceptor/auth"
-```
+
 ```go
     // ********************************************
     // ********** Enable interceptors *************
@@ -44,8 +42,8 @@ import    "github.com/rookie-ninja/rk-gin/interceptor/auth"
     interceptors := []gin.HandlerFunc{
         rkginlog.Interceptor(),
         rkginauth.Interceptor(
-            rkginauth.WithBasicAuth("", "rk-user:rk-pass"),
-            rkginauth.WithApiKeyAuth("rk-api-key"),
+            rkmidauth.WithBasicAuth("", "rk-user:rk-pass"),
+            rkmidauth.WithApiKeyAuth("rk-api-key"),
         ),
     }
 ```
@@ -57,10 +55,10 @@ Auth interceptor validate authorization for each request.
 
 | Name | Default | Description |
 | ---- | ---- | ---- |
-| WithEntryNameAndType(entryName, entryType string) | entryName=gin, entryType=gin | entryName and entryType will be used to distinguish options if there are multiple interceptors in single process. |
-| WithBasicAuth(realm string, cred ...string) | []string | Provide Basic auth credential with scheme of [user:pass]. Multiple credential are available for server. |
-| WithApiKeyAuth(key ...string) | []string | Provide API key. Multiple keys are available for server. |
-| WithIgnorePrefix(paths ...string) | []string | Ignoring paths that interceptors will ignore. |
+| rkmidauth.WithEntryNameAndType(entryName, entryType string) | entryName=gin, entryType=gin | entryName and entryType will be used to distinguish options if there are multiple interceptors in single process. |
+| rkmidauth.WithBasicAuth(realm string, cred ...string) | []string | Provide Basic auth credential with scheme of [user:pass]. Multiple credential are available for server. |
+| rkmidauth.WithApiKeyAuth(key ...string) | []string | Provide API key. Multiple keys are available for server. |
+| rkmidauth.WithIgnorePrefix(paths ...string) | []string | Ignoring paths that interceptors will ignore. |
 
 ```go
     // ********************************************
@@ -69,8 +67,8 @@ Auth interceptor validate authorization for each request.
     interceptors := []gin.HandlerFunc{
         rkginlog.Interceptor(),
         rkginauth.Interceptor(
-            rkginauth.WithBasicAuth("", "rk-user:rk-pass"),
-            rkginauth.WithApiKeyAuth("rk-api-key"),
+            rkmidauth.WithBasicAuth("", "rk-user:rk-pass"),
+            rkmidauth.WithApiKeyAuth("rk-api-key"),
         ),
     }
 ```
@@ -96,19 +94,19 @@ $ go run greeter-server.go
 - Server side (event)
 ```shell script
 ------------------------------------------------------------------------
-endTime=2021-06-24T20:16:30.011298+08:00
-startTime=2021-06-24T20:16:30.011208+08:00
-elapsedNano=90163
+endTime=2022-01-13T19:46:51.337078+08:00
+startTime=2022-01-13T19:46:51.336923+08:00
+elapsedNano=155796
 timezone=CST
-ids={"eventId":"cc695229-0775-4caa-ac84-cdbb2eb11ca7"}
-app={"appName":"rk","appVersion":"v0.0.0","entryName":"gin","entryType":"gin"}
-env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.2","os":"darwin","realm":"*","region":"*"}
+ids={"eventId":"94c4a3ab-349c-4f13-8e0c-4c61364f3fae"}
+app={"appName":"rk","appVersion":"","entryName":"c7g12a3d0cvj65683nb0","entryType":""}
+env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.6","os":"darwin","realm":"*","region":"*"}
 payloads={"apiMethod":"GET","apiPath":"/rk/example/greeter","apiProtocol":"HTTP/1.1","apiQuery":"name=rk-dev","userAgent":"curl/7.64.1"}
 error={}
 counters={}
 pairs={}
 timing={}
-remoteAddr=localhost:65449
+remoteAddr=localhost:61234
 operation=/rk/example/greeter
 resCode=401
 eventStatus=Ended
@@ -118,12 +116,11 @@ EOE
 - Client side 
 ```shell script
 $ curl "localhost:8080/rk/example/greeter?name=rk-dev"
-# Pretty print manually.
 {
     "error":{
         "code":401,
         "status":"Unauthorized",
-        "message":"Missing authorization",
+        "message":"missing authorization, provide one of bellow auth header:[Basic Auth,X-API-Key]",
         "details":[]
     }
 }
@@ -133,19 +130,19 @@ $ curl "localhost:8080/rk/example/greeter?name=rk-dev"
 - Server side (event)
 ```shell script
 ------------------------------------------------------------------------
-endTime=2021-06-24T20:46:29.987694+08:00
-startTime=2021-06-24T20:46:29.987572+08:00
-elapsedNano=121714
+endTime=2022-01-13T19:47:23.698389+08:00
+startTime=2022-01-13T19:47:23.698371+08:00
+elapsedNano=18074
 timezone=CST
-ids={"eventId":"6250b92d-e54d-4250-bd7c-bc39047da471"}
-app={"appName":"rk","appVersion":"v0.0.0","entryName":"gin","entryType":"gin"}
-env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.2","os":"darwin","realm":"*","region":"*"}
+ids={"eventId":"aa2289e0-0dea-4cc8-8440-8d5c043b4db0"}
+app={"appName":"rk","appVersion":"","entryName":"c7g12a3d0cvj65683nb0","entryType":""}
+env={"arch":"amd64","az":"*","domain":"*","hostname":"lark.local","localIP":"10.8.0.6","os":"darwin","realm":"*","region":"*"}
 payloads={"apiMethod":"GET","apiPath":"/rk/v1/greeter","apiProtocol":"HTTP/1.1","apiQuery":"name=rk-dev","userAgent":"curl/7.64.1"}
 error={}
 counters={}
 pairs={}
 timing={}
-remoteAddr=localhost:55755
+remoteAddr=localhost:63303
 operation=/rk/v1/greeter
 resCode=200
 eventStatus=Ended

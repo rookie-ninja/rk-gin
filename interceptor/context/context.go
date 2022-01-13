@@ -9,7 +9,7 @@ package rkginctx
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/rookie-ninja/rk-gin/interceptor"
+	"github.com/rookie-ninja/rk-entry/middleware"
 	"github.com/rookie-ninja/rk-logger"
 	"github.com/rookie-ninja/rk-query"
 	otelcodes "go.opentelemetry.io/otel/codes"
@@ -17,13 +17,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"net/http"
-)
-
-const (
-	// RequestIdKey is the header key sent to client
-	RequestIdKey = "X-Request-Id"
-	// TraceIdKey is the header sent to client
-	TraceIdKey = "X-Trace-Id"
 )
 
 var (
@@ -63,7 +56,7 @@ func GetEvent(ctx *gin.Context) rkquery.Event {
 		return noopEvent
 	}
 
-	if event, ok := ctx.Get(rkgininter.RpcEventKey); ok {
+	if event, ok := ctx.Get(rkmid.EventKey.String()); ok {
 		return event.(rkquery.Event)
 	}
 
@@ -76,7 +69,7 @@ func GetLogger(ctx *gin.Context) *zap.Logger {
 		return rklogger.NoopLogger
 	}
 
-	if logger, ok := ctx.Get(rkgininter.RpcLoggerKey); ok {
+	if logger, ok := ctx.Get(rkmid.LoggerKey.String()); ok {
 		requestId := GetRequestId(ctx)
 		traceId := GetTraceId(ctx)
 		fields := make([]zap.Field, 0)
@@ -101,7 +94,7 @@ func GetRequestId(ctx *gin.Context) string {
 		return ""
 	}
 
-	return ctx.Writer.Header().Get(RequestIdKey)
+	return ctx.Writer.Header().Get(rkmid.HeaderRequestId)
 }
 
 // GetTraceId extract trace id from context.
@@ -110,7 +103,7 @@ func GetTraceId(ctx *gin.Context) string {
 		return ""
 	}
 
-	return ctx.Writer.Header().Get(TraceIdKey)
+	return ctx.Writer.Header().Get(rkmid.HeaderTraceId)
 }
 
 // GetEntryName extract entry name from context.
@@ -119,7 +112,7 @@ func GetEntryName(ctx *gin.Context) string {
 		return ""
 	}
 
-	if v, ok := ctx.Get(rkgininter.RpcEntryNameKey); ok {
+	if v, ok := ctx.Get(rkmid.EntryNameKey.String()); ok {
 		return v.(string)
 	}
 
@@ -134,7 +127,7 @@ func GetTraceSpan(ctx *gin.Context) trace.Span {
 		return span
 	}
 
-	if v, ok := ctx.Get(rkgininter.RpcSpanKey); ok {
+	if v, ok := ctx.Get(rkmid.SpanKey.String()); ok {
 		return v.(trace.Span)
 	}
 
@@ -147,7 +140,7 @@ func GetTracer(ctx *gin.Context) trace.Tracer {
 		return noopTracerProvider.Tracer("rk-trace-noop")
 	}
 
-	if v, ok := ctx.Get(rkgininter.RpcTracerKey); ok {
+	if v, ok := ctx.Get(rkmid.TracerKey.String()); ok {
 		return v.(trace.Tracer)
 	}
 
@@ -160,7 +153,7 @@ func GetTracerProvider(ctx *gin.Context) trace.TracerProvider {
 		return noopTracerProvider
 	}
 
-	if v, ok := ctx.Get(rkgininter.RpcTracerProviderKey); ok {
+	if v, ok := ctx.Get(rkmid.TracerProviderKey.String()); ok {
 		return v.(trace.TracerProvider)
 	}
 
@@ -173,7 +166,7 @@ func GetTracerPropagator(ctx *gin.Context) propagation.TextMapPropagator {
 		return nil
 	}
 
-	if v, ok := ctx.Get(rkgininter.RpcPropagatorKey); ok {
+	if v, ok := ctx.Get(rkmid.PropagatorKey.String()); ok {
 		return v.(propagation.TextMapPropagator)
 	}
 
@@ -218,7 +211,7 @@ func GetJwtToken(ctx *gin.Context) *jwt.Token {
 		return nil
 	}
 
-	if raw, exist := ctx.Get(rkgininter.RpcJwtTokenKey); exist {
+	if raw, exist := ctx.Get(rkmid.JwtTokenKey.String()); exist {
 		if res, ok := raw.(*jwt.Token); ok {
 			return res
 		}
@@ -233,7 +226,7 @@ func GetCsrfToken(ctx *gin.Context) string {
 		return ""
 	}
 
-	if raw, ok := ctx.Get(rkgininter.RpcCsrfTokenKey); ok {
+	if raw, ok := ctx.Get(rkmid.CsrfTokenKey.String()); ok {
 		if res, ok := raw.(string); ok {
 			return res
 		}

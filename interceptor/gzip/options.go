@@ -9,7 +9,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-gin/interceptor"
+	"github.com/rs/xid"
 	"io/ioutil"
 	"strings"
 	"sync"
@@ -46,8 +46,8 @@ var (
 // Create new optionSet with rpc type nad options.
 func newOptionSet(opts ...Option) *optionSet {
 	set := &optionSet{
-		EntryName:      rkgininter.RpcEntryNameValue,
-		EntryType:      rkgininter.RpcEntryTypeValue,
+		EntryName:      xid.New().String(),
+		EntryType:      "",
 		Skipper:        defaultSkipper,
 		Level:          DefaultCompression,
 		decompressPool: newDecompressPool(),

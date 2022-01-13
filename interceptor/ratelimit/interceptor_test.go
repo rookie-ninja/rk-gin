@@ -1,121 +1,42 @@
 package rkginlimit
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/rookie-ninja/rk-common/error"
+	"github.com/rookie-ninja/rk-entry/middleware/ratelimit"
 	"github.com/stretchr/testify/assert"
 	"net/http"
-	"net/url"
+	"net/http/httptest"
+	"os"
 	"testing"
 )
 
-func init() {
-	gin.SetMode(gin.ReleaseMode)
+func newCtx() *gin.Context {
+	ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
+	ctx.Request = httptest.NewRequest(http.MethodGet, "/ut-path", nil)
+	return ctx
 }
 
-func NewMockResponseWriter() *MockResponseWriter {
-	return &MockResponseWriter{
-		data:   make([]byte, 0),
-		header: http.Header{},
-	}
-}
+func TestInterceptor(t *testing.T) {
+	beforeCtx := rkmidlimit.NewBeforeCtx()
+	mock := rkmidlimit.NewOptionSetMock(beforeCtx)
 
-type MockResponseWriter struct {
-	data       []byte
-	statusCode int
-	header     http.Header
-}
-
-func (m *MockResponseWriter) Header() http.Header {
-	return m.header
-}
-
-func (m *MockResponseWriter) Write(bytes []byte) (int, error) {
-	m.data = bytes
-	return len(bytes), nil
-}
-
-func (m *MockResponseWriter) WriteHeader(statusCode int) {
-	m.statusCode = statusCode
-}
-
-func TestInterceptor_WithoutOptions(t *testing.T) {
-	defer assertNotPanic(t)
-
-	handler := Interceptor()
-
-	ctx, _ := gin.CreateTestContext(NewMockResponseWriter())
-	ctx.Request = &http.Request{
-		URL: &url.URL{
-			Path: "/ut-path",
-		},
-	}
-
-	handler(ctx)
-
-	assert.False(t, ctx.IsAborted())
-}
-
-func TestInterceptor_WithTokenBucket(t *testing.T) {
-	defer assertNotPanic(t)
-
-	handler := Interceptor(
-		WithAlgorithm(TokenBucket),
-		WithReqPerSec(1),
-		WithReqPerSecByPath("ut-path", 1))
-
-	ctx, _ := gin.CreateTestContext(NewMockResponseWriter())
-	ctx.Request = &http.Request{
-		URL: &url.URL{
-			Path: "/ut-path",
-		},
-	}
-
-	handler(ctx)
-
-	assert.False(t, ctx.IsAborted())
-}
-
-func TestInterceptor_WithLeakyBucket(t *testing.T) {
-	defer assertNotPanic(t)
-
-	handler := Interceptor(
-		WithAlgorithm(LeakyBucket),
-		WithReqPerSec(1),
-		WithReqPerSecByPath("ut-path", 1))
-
-	ctx, _ := gin.CreateTestContext(NewMockResponseWriter())
-	ctx.Request = &http.Request{
-		URL: &url.URL{
-			Path: "/ut-path",
-		},
-	}
-
-	handler(ctx)
-
-	assert.False(t, ctx.IsAborted())
-}
-
-func TestInterceptor_WithUserLimiter(t *testing.T) {
-	defer assertNotPanic(t)
-
-	handler := Interceptor(
-		WithGlobalLimiter(func(ctx *gin.Context) error {
-			return fmt.Errorf("ut-error")
-		}),
-		WithLimiterByPath("/ut-path", func(ctx *gin.Context) error {
-			return fmt.Errorf("ut-error")
-		}))
-
-	ctx, _ := gin.CreateTestContext(NewMockResponseWriter())
-	ctx.Request = &http.Request{
-		URL: &url.URL{
-			Path: "/ut-path",
-		},
-	}
-
-	handler(ctx)
-
-	assert.Equal(t, http.StatusTooManyRequests, ctx.Writer.Status())
+	// case 1: with error response
+	inter := Interceptor(rkmidlimit.WithMockOptionSet(mock))
+	ctx := newCtx()
+	// assign any of error response
+	beforeCtx.Output.ErrResp = rkerror.New(rkerror.WithHttpCode(http.StatusUnauthorized))
+	inter(ctx)
 	assert.True(t, ctx.IsAborted())
+
+	// case 2: happy case
+	ctx = newCtx()
+	beforeCtx.Output.ErrResp = nil
+	inter(ctx)
+	assert.False(t, ctx.IsAborted())
+}
+
+func TestMain(m *testing.M) {
+	gin.SetMode(gin.ReleaseMode)
+	os.Exit(m.Run())
 }

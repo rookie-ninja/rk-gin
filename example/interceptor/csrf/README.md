@@ -1,4 +1,4 @@
-# CSRF interceptor
+# CSRF middleware
 In this example, we will try to create gin server with csrf middleware enabled.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -27,9 +27,6 @@ go get -u github.com/rookie-ninja/rk-gin
 Add rkgincsrf.Interceptor() csrf with option.
 
 ```go
-import     "github.com/rookie-ninja/rk-gin/interceptor/csrf"
-```
-```go
     // ********************************************
     // ********** Enable interceptors *************
     // ********************************************
@@ -41,16 +38,16 @@ import     "github.com/rookie-ninja/rk-gin/interceptor/csrf"
 ## Options
 | Name | Description | Default Values |
 | ---- | ---- | ---- |
-| rkgincsrf.WithEntryNameAndType(entryName, entryType string) | Optional. Provide entry name and type if there are multiple csrf interceptors needs to be used. | gin, gin|
-| rkgincsrf.WithSkipper(skipper function) | Optional. Provide skipper function | function always returns false |
-| rkgincsrf.WithTokenLength(int) | Optional. Provide the length of the generated token. | 32 |
-| rkgincsrf.WithTokenLookup(string) | Optional, provide csrf token lookup rules, please see code comments for details. | "header:X-CSRF-Token" |
-| rkgincsrf.WithCookieName(string) | Optional, Provide name of the CSRF cookie. This cookie will store CSRF token. | csrf |
-| rkgincsrf.WithCookieDomain(string) | Optional, domain of the CSRF cookie. | "" |
-| rkgincsrf.WithCookiePath(string) | Optional, path of the CSRF cookie. | "" |
-| rkgincsrf.WithCookieMaxAge(int) | Optional, provide max age (in seconds) of the CSRF cookie. | 86400 (24hr). |
-| rkgincsrf.WithCookieHTTPOnly(bool) | Optional, indicates if CSRF cookie is HTTP only. | false | 
-| rkgincsrf.WithCookieSameSite(http.SameSite) | Optional, indicates SameSite mode of the CSRF cookie. | SameSiteDefaultMode |
+| rkmidcsrf.WithEntryNameAndType(entryName, entryType string) | Optional. Provide entry name and type if there are multiple csrf interceptors needs to be used. | gin, gin|
+| rkmidcsrf.WithIgnorePrefix(string...) | Optional. Provide ignore path | [] |
+| rkmidcsrf.WithTokenLength(int) | Optional. Provide the length of the generated token. | 32 |
+| rkmidcsrf.WithTokenLookup(string) | Optional, provide csrf token lookup rules, please see code comments for details. | "header:X-CSRF-Token" |
+| rkmidcsrf.WithCookieName(string) | Optional, Provide name of the CSRF cookie. This cookie will store CSRF token. | csrf |
+| rkmidcsrf.WithCookieDomain(string) | Optional, domain of the CSRF cookie. | "" |
+| rkmidcsrf.WithCookiePath(string) | Optional, path of the CSRF cookie. | "" |
+| rkmidcsrf.WithCookieMaxAge(int) | Optional, provide max age (in seconds) of the CSRF cookie. | 86400 (24hr). |
+| rkmidcsrf.WithCookieHTTPOnly(bool) | Optional, indicates if CSRF cookie is HTTP only. | false | 
+| rkmidcsrf.WithCookieSameSite(http.SameSite) | Optional, indicates SameSite mode of the CSRF cookie. | SameSiteDefaultMode |
 
 ```go
     // ********************************************
@@ -59,16 +56,11 @@ import     "github.com/rookie-ninja/rk-gin/interceptor/csrf"
 	interceptors := []gin.HandlerFunc{
 		rkgincsrf.Interceptor(
 			// Required, entry name and entry type will be used for distinguishing interceptors. Recommended.
-			rkgincsrf.WithEntryNameAndType("greeter", "gin"),
-			//
-			// Optional, provide skipper function
-			//rkgincsrf.WithSkipper(func(e *gin.Context) bool {
-			//	return true
-			//}),
-			//
+			rkmidcsrf.WithEntryNameAndType("greeter", "gin"),
+			// rkmidcsrf.WithIgnorePrefix(""),
 			// WithTokenLength the length of the generated token.
 			// Optional. Default value 32.
-			//rkgincsrf.WithTokenLength(10),
+			//rkmidcsrf.WithTokenLength(10),
 			//
 			// WithTokenLookup a string in the form of "<source>:<key>" that is used
 			// to extract token from the request.
@@ -78,31 +70,31 @@ import     "github.com/rookie-ninja/rk-gin/interceptor/csrf"
 			// - "form:<name>"
 			// - "query:<name>"
 			// Optional. Default value "header:X-CSRF-Token".
-			//rkgincsrf.WithTokenLookup("header:X-CSRF-Token"),
+			//rkmidcsrf.WithTokenLookup("header:X-CSRF-Token"),
 			//
 			// WithCookieName provide name of the CSRF cookie. This cookie will store CSRF token.
 			// Optional. Default value "csrf".
-			//rkgincsrf.WithCookieName("csrf"),
+			//rkmidcsrf.WithCookieName("csrf"),
 			//
 			// WithCookieDomain provide domain of the CSRF cookie.
 			// Optional. Default value "".
-			//rkgincsrf.WithCookieDomain(""),
+			//rkmidcsrf.WithCookieDomain(""),
 			//
 			// WithCookiePath provide path of the CSRF cookie.
 			// Optional. Default value "".
-			//rkgincsrf.WithCookiePath(""),
+			//rkmidcsrf.WithCookiePath(""),
 			//
 			// WithCookieMaxAge provide max age (in seconds) of the CSRF cookie.
 			// Optional. Default value 86400 (24hr).
-			//rkgincsrf.WithCookieMaxAge(10),
+			//rkmidcsrf.WithCookieMaxAge(10),
 			//
 			// WithCookieHTTPOnly indicates if CSRF cookie is HTTP only.
 			// Optional. Default value false.
-			//rkgincsrf.WithCookieHTTPOnly(false),
+			//rkmidcsrf.WithCookieHTTPOnly(false),
 			//
 			// WithCookieSameSite indicates SameSite mode of the CSRF cookie.
 			// Optional. Default value SameSiteDefaultMode.
-			//rkgincsrf.WithCookieSameSite(http.SameSiteStrictMode),
+			//rkmidcsrf.WithCookieSameSite(http.SameSiteStrictMode),
 		),
 	}
 ```

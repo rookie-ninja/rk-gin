@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-entry/entry"
-	"github.com/rookie-ninja/rk-gin/interceptor/context"
+	rkginctx "github.com/rookie-ninja/rk-gin/interceptor/context"
 	"github.com/rookie-ninja/rk-gin/interceptor/log/zap"
 	"github.com/rookie-ninja/rk-gin/interceptor/meta"
 	"log"
@@ -33,10 +33,10 @@ func main() {
 		rkginlog.Interceptor(),
 		rkginmeta.Interceptor(
 		// Entry name and entry type will be used for distinguishing interceptors. Recommended.
-		// rkginmeta.WithEntryNameAndType("greeter", "gin"),
+		// rkmidmeta.WithEntryNameAndType("greeter", "gin"),
 		//
 		// We will replace X-<Prefix>-XXX with prefix user provided.
-		// rkginmeta.WithPrefix("Dog"),
+		// rkmidmeta.WithPrefix("Dog"),
 		),
 	}
 
@@ -77,18 +77,10 @@ type GreeterResponse struct {
 
 // Greeter Handler.
 func Greeter(ctx *gin.Context) {
-	// ******************************************
-	// ********** rpc-scoped logger *************
-	// ******************************************
-	//
-	// RequestId will be printed if enabled by bellow codes.
-	// 1: Enable rkginmeta.Interceptor() in server side.
-	// 2: rkginctx.AddHeaderToClient(ctx, rkginctx.RequestIdKey, rkcommon.GenerateRequestId())
-	//
-	rkginctx.GetLogger(ctx).Info("Received request from client.")
-
 	// Set request id with X-Request-Id to outgoing headers.
-	// rkginctx.SetHeaderToClient(ctx, rkginctx.RequestIdKey, "this-is-my-request-id-overridden")
+	// rkginctx.SetHeaderToClient(ctx, rkmid.HeaderRequestId, "this-is-my-request-id-overridden")
+
+	rkginctx.GetLogger(ctx).Info("Received request from client.")
 
 	ctx.JSON(http.StatusOK, &GreeterResponse{
 		Message: fmt.Sprintf("Hello %s!", ctx.Query("name")),

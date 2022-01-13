@@ -7,50 +7,37 @@ package rkginmeta
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/rookie-ninja/rk-entry/entry"
+	"github.com/rookie-ninja/rk-entry/middleware/meta"
 	"github.com/stretchr/testify/assert"
 	"net/http"
+	"net/http/httptest"
+	"os"
 	"testing"
 )
 
-func init() {
-	gin.SetMode(gin.ReleaseMode)
-}
-
-func NewMockResponseWriter() *MockResponseWriter {
-	return &MockResponseWriter{
-		data:   make([]byte, 0),
-		header: http.Header{},
-	}
-}
-
-type MockResponseWriter struct {
-	data       []byte
-	statusCode int
-	header     http.Header
-}
-
-func (m *MockResponseWriter) Header() http.Header {
-	return m.header
-}
-
-func (m *MockResponseWriter) Write(bytes []byte) (int, error) {
-	m.data = bytes
-	return len(bytes), nil
-}
-
-func (m *MockResponseWriter) WriteHeader(statusCode int) {
-	m.statusCode = statusCode
+func newCtx() *gin.Context {
+	ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
+	ctx.Request = httptest.NewRequest(http.MethodGet, "/ut-path", nil)
+	return ctx
 }
 
 func TestInterceptor(t *testing.T) {
-	handler := Interceptor(
-		WithEntryNameAndType("ut-entry", "ut-type"))
+	beforeCtx := rkmidmeta.NewBeforeCtx()
+	mock := rkmidmeta.NewOptionSetMock(beforeCtx)
 
-	ctx, _ := gin.CreateTestContext(NewMockResponseWriter())
-	handler(ctx)
+	inter := Interceptor(rkmidmeta.WithMockOptionSet(mock))
+	ctx := newCtx()
 
-	assert.NotEmpty(t, ctx.Writer.Header().Get("X-RK-App-Name"))
-	assert.Empty(t, ctx.Writer.Header().Get("X-RK-App-Version"))
-	assert.NotEmpty(t, ctx.Writer.Header().Get("X-RK-App-Unix-Time"))
-	assert.NotEmpty(t, ctx.Writer.Header().Get("X-RK-Received-Time"))
+	beforeCtx.Input.Event = rkentry.NoopEventLoggerEntry().GetEventFactory().CreateEventNoop()
+	beforeCtx.Output.HeadersToReturn["key"] = "value"
+
+	inter(ctx)
+
+	assert.Equal(t, "value", ctx.Writer.Header().Get("key"))
+}
+
+func TestMain(m *testing.M) {
+	gin.SetMode(gin.ReleaseMode)
+	os.Exit(m.Run())
 }
