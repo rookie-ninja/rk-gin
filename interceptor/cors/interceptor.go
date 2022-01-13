@@ -2,7 +2,7 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
-//
+
 // Package rkgincors is a CORS middleware for gin framework
 package rkgincors
 
