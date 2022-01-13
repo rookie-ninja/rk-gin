@@ -2,7 +2,7 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
-
+//
 // Copied from https://github.com/gin-contrib/timeout/blob/master/writer.go
 package rkgintimeout
 
