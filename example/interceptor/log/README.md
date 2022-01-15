@@ -56,13 +56,13 @@ As soon as user function returns, middleware will write the event into files.
     interceptors := []gin.HandlerFunc{
         rkginlog.Interceptor(
             // Entry name and entry type will be used for distinguishing interceptors. Recommended.
-            // rkmidlog.WithEntryNameAndType("greeter", "grpc"),
+            // rkmidlog.WithEntryNameAndType("greeter", "gin"),
             //
             // Zap logger would be logged as JSON format.
-            // rkmidlog.WithZapLoggerEncoding(rkgrpclog.ENCODING_JSON),
+            // rkmidlog.WithZapLoggerEncoding("json"),
             //
             // Event logger would be logged as JSON format.
-            // rkmidlog.WithEventLoggerEncoding(rkgrpclog.ENCODING_JSON),
+            // rkmidlog.WithEventLoggerEncoding("json"),
             //
             // Zap logger would be logged to specified path.
             // rkmidlog.WithZapLoggerOutputPaths("logs/server-zap.log"),

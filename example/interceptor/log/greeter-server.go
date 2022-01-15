@@ -26,18 +26,18 @@ func main() {
 		rkginlog.Interceptor(
 			// Entry name and entry type will be used for distinguishing interceptors. Recommended.
 			rkmidlog.WithEntryNameAndType("greeter", "gin"),
-		//
-		// Zap logger would be logged as JSON format.
-		// rkmidlog.WithZapLoggerEncoding("json"),
-		//
-		// Event logger would be logged as JSON format.
-		// rkmidlog.WithEventLoggerEncoding("json"),
-		//
-		// Zap logger would be logged to specified path.
-		// rkmidlog.WithZapLoggerOutputPaths("logs/server-zap.log"),
-		//
-		// Event logger would be logged to specified path.
-		// rkmidlog.WithEventLoggerOutputPaths("logs/server-event.log"),
+			//
+			// Zap logger would be logged as JSON format.
+			// rkmidlog.WithZapLoggerEncoding("json"),
+			//
+			// Event logger would be logged as JSON format.
+			// rkmidlog.WithEventLoggerEncoding("json"),
+			//
+			// Zap logger would be logged to specified path.
+			// rkmidlog.WithZapLoggerOutputPaths("logs/server-zap.log"),
+			//
+			// Event logger would be logged to specified path.
+			// rkmidlog.WithEventLoggerOutputPaths("logs/server-event.log"),
 		),
 	}
 
