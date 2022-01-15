@@ -110,7 +110,7 @@ func TestGetGinEntry(t *testing.T) {
 	assert.Nil(t, GetGinEntry("entry-name"))
 
 	// happy case
-	ginEntry := RegisterGinEntry(WithNameGin("ut-gin"))
+	ginEntry := RegisterGinEntry(WithName("ut-gin"))
 	assert.Equal(t, ginEntry, GetGinEntry("ut-gin"))
 
 	rkentry.GlobalAppCtx.RemoveEntry("ut-gin")
@@ -128,17 +128,17 @@ func TestRegisterGinEntry(t *testing.T) {
 
 	// with options
 	entry = RegisterGinEntry(
-		WithZapLoggerEntryGin(nil),
-		WithEventLoggerEntryGin(nil),
-		WithCommonServiceEntryGin(rkentry.RegisterCommonServiceEntry()),
-		WithTvEntryGin(rkentry.RegisterTvEntry()),
-		WithStaticFileHandlerEntryGin(rkentry.RegisterStaticFileHandlerEntry()),
-		WithCertEntryGin(rkentry.RegisterCertEntry()),
-		WithSwEntryGin(rkentry.RegisterSwEntry()),
-		WithPortGin(8080),
-		WithNameGin("ut-entry"),
-		WithDescriptionGin("ut-desc"),
-		WithPromEntryGin(rkentry.RegisterPromEntry()))
+		WithZapLoggerEntry(nil),
+		WithEventLoggerEntry(nil),
+		WithCommonServiceEntry(rkentry.RegisterCommonServiceEntry()),
+		WithTvEntry(rkentry.RegisterTvEntry()),
+		WithStaticFileHandlerEntry(rkentry.RegisterStaticFileHandlerEntry()),
+		WithCertEntry(rkentry.RegisterCertEntry()),
+		WithSwEntry(rkentry.RegisterSwEntry()),
+		WithPort(8080),
+		WithName("ut-entry"),
+		WithDescription("ut-desc"),
+		WithPromEntry(rkentry.RegisterPromEntry()))
 
 	assert.NotEmpty(t, entry.GetName())
 	assert.NotEmpty(t, entry.GetType())
@@ -168,7 +168,7 @@ func TestGinEntry_Bootstrap(t *testing.T) {
 	defer assertNotPanic(t)
 
 	// without enable sw, static, prom, common, tv, tls
-	entry := RegisterGinEntry(WithPortGin(8080))
+	entry := RegisterGinEntry(WithPort(8080))
 	entry.Bootstrap(context.TODO())
 	validateServerIsUp(t, 8080, entry.IsTlsEnabled())
 	assert.Empty(t, entry.Router.Routes())
@@ -180,13 +180,13 @@ func TestGinEntry_Bootstrap(t *testing.T) {
 	certEntry.Store.ServerCert, certEntry.Store.ServerKey = generateCerts()
 
 	entry = RegisterGinEntry(
-		WithPortGin(8080),
-		WithCommonServiceEntryGin(rkentry.RegisterCommonServiceEntry()),
-		WithTvEntryGin(rkentry.RegisterTvEntry()),
-		WithStaticFileHandlerEntryGin(rkentry.RegisterStaticFileHandlerEntry()),
-		WithCertEntryGin(certEntry),
-		WithSwEntryGin(rkentry.RegisterSwEntry()),
-		WithPromEntryGin(rkentry.RegisterPromEntry()))
+		WithPort(8080),
+		WithCommonServiceEntry(rkentry.RegisterCommonServiceEntry()),
+		WithTvEntry(rkentry.RegisterTvEntry()),
+		WithStaticFileHandlerEntry(rkentry.RegisterStaticFileHandlerEntry()),
+		WithCertEntry(certEntry),
+		WithSwEntry(rkentry.RegisterSwEntry()),
+		WithPromEntry(rkentry.RegisterPromEntry()))
 	entry.Bootstrap(context.TODO())
 	validateServerIsUp(t, 8080, entry.IsTlsEnabled())
 	assert.NotEmpty(t, entry.Router.Routes())
@@ -199,8 +199,8 @@ func TestGinEntry_startServer_InvalidTls(t *testing.T) {
 
 	// with invalid tls
 	entry := RegisterGinEntry(
-		WithPortGin(8080),
-		WithCertEntryGin(rkentry.RegisterCertEntry()))
+		WithPort(8080),
+		WithCertEntry(rkentry.RegisterCertEntry()))
 	event := rkentry.NoopEventLoggerEntry().GetEventFactory().CreateEventNoop()
 	logger := rkentry.NoopZapLoggerEntry().GetLogger()
 
@@ -215,8 +215,8 @@ func TestGinEntry_startServer_TlsServerFail(t *testing.T) {
 
 	// let's give an invalid port
 	entry := RegisterGinEntry(
-		WithPortGin(808080),
-		WithCertEntryGin(certEntry))
+		WithPort(808080),
+		WithCertEntry(certEntry))
 
 	event := rkentry.NoopEventLoggerEntry().GetEventFactory().CreateEventNoop()
 	logger := rkentry.NoopZapLoggerEntry().GetLogger()
@@ -229,7 +229,7 @@ func TestGinEntry_startServer_ServerFail(t *testing.T) {
 
 	// let's give an invalid port
 	entry := RegisterGinEntry(
-		WithPortGin(808080))
+		WithPort(808080))
 
 	event := rkentry.NoopEventLoggerEntry().GetEventFactory().CreateEventNoop()
 	logger := rkentry.NoopZapLoggerEntry().GetLogger()
@@ -270,7 +270,7 @@ func TestGinEntry_constructSwUrl(t *testing.T) {
 	port := 1111
 
 	sw := rkentry.RegisterSwEntry(rkentry.WithPathSw(path), rkentry.WithPortSw(uint64(port)))
-	entry := RegisterGinEntry(WithSwEntryGin(sw), WithPortGin(uint64(port)))
+	entry := RegisterGinEntry(WithSwEntry(sw), WithPort(uint64(port)))
 
 	assert.Equal(t, fmt.Sprintf("http://8.8.8.8:%s/%s/", strconv.Itoa(port), path), entry.constructSwUrl(ctx))
 
@@ -279,7 +279,7 @@ func TestGinEntry_constructSwUrl(t *testing.T) {
 	assert.Equal(t, fmt.Sprintf("https://8.8.8.8:%s/%s/", strconv.Itoa(port), path), entry.constructSwUrl(ctx))
 
 	// without swagger
-	entry = RegisterGinEntry(WithPortGin(uint64(port)))
+	entry = RegisterGinEntry(WithPort(uint64(port)))
 	assert.Equal(t, "N/A", entry.constructSwUrl(ctx))
 }
 
@@ -290,12 +290,12 @@ func TestGinEntry_API(t *testing.T) {
 	ctx, _ := gin.CreateTestContext(writer)
 
 	entry := RegisterGinEntry(
-		WithCommonServiceEntryGin(rkentry.RegisterCommonServiceEntry()),
-		WithNameGin("unit-test-gin"))
+		WithCommonServiceEntry(rkentry.RegisterCommonServiceEntry()),
+		WithName("unit-test-gin"))
 
 	entry.Router.GET("ut-test")
 
-	entry.ListApis(ctx)
+	entry.Apis(ctx)
 	assert.Equal(t, 200, writer.Code)
 	assert.NotEmpty(t, writer.Body.String())
 
@@ -309,9 +309,9 @@ func TestGinEntry_Req_HappyCase(t *testing.T) {
 	ctx, _ := gin.CreateTestContext(writer)
 
 	entry := RegisterGinEntry(
-		WithCommonServiceEntryGin(rkentry.RegisterCommonServiceEntry()),
-		WithPortGin(8080),
-		WithNameGin("ut-gin"))
+		WithCommonServiceEntry(rkentry.RegisterCommonServiceEntry()),
+		WithPort(8080),
+		WithName("ut-gin"))
 
 	entry.AddInterceptor(rkginmetrics.Interceptor(
 		rkmidmetrics.WithEntryNameAndType("ut-gin", "Gin"),
@@ -333,9 +333,9 @@ func TestGinEntry_Req_WithEmpty(t *testing.T) {
 	ctx, _ := gin.CreateTestContext(writer)
 
 	entry := RegisterGinEntry(
-		WithCommonServiceEntryGin(rkentry.RegisterCommonServiceEntry()),
-		WithPortGin(8080),
-		WithNameGin("ut-gin"))
+		WithCommonServiceEntry(rkentry.RegisterCommonServiceEntry()),
+		WithPort(8080),
+		WithName("ut-gin"))
 
 	entry.AddInterceptor(rkginmetrics.Interceptor(
 		rkmidmetrics.WithRegisterer(prometheus.NewRegistry())))
@@ -353,10 +353,10 @@ func TestGinEntry_TV(t *testing.T) {
 	defer assertNotPanic(t)
 
 	entry := RegisterGinEntry(
-		WithCommonServiceEntryGin(rkentry.RegisterCommonServiceEntry()),
-		WithTvEntryGin(rkentry.RegisterTvEntry()),
-		WithPortGin(8080),
-		WithNameGin("ut-gin"))
+		WithCommonServiceEntry(rkentry.RegisterCommonServiceEntry()),
+		WithTvEntry(rkentry.RegisterTvEntry()),
+		WithPort(8080),
+		WithName("ut-gin"))
 
 	entry.AddInterceptor(rkginmetrics.Interceptor(
 		rkmidmetrics.WithEntryNameAndType("ut-gin", "Gin")))

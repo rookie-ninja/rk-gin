@@ -21,7 +21,7 @@ func Interceptor(opts ...rkmidmetrics.Option) gin.HandlerFunc {
 		ctx.Set(rkmid.EntryNameKey.String(), set.GetEntryName())
 
 		beforeCtx := set.BeforeCtx(ctx.Request)
-		set.Before(set.BeforeCtx(ctx.Request))
+		set.Before(beforeCtx)
 
 		ctx.Next()
 
