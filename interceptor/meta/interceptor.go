@@ -23,6 +23,8 @@ func Interceptor(opts ...rkmidmeta.Option) gin.HandlerFunc {
 		beforeCtx := set.BeforeCtx(rkginctx.GetEvent(ctx))
 		set.Before(beforeCtx)
 
+		ctx.Set(rkmid.HeaderRequestId, beforeCtx.Output.RequestId)
+
 		for k, v := range beforeCtx.Output.HeadersToReturn {
 			ctx.Header(k, v)
 		}
