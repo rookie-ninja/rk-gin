@@ -25,7 +25,7 @@ func newCtx() *gin.Context {
 	return ctx
 }
 
-func TestInterceptor_HappyCase(t *testing.T) {
+func TestInterceptor(t *testing.T) {
 	defer assertNotPanic(t)
 
 	beforeCtx := rkmidlog.NewBeforeCtx()

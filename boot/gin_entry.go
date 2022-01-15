@@ -627,7 +627,7 @@ func (entry *GinEntry) startServer(event rkquery.Event, logger *zap.Logger) {
 
 // ***************** Common Service Extension API *****************
 
-// ListApis list apis from gin.Router
+// Apis list apis from gin.Router
 func (entry *GinEntry) Apis(ctx *gin.Context) {
 	ctx.Header("Access-Control-Allow-Origin", "*")
 
