@@ -7,7 +7,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.2.0
 	github.com/prometheus/client_golang v1.10.0
 	github.com/rookie-ninja/rk-common v1.2.3
-	github.com/rookie-ninja/rk-entry v1.0.5
+	github.com/rookie-ninja/rk-entry v1.0.6
 	github.com/rookie-ninja/rk-logger v1.2.3
 	github.com/rookie-ninja/rk-query v1.2.4
 	github.com/rs/xid v1.3.0
