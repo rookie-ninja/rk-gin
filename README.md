@@ -373,8 +373,8 @@ User can start multiple [gin-gonic/gin](https://github.com/gin-gonic/gin) instan
 | gin.enabled | Optional, Enable Gin entry or not | bool | false |
 | gin.description | Optional, Description of gin entry. | string | "" |
 | gin.cert.ref | Optional, Reference of cert entry declared in [cert entry](https://github.com/rookie-ninja/rk-entry#certentry) | string | "" |
-| gin.logger.zapLogger.ref | Optional, Reference of zapLoggerEntry declared in [zapLoggerEntry](https://github.com/rookie-ninja/rk-entry#zaploggerentry) | string | "" |
-| gin.logger.eventLogger.ref | Optional, Reference of eventLoggerEntry declared in [eventLoggerEntry](https://github.com/rookie-ninja/rk-entry#eventloggerentry) | string | "" |
+| gin.logger.zapLogger | Optional, Reference of zapLoggerEntry declared in [zapLoggerEntry](https://github.com/rookie-ninja/rk-entry#zaploggerentry) | string | "" |
+| gin.logger.eventLogger | Optional, Reference of eventLoggerEntry declared in [eventLoggerEntry](https://github.com/rookie-ninja/rk-entry#eventloggerentry) | string | "" |
 
 ### CommonService
 | Path | Description |
@@ -649,9 +649,31 @@ The supported scheme of **tokenLookup**
 #zapLogger:
 #  - name: zap-logger                                      # Required
 #    description: "Description of entry"                   # Optional
+#    loki:
+#      enabled: true                                       # Optional, default: false
+#      addr: localhost:3100                                # Optional, default: localhost:3100
+#      path: /loki/api/v1/push                             # Optional, default: /loki/api/v1/push
+#      username: ""                                        # Optional, default: ""
+#      password: ""                                        # Optional, default: ""
+#      maxBatchWaitMs: 3000                                # Optional, default: 3000
+#      maxBatchSize: 1000                                  # Optional, default: 1000
+#      insecureSkipVerify: false                           # Optional, default: false
+#      labels:                                             # Optional, default: empty map
+#        my_label_key: my_label_value
 #eventLogger:
 #  - name: event-logger                                    # Required
 #    description: "Description of entry"                   # Optional
+#    loki:
+#      enabled: true                                       # Optional, default: false
+#      addr: localhost:3100                                # Optional, default: localhost:3100
+#      path: /loki/api/v1/push                             # Optional, default: /loki/api/v1/push
+#      username: ""                                        # Optional, default: ""
+#      password: ""                                        # Optional, default: ""
+#      maxBatchWaitMs: 3000                                # Optional, default: 3000
+#      maxBatchSize: 1000                                  # Optional, default: 1000
+#      insecureSkipVerify: false                           # Optional, default: false
+#      labels:                                             # Optional, default: empty map
+#        my_label_key: my_label_value
 #cred:
 #  - name: "local-cred"                                    # Required
 #    provider: "localFs"                                   # Required, etcd, consul, localFs, remoteFs are supported options
@@ -678,8 +700,7 @@ gin:
     port: 8080                                             # Required
     enabled: true                                          # Required
 #    description: "greeter server"                         # Optional, default: ""
-#    cert:
-#      ref: "local-cert"                                   # Optional, default: "", reference of cert entry declared above
+#    certEntry: "local-cert"                               # Optional, default: "", reference of cert entry declared above
 #    sw:
 #      enabled: true                                       # Optional, default: false
 #      path: "sw"                                          # Optional, default: "sw"
@@ -706,10 +727,8 @@ gin:
 #        cert:                                             # Optional
 #          ref: "local-test"                               # Optional, default: "", reference of cert entry declared above
 #    logger:
-#      zapLogger:
-#        ref: zap-logger                                   # Optional, default: logger of STDOUT, reference of logger entry declared above
-#      eventLogger:
-#        ref: event-logger                                 # Optional, default: logger of STDOUT, reference of logger entry declared above
+#      zapLogger: zap-logger                               # Optional, default: logger of STDOUT, reference of logger entry declared above
+#      eventLogger: event-logger                           # Optional, default: logger of STDOUT, reference of logger entry declared above
 #    interceptors:
 #      loggingZap:
 #        enabled: true                                     # Optional, default: false
