@@ -346,7 +346,7 @@ func (entry *GinEntry) GetDescription() string {
 
 // Bootstrap GinEntry.
 func (entry *GinEntry) Bootstrap(ctx context.Context) {
-	event, logger := entry.logBasicInfo("Bootstrap")
+	event, logger := entry.logBasicInfo("Bootstrap", ctx)
 
 	// Is swagger enabled?
 	if entry.IsSwEnabled() {
@@ -410,7 +410,7 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 
 // Interrupt GinEntry.
 func (entry *GinEntry) Interrupt(ctx context.Context) {
-	event, logger := entry.logBasicInfo("Interrupt")
+	event, logger := entry.logBasicInfo("Interrupt", ctx)
 
 	if entry.IsStaticFileHandlerEnabled() {
 		// Interrupt entry
@@ -536,14 +536,23 @@ func (entry *GinEntry) IsTlsEnabled() bool {
 // ***************** Helper function *****************
 
 // Add basic fields into event.
-func (entry *GinEntry) logBasicInfo(operation string) (rkquery.Event, *zap.Logger) {
+func (entry *GinEntry) logBasicInfo(operation string, ctx context.Context) (rkquery.Event, *zap.Logger) {
 	event := entry.EventLoggerEntry.GetEventHelper().Start(
 		operation,
 		rkquery.WithEntryName(entry.GetName()),
 		rkquery.WithEntryType(entry.GetType()))
+
+	// extract eventId if exists
+	if val := ctx.Value("eventId"); val != nil {
+		if id, ok := val.(string); ok {
+			event.SetEventId(id)
+		}
+	}
+
 	logger := entry.ZapLoggerEntry.GetLogger().With(
 		zap.String("eventId", event.GetEventId()),
-		zap.String("entryName", entry.EntryName))
+		zap.String("entryName", entry.EntryName),
+		zap.String("entryType", entry.EntryType))
 
 	// add general info
 	event.AddPayloads(
