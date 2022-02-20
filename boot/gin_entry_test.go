@@ -1,3 +1,4 @@
+//go:build !race
 // +build !race
 
 // Copyright (c) 2021 rookie-ninja
@@ -284,7 +285,7 @@ func TestGinEntry_constructSwUrl(t *testing.T) {
 }
 
 func TestGinEntry_API(t *testing.T) {
-	defer assertNotPanic(t)
+	//defer assertNotPanic(t)
 
 	writer := httptest.NewRecorder()
 	ctx, _ := gin.CreateTestContext(writer)
@@ -293,7 +294,7 @@ func TestGinEntry_API(t *testing.T) {
 		WithCommonServiceEntry(rkentry.RegisterCommonServiceEntry()),
 		WithName("unit-test-gin"))
 
-	entry.Router.GET("ut-test")
+	entry.Router.GET("ut-test", func(c *gin.Context) {})
 
 	entry.Apis(ctx)
 	assert.Equal(t, 200, writer.Code)
