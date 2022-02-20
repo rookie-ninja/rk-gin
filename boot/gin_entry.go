@@ -191,6 +191,11 @@ func RegisterGinEntriesWithConfig(configFilePath string) map[string]rkentry.Entr
 					zapLoggerEntry, eventLoggerEntry)...))
 		}
 
+		// Default interceptor should be placed after logging middleware, we should make sure interceptors never panic
+		// insert panic interceptor
+		inters = append(inters, rkginpanic.Interceptor(
+			rkmidpanic.WithEntryNameAndType(element.Name, GinEntryType)))
+
 		// metrics middleware
 		if element.Interceptors.MetricsProm.Enabled {
 			inters = append(inters, rkginmetrics.Interceptor(
@@ -318,11 +323,6 @@ func RegisterGinEntry(opts ...GinEntryOption) *GinEntry {
 	// add entry name and entry type into loki syncer if enabled
 	entry.ZapLoggerEntry.AddEntryLabelToLokiSyncer(entry)
 	entry.EventLoggerEntry.AddEntryLabelToLokiSyncer(entry)
-
-	// Default interceptor should be at front
-	// insert panic interceptor
-	entry.Router.Use(rkginpanic.Interceptor(
-		rkmidpanic.WithEntryNameAndType(entry.EntryName, entry.EntryType)))
 
 	rkentry.GlobalAppCtx.AddEntry(entry)
 
