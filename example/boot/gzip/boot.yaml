@@ -5,7 +5,7 @@ gin:
     enabled: true                     # Required
     commonService:
       enabled: true                   # Optional, default: false
-    interceptors:
+    middleware:
       gzip:
         enabled: true                 # Optional, default: false
         level: bestSpeed              # Optional, options: [noCompression, bestSpeed， bestCompression, defaultCompression, huffmanOnly]

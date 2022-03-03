@@ -6,16 +6,20 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"github.com/rookie-ninja/rk-entry/entry"
 	"github.com/rookie-ninja/rk-gin/boot"
 )
 
+//go:embed boot.yaml
+var boot []byte
+
 func main() {
-	// Bootstrap basic entries from boot config.
-	rkentry.RegisterInternalEntriesFromConfig("example/boot/full/boot.yaml")
+	// Bootstrap preload entries
+	rkentry.BootstrapPreloadEntryYAML(boot)
 
 	// Bootstrap gin entry from boot config
-	res := rkgin.RegisterGinEntriesWithConfig("example/boot/full/boot.yaml")
+	res := rkgin.RegisterGinEntryYAML(boot)
 
 	// Bootstrap gin entry
 	res["greeter"].Bootstrap(context.Background())
