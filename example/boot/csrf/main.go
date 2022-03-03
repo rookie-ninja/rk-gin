@@ -6,27 +6,31 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rookie-ninja/rk-entry/entry"
 	"github.com/rookie-ninja/rk-gin/boot"
-	"github.com/rookie-ninja/rk-gin/interceptor/context"
+	"github.com/rookie-ninja/rk-gin/middleware/context"
 	"net/http"
 )
 
-func main() {
-	// Bootstrap basic entries from boot config.
-	rkentry.RegisterInternalEntriesFromConfig("example/boot/csrf/boot.yaml")
+//go:embed boot.yaml
+var boot []byte
 
-	// Bootstrap echo entry from boot config
-	res := rkgin.RegisterGinEntriesWithConfig("example/boot/csrf/boot.yaml")
+func main() {
+	// Bootstrap preload entries
+	rkentry.BootstrapPreloadEntryYAML(boot)
+
+	// Bootstrap gin entry from boot config
+	res := rkgin.RegisterGinEntryYAML(boot)
 
 	// Register GET and POST method of /rk/v1/greeter
 	entry := res["greeter"].(*rkgin.GinEntry)
 	entry.Router.GET("/rk/v1/greeter", Greeter)
 	entry.Router.POST("/rk/v1/greeter", Greeter)
 
-	// Bootstrap echo entry
+	// Bootstrap gin entry
 	res["greeter"].Bootstrap(context.Background())
 
 	// Wait for shutdown signal

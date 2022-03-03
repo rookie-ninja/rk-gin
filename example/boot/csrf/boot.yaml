@@ -3,6 +3,6 @@ gin:
   - name: greeter                     # Required
     port: 8080                        # Required
     enabled: true                     # Required
-    interceptors:
+    middleware:
       csrf:
         enabled: true
