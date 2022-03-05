@@ -483,9 +483,14 @@ func (entry *GinEntry) MarshalJSON() ([]byte, error) {
 		"description":            entry.entryDescription,
 		"port":                   entry.Port,
 		"swEntry":                entry.SwEntry,
+		"docsEntry":              entry.DocsEntry,
 		"commonServiceEntry":     entry.CommonServiceEntry,
 		"promEntry":              entry.PromEntry,
 		"staticFileHandlerEntry": entry.StaticFileEntry,
+	}
+
+	if entry.IsTlsEnabled() {
+		m["certEntry"] = entry.CertEntry
 	}
 
 	return json.Marshal(&m)
@@ -580,8 +585,14 @@ func (entry *GinEntry) logBasicInfo(operation string, ctx context.Context) (rkqu
 	// add CommonServiceEntry info
 	if entry.IsCommonServiceEnabled() {
 		event.AddPayloads(
-			zap.Bool("commonServiceEnabled", true),
-			zap.String("commonServicePathPrefix", "/rk/v1/"))
+			zap.Bool("commonServiceEnabled", true))
+	}
+
+	// add DocsEntry info
+	if entry.IsDocsEnabled() {
+		event.AddPayloads(
+			zap.Bool("docsEnabled", true),
+			zap.String("docsPath", entry.DocsEntry.Path))
 	}
 
 	// add PromEntry info
