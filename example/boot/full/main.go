@@ -7,8 +7,8 @@ package main
 import (
 	"context"
 	_ "embed"
-	"github.com/rookie-ninja/rk-entry/entry"
-	"github.com/rookie-ninja/rk-gin/boot"
+	"github.com/rookie-ninja/rk-entry/v2/entry"
+	"github.com/rookie-ninja/rk-gin/v2/boot"
 )
 
 //go:embed boot.yaml
@@ -20,13 +20,14 @@ func main() {
 
 	// Bootstrap gin entry from boot config
 	res := rkgin.RegisterGinEntryYAML(boot)
+	ginEntry := res["greeter"]
 
 	// Bootstrap gin entry
-	res["greeter"].Bootstrap(context.Background())
+	ginEntry.Bootstrap(context.Background())
 
 	// Wait for shutdown signal
 	rkentry.GlobalAppCtx.WaitForShutdownSig()
 
 	// Interrupt gin entry
-	res["greeter"].Interrupt(context.Background())
+	ginEntry.Interrupt(context.Background())
 }

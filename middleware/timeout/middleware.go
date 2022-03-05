@@ -9,9 +9,9 @@ package rkgintout
 import (
 	"bytes"
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-entry/middleware"
-	"github.com/rookie-ninja/rk-entry/middleware/timeout"
-	"github.com/rookie-ninja/rk-gin/middleware/context"
+	"github.com/rookie-ninja/rk-entry/v2/middleware"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/timeout"
+	"github.com/rookie-ninja/rk-gin/v2/middleware/context"
 )
 
 // Middleware Add timeout interceptors.

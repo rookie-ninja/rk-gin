@@ -3,16 +3,13 @@ gin:
   - name: greeter                     # Required
     port: 8080                        # Required
     enabled: true                     # Required
-    prom:
+    commonService:
       enabled: true                   # Optional, default: false
     sw:
       enabled: true                   # Optional, default: false
-      jsonPath: "docs"
-    static:
+    docs:
       enabled: true
-      sourceType: local
-      sourcePath: .
-    commonService:
+    prom:
       enabled: true                   # Optional, default: false
     middleware:
       logging:

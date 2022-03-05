@@ -7,9 +7,9 @@ package rkginlog
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-entry/entry"
-	"github.com/rookie-ninja/rk-entry/middleware"
-	"github.com/rookie-ninja/rk-entry/middleware/log"
+	"github.com/rookie-ninja/rk-entry/v2/entry"
+	"github.com/rookie-ninja/rk-entry/v2/middleware"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/log"
 	"github.com/rookie-ninja/rk-query"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"

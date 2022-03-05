@@ -5,13 +5,6 @@ gin:
     enabled: true                     # Required
     commonService:
       enabled: true                   # Optional, default: false
-    logger:
-      zapLogger:
-      eventLogger:
-    config:
-      - name:
-        content:
-          a: adsf
     middleware:
       logging:
         enabled: true                 # Optional, default: false

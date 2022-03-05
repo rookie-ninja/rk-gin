@@ -9,7 +9,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"github.com/gin-gonic/gin"
-	rkmid "github.com/rookie-ninja/rk-entry/middleware"
+	"github.com/rookie-ninja/rk-entry/v2/middleware"
 	"github.com/rs/xid"
 	"io/ioutil"
 	"strings"
@@ -80,8 +80,8 @@ type optionSet struct {
 	ignorePrefix   []string
 }
 
-// Ignore determine whether auth should be ignored based on path
-func (set *optionSet) ignore(ctx *gin.Context) bool {
+// ShouldIgnore determine whether auth should be ignored based on path
+func (set *optionSet) ShouldIgnore(ctx *gin.Context) bool {
 	if ctx.Request != nil && ctx.Request.URL != nil {
 		for i := range set.ignorePrefix {
 			if strings.HasPrefix(ctx.Request.URL.Path, set.ignorePrefix[i]) {
@@ -89,7 +89,7 @@ func (set *optionSet) ignore(ctx *gin.Context) bool {
 			}
 		}
 
-		return rkmid.IgnorePrefixGlobal(ctx.Request.URL.Path)
+		return rkmid.ShouldIgnoreGlobal(ctx.Request.URL.Path)
 	}
 
 	return false
@@ -120,7 +120,8 @@ func WithSkipper(skip Skipper) Option {
 	}
 }
 
-func WithIgnorePrefix(prefix ...string) Option {
+// WithPathToIgnore provide path prefix to ignore middleware
+func WithPathToIgnore(prefix ...string) Option {
 	return func(opt *optionSet) {
 		opt.ignorePrefix = append(opt.ignorePrefix, prefix...)
 	}

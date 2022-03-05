@@ -8,8 +8,8 @@ package rkgintrace
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	rkmid "github.com/rookie-ninja/rk-entry/middleware"
-	"github.com/rookie-ninja/rk-entry/middleware/tracing"
+	"github.com/rookie-ninja/rk-entry/v2/middleware"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/tracing"
 	"github.com/stretchr/testify/assert"
 	"go.opentelemetry.io/otel/trace"
 	"net/http"

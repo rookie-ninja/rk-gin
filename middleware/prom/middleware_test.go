@@ -7,7 +7,7 @@ package rkginprom
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-entry/middleware/prom"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/prom"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"

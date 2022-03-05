@@ -8,7 +8,7 @@ package rkginpanic
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-entry/middleware/panic"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/panic"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"

@@ -9,9 +9,9 @@ import (
 	_ "embed"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-entry/entry"
-	"github.com/rookie-ninja/rk-gin/boot"
-	"github.com/rookie-ninja/rk-gin/middleware/context"
+	"github.com/rookie-ninja/rk-entry/v2/entry"
+	"github.com/rookie-ninja/rk-gin/v2/boot"
+	"github.com/rookie-ninja/rk-gin/v2/middleware/context"
 	"net/http"
 )
 
@@ -26,18 +26,18 @@ func main() {
 	res := rkgin.RegisterGinEntryYAML(boot)
 
 	// Register GET and POST method of /rk/v1/greeter
-	entry := res["greeter"].(*rkgin.GinEntry)
-	entry.Router.GET("/rk/v1/greeter", Greeter)
-	entry.Router.POST("/rk/v1/greeter", Greeter)
+	ginEntry := res["greeter"].(*rkgin.GinEntry)
+	ginEntry.Router.GET("/rk/v1/greeter", Greeter)
+	ginEntry.Router.POST("/rk/v1/greeter", Greeter)
 
 	// Bootstrap gin entry
-	res["greeter"].Bootstrap(context.Background())
+	ginEntry.Bootstrap(context.Background())
 
 	// Wait for shutdown signal
 	rkentry.GlobalAppCtx.WaitForShutdownSig()
 
 	// Interrupt echo entry
-	res["greeter"].Interrupt(context.Background())
+	ginEntry.Interrupt(context.Background())
 }
 
 // GreeterResponse Response of Greeter.

@@ -8,8 +8,8 @@ package rkgingzip
 import (
 	"bytes"
 	"github.com/gin-gonic/gin"
-	rkerror "github.com/rookie-ninja/rk-entry/error"
-	"github.com/rookie-ninja/rk-entry/middleware"
+	"github.com/rookie-ninja/rk-entry/v2/error"
+	"github.com/rookie-ninja/rk-entry/v2/middleware"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -27,7 +27,7 @@ func Middleware(opts ...Option) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		ctx.Set(rkmid.EntryNameKey.String(), set.EntryName)
 
-		if set.Skipper(ctx) || set.ignore(ctx) {
+		if set.Skipper(ctx) || set.ShouldIgnore(ctx) {
 			ctx.Next()
 			return
 		}
@@ -48,7 +48,7 @@ func Middleware(opts ...Option) gin.HandlerFunc {
 					return
 				}
 
-				ctx.AbortWithStatusJSON(http.StatusInternalServerError, rkerror.NewInternalError(err))
+				ctx.AbortWithStatusJSON(http.StatusInternalServerError, rkerror.NewInternalError("Failed to read request body", err))
 
 				return
 			}
@@ -56,7 +56,7 @@ func Middleware(opts ...Option) gin.HandlerFunc {
 			// create a buffer and copy decompressed data into it via gzipReader
 			var buf bytes.Buffer
 			if _, err := io.Copy(&buf, gzipReader); err != nil {
-				ctx.AbortWithStatusJSON(http.StatusInternalServerError, rkerror.NewInternalError(err))
+				ctx.AbortWithStatusJSON(http.StatusInternalServerError, rkerror.NewInternalError("Failed to copy request body", err))
 				return
 			}
 
