@@ -66,6 +66,7 @@ In the bellow example, we will start microservice with bellow functionality and 
 
 - [gin-gonic/gin](https://github.com/gin-gonic/gin) server
 - Swagger UI
+- Docs
 - CommonService
 - Prometheus Metrics (middleware)
 - Logging (middleware)
@@ -214,7 +215,7 @@ By default, we could access prometheus client at [http://localhost:8080/metrics]
 #### 4.5 Logging
 Please refer **middleware.logging** section at [Full YAML](#full-yaml).
 
-By default, we enable zap logger and event logger with encoding type of [console]. Encoding type of [json] is also supported.
+By default, we enable zap logger and event logger with encoding type of [console]. Encoding type of [json] and [flatten] is also supported.
 
 ```shell script
 2021-12-28T02:14:48.303+0800    INFO    boot/gin_entry.go:920   Bootstrap ginEntry      {"eventId": "65b03dbc-c10e-4998-8d49-26775dafc78b", "entryName": "greeter"}
@@ -327,15 +328,15 @@ Access [http://localhost:8080/metrics](http://localhost:8080/metrics)
 User can start multiple [gin-gonic/gin](https://github.com/gin-gonic/gin) instances at the same time. Please make sure use different port and name.
 
 ### Gin
-| name            | description                                                                                                            | type    | default value           |
-|-----------------|------------------------------------------------------------------------------------------------------------------------|---------|-------------------------|
-| gin.name        | Required, The name of gin server                                                                                       | string  | N/A                     |
-| gin.port        | Required, The port of gin server                                                                                       | integer | nil, server won't start |
-| gin.enabled     | Optional, Enable Gin entry or not                                                                                      | bool    | false                   |
-| gin.description | Optional, Description of gin entry.                                                                                    | string  | ""                      |
-| gin.certEntry   | Optional, Reference of certEntry declared in [cert entry](https://github.com/rookie-ninja/rk-entry#certentry)          | string  | ""                      |
-| gin.loggerEntry | Optional, Reference of loggerEntry declared in [zapLoggerEntry](https://github.com/rookie-ninja/rk-entry#loggerentry)  | string  | ""                      |
-| gin.eventEntry  | Optional, Reference of eventLEntry declared in [eventLoggerEntry](https://github.com/rookie-ninja/rk-entry#evententry) | string  | ""                      |
+| name            | description                                                                                                        | type    | default value           |
+|-----------------|--------------------------------------------------------------------------------------------------------------------|---------|-------------------------|
+| gin.name        | Required, The name of gin server                                                                                   | string  | N/A                     |
+| gin.port        | Required, The port of gin server                                                                                   | integer | nil, server won't start |
+| gin.enabled     | Optional, Enable Gin entry or not                                                                                  | bool    | false                   |
+| gin.description | Optional, Description of gin entry.                                                                                | string  | ""                      |
+| gin.certEntry   | Optional, Reference of certEntry declared in [cert entry](https://github.com/rookie-ninja/rk-entry#certentry)      | string  | ""                      |
+| gin.loggerEntry | Optional, Reference of loggerEntry declared in [LoggerEntry](https://github.com/rookie-ninja/rk-entry#loggerentry) | string  | ""                      |
+| gin.eventEntry  | Optional, Reference of eventLEntry declared in [eventEntry](https://github.com/rookie-ninja/rk-entry#evententry)   | string  | ""                      |
 
 ### CommonService
 | Path         | Description                       |
