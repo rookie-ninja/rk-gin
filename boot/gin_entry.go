@@ -14,39 +14,40 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/rookie-ninja/rk-entry/entry"
-	rkmid "github.com/rookie-ninja/rk-entry/middleware"
-	"github.com/rookie-ninja/rk-entry/middleware/auth"
-	"github.com/rookie-ninja/rk-entry/middleware/cors"
-	"github.com/rookie-ninja/rk-entry/middleware/csrf"
-	"github.com/rookie-ninja/rk-entry/middleware/jwt"
-	"github.com/rookie-ninja/rk-entry/middleware/log"
-	"github.com/rookie-ninja/rk-entry/middleware/meta"
-	rkmidpanic "github.com/rookie-ninja/rk-entry/middleware/panic"
-	"github.com/rookie-ninja/rk-entry/middleware/prom"
-	"github.com/rookie-ninja/rk-entry/middleware/ratelimit"
-	"github.com/rookie-ninja/rk-entry/middleware/secure"
-	"github.com/rookie-ninja/rk-entry/middleware/timeout"
-	"github.com/rookie-ninja/rk-entry/middleware/tracing"
-	"github.com/rookie-ninja/rk-gin/middleware/auth"
-	"github.com/rookie-ninja/rk-gin/middleware/cors"
-	"github.com/rookie-ninja/rk-gin/middleware/csrf"
-	"github.com/rookie-ninja/rk-gin/middleware/gzip"
-	"github.com/rookie-ninja/rk-gin/middleware/jwt"
-	"github.com/rookie-ninja/rk-gin/middleware/log"
-	"github.com/rookie-ninja/rk-gin/middleware/meta"
-	"github.com/rookie-ninja/rk-gin/middleware/panic"
-	"github.com/rookie-ninja/rk-gin/middleware/prom"
-	"github.com/rookie-ninja/rk-gin/middleware/ratelimit"
-	"github.com/rookie-ninja/rk-gin/middleware/secure"
-	"github.com/rookie-ninja/rk-gin/middleware/timeout"
-	"github.com/rookie-ninja/rk-gin/middleware/tracing"
+	"github.com/rookie-ninja/rk-entry/v2/entry"
+	"github.com/rookie-ninja/rk-entry/v2/middleware"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/auth"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/cors"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/csrf"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/jwt"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/log"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/meta"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/panic"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/prom"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/ratelimit"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/secure"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/timeout"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/tracing"
+	"github.com/rookie-ninja/rk-gin/v2/middleware/auth"
+	"github.com/rookie-ninja/rk-gin/v2/middleware/cors"
+	"github.com/rookie-ninja/rk-gin/v2/middleware/csrf"
+	"github.com/rookie-ninja/rk-gin/v2/middleware/gzip"
+	"github.com/rookie-ninja/rk-gin/v2/middleware/jwt"
+	"github.com/rookie-ninja/rk-gin/v2/middleware/log"
+	"github.com/rookie-ninja/rk-gin/v2/middleware/meta"
+	"github.com/rookie-ninja/rk-gin/v2/middleware/panic"
+	"github.com/rookie-ninja/rk-gin/v2/middleware/prom"
+	"github.com/rookie-ninja/rk-gin/v2/middleware/ratelimit"
+	"github.com/rookie-ninja/rk-gin/v2/middleware/secure"
+	"github.com/rookie-ninja/rk-gin/v2/middleware/timeout"
+	"github.com/rookie-ninja/rk-gin/v2/middleware/tracing"
 	"github.com/rookie-ninja/rk-query"
 	"go.uber.org/zap"
 	"net/http"
 	"path"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 const (
@@ -68,6 +69,7 @@ type BootGin struct {
 		Port          uint64                        `yaml:"port" json:"port"`
 		Description   string                        `yaml:"description" json:"description"`
 		SW            rkentry.BootSW                `yaml:"sw" json:"sw"`
+		Docs          rkentry.BootDocs              `yaml:"docs" json:"docs"`
 		CommonService rkentry.BootCommonService     `yaml:"commonService" json:"commonService"`
 		Prom          rkentry.BootProm              `yaml:"prom" json:"prom"`
 		CertEntry     string                        `yaml:"certEntry" json:"certEntry"`
@@ -75,22 +77,22 @@ type BootGin struct {
 		EventEntry    string                        `yaml:"eventEntry" json:"eventEntry"`
 		Static        rkentry.BootStaticFileHandler `yaml:"static" json:"static"`
 		Middleware    struct {
-			IgnorePrefix []string                `yaml:"ignorePrefix" json:"ignorePrefix"`
-			Logging      rkmidlog.BootConfig     `yaml:"logging" json:"logging"`
-			Prom         rkmidprom.BootConfig    `yaml:"prom" json:"prom"`
-			Auth         rkmidauth.BootConfig    `yaml:"auth" json:"auth"`
-			Cors         rkmidcors.BootConfig    `yaml:"cors" json:"cors"`
-			Meta         rkmidmeta.BootConfig    `yaml:"meta" json:"meta"`
-			Jwt          rkmidjwt.BootConfig     `yaml:"jwt" json:"jwt"`
-			Secure       rkmidsec.BootConfig     `yaml:"secure" json:"secure"`
-			RateLimit    rkmidlimit.BootConfig   `yaml:"rateLimit" json:"rateLimit"`
-			Csrf         rkmidcsrf.BootConfig    `yaml:"csrf" yaml:"csrf"`
-			Timeout      rkmidtimeout.BootConfig `yaml:"timeout" json:"timeout"`
-			Trace        rkmidtrace.BootConfig   `yaml:"trace" json:"trace"`
-			Gzip         struct {
-				Enabled      bool     `yaml:"enabled" json:"enabled"`
-				IgnorePrefix []string `yaml:"ignorePrefix" json:"ignorePrefix"`
-				Level        string   `yaml:"level" json:"level"`
+			Ignore    []string                `yaml:"ignore" json:"ignore"`
+			Logging   rkmidlog.BootConfig     `yaml:"logging" json:"logging"`
+			Prom      rkmidprom.BootConfig    `yaml:"prom" json:"prom"`
+			Auth      rkmidauth.BootConfig    `yaml:"auth" json:"auth"`
+			Cors      rkmidcors.BootConfig    `yaml:"cors" json:"cors"`
+			Meta      rkmidmeta.BootConfig    `yaml:"meta" json:"meta"`
+			Jwt       rkmidjwt.BootConfig     `yaml:"jwt" json:"jwt"`
+			Secure    rkmidsec.BootConfig     `yaml:"secure" json:"secure"`
+			RateLimit rkmidlimit.BootConfig   `yaml:"rateLimit" json:"rateLimit"`
+			Csrf      rkmidcsrf.BootConfig    `yaml:"csrf" yaml:"csrf"`
+			Timeout   rkmidtimeout.BootConfig `yaml:"timeout" json:"timeout"`
+			Trace     rkmidtrace.BootConfig   `yaml:"trace" json:"trace"`
+			Gzip      struct {
+				Enabled bool     `yaml:"enabled" json:"enabled"`
+				Ignore  []string `yaml:"ignore" json:"ignore"`
+				Level   string   `yaml:"level" json:"level"`
 			} `yaml:"gzip" json:"gzip"`
 		} `yaml:"middleware" json:"middleware"`
 	} `yaml:"gin" json:"gin"`
@@ -107,10 +109,12 @@ type GinEntry struct {
 	LoggerEntry        *rkentry.LoggerEntry            `json:"-" yaml:"-"`
 	EventEntry         *rkentry.EventEntry             `json:"-" yaml:"-"`
 	SwEntry            *rkentry.SWEntry                `json:"-" yaml:"-"`
+	DocsEntry          *rkentry.DocsEntry              `json:"-" yaml:"-"`
 	CommonServiceEntry *rkentry.CommonServiceEntry     `json:"-" yaml:"-"`
 	PromEntry          *rkentry.PromEntry              `json:"-" yaml:"-"`
 	StaticFileEntry    *rkentry.StaticFileHandlerEntry `json:"-" yaml:"-"`
 	CertEntry          *rkentry.CertEntry              `json:"-" yaml:"-"`
+	bootstrapLogOnce   sync.Once                       `json:"-" yaml:"-"`
 }
 
 // RegisterGinEntryYAML register gin entries with provided config file (Must YAML file).
@@ -165,6 +169,9 @@ func RegisterGinEntryYAML(raw []byte) map[string]rkentry.Entry {
 		// Register swagger entry
 		swEntry := rkentry.RegisterSWEntry(&element.SW, rkentry.WithNameSWEntry(element.Name))
 
+		// Register docs entry
+		docsEntry := rkentry.RegisterDocsEntry(&element.Docs, rkentry.WithNameDocsEntry(element.Name))
+
 		// Register prometheus entry
 		promRegistry := prometheus.NewRegistry()
 		promEntry := rkentry.RegisterPromEntry(&element.Prom, rkentry.WithRegistryPromEntry(promRegistry))
@@ -173,12 +180,12 @@ func RegisterGinEntryYAML(raw []byte) map[string]rkentry.Entry {
 		commonServiceEntry := rkentry.RegisterCommonServiceEntry(&element.CommonService)
 
 		// Register static file handler
-		staticEntry := rkentry.RegisterStaticFileHandlerEntry(&element.Static)
+		staticEntry := rkentry.RegisterStaticFileHandlerEntry(&element.Static, rkentry.WithNameStaticFileHandlerEntry(element.Name))
 
 		inters := make([]gin.HandlerFunc, 0)
 
 		// add global path ignorance
-		rkmid.AddIgnorePrefixGlobal(element.Middleware.IgnorePrefix...)
+		rkmid.AddPathToIgnoreGlobal(element.Middleware.Ignore...)
 
 		// logging middlewares
 		if element.Middleware.Logging.Enabled {
@@ -234,7 +241,7 @@ func RegisterGinEntryYAML(raw []byte) map[string]rkentry.Entry {
 			opts := []rkgingzip.Option{
 				rkgingzip.WithEntryNameAndType(element.Name, GinEntryType),
 				rkgingzip.WithLevel(element.Middleware.Gzip.Level),
-				rkgingzip.WithIgnorePrefix(element.Middleware.Gzip.IgnorePrefix...),
+				rkgingzip.WithPathToIgnore(element.Middleware.Gzip.Ignore...),
 			}
 
 			inters = append(inters, rkgingzip.Middleware(opts...))
@@ -271,6 +278,7 @@ func RegisterGinEntryYAML(raw []byte) map[string]rkentry.Entry {
 			WithDescription(element.Description),
 			WithPort(element.Port),
 			WithSwEntry(swEntry),
+			WithDocsEntry(docsEntry),
 			WithPromEntry(promEntry),
 			WithCommonServiceEntry(commonServiceEntry),
 			WithCertEntry(certEntry),
@@ -342,10 +350,27 @@ func (entry *GinEntry) GetDescription() string {
 func (entry *GinEntry) Bootstrap(ctx context.Context) {
 	event, logger := entry.logBasicInfo("Bootstrap", ctx)
 
+	// Is common service enabled?
+	if entry.IsCommonServiceEnabled() {
+		// Register common service path into Router.
+		entry.Router.GET(entry.CommonServiceEntry.ReadyPath, gin.WrapF(entry.CommonServiceEntry.Ready))
+		entry.Router.GET(entry.CommonServiceEntry.AlivePath, gin.WrapF(entry.CommonServiceEntry.Alive))
+		entry.Router.GET(entry.CommonServiceEntry.GcPath, gin.WrapF(entry.CommonServiceEntry.Gc))
+		entry.Router.GET(entry.CommonServiceEntry.InfoPath, gin.WrapF(entry.CommonServiceEntry.Info))
+
+		// Bootstrap common service entry.
+		entry.CommonServiceEntry.Bootstrap(ctx)
+	}
+
 	// Is swagger enabled?
 	if entry.IsSwEnabled() {
 		entry.Router.GET(path.Join(entry.SwEntry.Path, "*any"), gin.WrapF(entry.SwEntry.ConfigFileHandler()))
 		entry.SwEntry.Bootstrap(ctx)
+	}
+
+	if entry.IsDocsEnabled() {
+		entry.Router.GET(path.Join(entry.DocsEntry.Path, "*any"), gin.WrapF(entry.DocsEntry.ConfigFileHandler()))
+		entry.DocsEntry.Bootstrap(ctx)
 	}
 
 	// Is static file handler enabled?
@@ -361,46 +386,39 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 		entry.PromEntry.Bootstrap(ctx)
 	}
 
-	// Is common service enabled?
-	if entry.IsCommonServiceEnabled() {
-		// Register common service path into Router.
-		entry.Router.GET(entry.CommonServiceEntry.ReadyPath, gin.WrapF(entry.CommonServiceEntry.Ready))
-		entry.Router.GET(entry.CommonServiceEntry.AlivePath, gin.WrapF(entry.CommonServiceEntry.Alive))
-		entry.Router.GET(entry.CommonServiceEntry.GcPath, gin.WrapF(entry.CommonServiceEntry.Gc))
-		entry.Router.GET(entry.CommonServiceEntry.InfoPath, gin.WrapF(entry.CommonServiceEntry.Info))
-
-		// Bootstrap common service entry.
-		entry.CommonServiceEntry.Bootstrap(ctx)
-	}
-
 	// Start gin server
 	go entry.startServer(event, logger)
 
-	// Print link and logging message
-	scheme := "http"
-	if entry.IsTlsEnabled() {
-		scheme = "https"
-	}
-	if entry.IsSwEnabled() {
-		entry.LoggerEntry.Info(fmt.Sprintf("[SwaggerUI]: %s://localhost:%d%s", scheme, entry.Port, entry.SwEntry.Path))
-	}
-	if entry.IsPromEnabled() {
-		entry.LoggerEntry.Info(fmt.Sprintf("[PrometheusClient]: %s://localhost:%d%s", scheme, entry.Port, entry.PromEntry.Path))
-	}
-	if entry.IsStaticFileHandlerEnabled() {
-		entry.LoggerEntry.Info(fmt.Sprintf("[StaticFileHandler]: %s://localhost:%d%s", scheme, entry.Port, entry.StaticFileEntry.Path))
-	}
-	if entry.IsCommonServiceEnabled() {
-		handlers := []string{
-			fmt.Sprintf("%s://localhost:%d%s", scheme, entry.Port, entry.CommonServiceEntry.ReadyPath),
-			fmt.Sprintf("%s://localhost:%d%s", scheme, entry.Port, entry.CommonServiceEntry.AlivePath),
-			fmt.Sprintf("%s://localhost:%d%s", scheme, entry.Port, entry.CommonServiceEntry.InfoPath),
+	entry.bootstrapLogOnce.Do(func() {
+		// Print link and logging message
+		scheme := "http"
+		if entry.IsTlsEnabled() {
+			scheme = "https"
 		}
 
-		entry.LoggerEntry.Info(fmt.Sprintf("[CommonSrevice]: %s", strings.Join(handlers, ", ")))
-	}
+		if entry.IsSwEnabled() {
+			entry.LoggerEntry.Info(fmt.Sprintf("SwaggerEntry: %s://localhost:%d%s", scheme, entry.Port, entry.SwEntry.Path))
+		}
+		if entry.IsDocsEnabled() {
+			entry.LoggerEntry.Info(fmt.Sprintf("DocsEntry: %s://localhost:%d%s", scheme, entry.Port, entry.DocsEntry.Path))
+		}
+		if entry.IsPromEnabled() {
+			entry.LoggerEntry.Info(fmt.Sprintf("PromEntry: %s://localhost:%d%s", scheme, entry.Port, entry.PromEntry.Path))
+		}
+		if entry.IsStaticFileHandlerEnabled() {
+			entry.LoggerEntry.Info(fmt.Sprintf("StaticFileHandlerEntry: %s://localhost:%d%s", scheme, entry.Port, entry.StaticFileEntry.Path))
+		}
+		if entry.IsCommonServiceEnabled() {
+			handlers := []string{
+				fmt.Sprintf("%s://localhost:%d%s", scheme, entry.Port, entry.CommonServiceEntry.ReadyPath),
+				fmt.Sprintf("%s://localhost:%d%s", scheme, entry.Port, entry.CommonServiceEntry.AlivePath),
+				fmt.Sprintf("%s://localhost:%d%s", scheme, entry.Port, entry.CommonServiceEntry.InfoPath),
+			}
 
-	entry.EventEntry.Finish(event)
+			entry.LoggerEntry.Info(fmt.Sprintf("CommonSreviceEntry: %s", strings.Join(handlers, ", ")))
+		}
+		entry.EventEntry.Finish(event)
+	})
 }
 
 // Interrupt GinEntry.
@@ -502,6 +520,11 @@ func (entry *GinEntry) IsSwEnabled() bool {
 	return entry.SwEntry != nil
 }
 
+// IsDocsEnabled Is docs entry enabled?
+func (entry *GinEntry) IsDocsEnabled() bool {
+	return entry.DocsEntry != nil
+}
+
 // IsStaticFileHandlerEnabled Is static file handler entry enabled?
 func (entry *GinEntry) IsStaticFileHandlerEnabled() bool {
 	return entry.StaticFileEntry != nil
@@ -597,12 +620,17 @@ func (entry *GinEntry) startServer(event rkquery.Event, logger *zap.Logger) {
 
 			if err := entry.Server.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
 				logger.Error("Error occurs while serving gin-listener-tls.", event.ListPayloads()...)
+				entry.bootstrapLogOnce.Do(func() {
+					entry.EventEntry.FinishWithCond(event, false)
+				})
 				rkentry.ShutdownWithError(err)
 			}
 		} else {
 			if err := entry.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 				logger.Error("Error occurs while serving gin-listener.", event.ListPayloads()...)
-				entry.EventEntry.FinishWithCond(event, false)
+				entry.bootstrapLogOnce.Do(func() {
+					entry.EventEntry.FinishWithCond(event, false)
+				})
 				rkentry.ShutdownWithError(err)
 			}
 		}
@@ -657,6 +685,13 @@ func WithCertEntry(certEntry *rkentry.CertEntry) GinEntryOption {
 func WithSwEntry(sw *rkentry.SWEntry) GinEntryOption {
 	return func(entry *GinEntry) {
 		entry.SwEntry = sw
+	}
+}
+
+// WithDocsEntry provide SwEntry.
+func WithDocsEntry(docs *rkentry.DocsEntry) GinEntryOption {
+	return func(entry *GinEntry) {
+		entry.DocsEntry = docs
 	}
 }
 

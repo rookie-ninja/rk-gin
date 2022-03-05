@@ -8,8 +8,8 @@ package rkginauth
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-entry/middleware"
-	"github.com/rookie-ninja/rk-entry/middleware/auth"
+	"github.com/rookie-ninja/rk-entry/v2/middleware"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/auth"
 )
 
 // Middleware validate bellow authorization.

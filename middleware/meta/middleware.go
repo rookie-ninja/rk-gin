@@ -8,9 +8,9 @@ package rkginmeta
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-entry/middleware"
-	"github.com/rookie-ninja/rk-entry/middleware/meta"
-	"github.com/rookie-ninja/rk-gin/middleware/context"
+	"github.com/rookie-ninja/rk-entry/v2/middleware"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/meta"
+	"github.com/rookie-ninja/rk-gin/v2/middleware/context"
 )
 
 // Middleware will add common headers as extension style in http response.

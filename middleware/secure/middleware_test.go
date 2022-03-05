@@ -7,7 +7,7 @@ package rkginsec
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-entry/middleware/secure"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/secure"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"

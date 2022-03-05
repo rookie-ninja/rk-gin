@@ -1,4 +1,4 @@
-module github.com/rookie-ninja/rk-gin
+module github.com/rookie-ninja/rk-gin/v2
 
 go 1.17
 
@@ -6,7 +6,7 @@ require (
 	github.com/gin-gonic/gin v1.7.7
 	github.com/golang-jwt/jwt/v4 v4.3.0
 	github.com/prometheus/client_golang v1.12.1
-	github.com/rookie-ninja/rk-entry v1.0.12-0.20220303194539-5d73262c7512
+	github.com/rookie-ninja/rk-entry/v2 v2.0.1
 	github.com/rookie-ninja/rk-logger v1.2.10
 	github.com/rookie-ninja/rk-query v1.2.11
 	github.com/rs/xid v1.3.0

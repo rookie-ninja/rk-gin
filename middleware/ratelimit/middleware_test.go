@@ -2,8 +2,8 @@ package rkginlimit
 
 import (
 	"github.com/gin-gonic/gin"
-	rkerror "github.com/rookie-ninja/rk-entry/error"
-	"github.com/rookie-ninja/rk-entry/middleware/ratelimit"
+	"github.com/rookie-ninja/rk-entry/v2/error"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/ratelimit"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -25,7 +25,7 @@ func TestInterceptor(t *testing.T) {
 	inter := Middleware(rkmidlimit.WithMockOptionSet(mock))
 	ctx := newCtx()
 	// assign any of error response
-	beforeCtx.Output.ErrResp = rkerror.NewUnauthorized()
+	beforeCtx.Output.ErrResp = rkerror.NewUnauthorized("")
 	inter(ctx)
 	assert.True(t, ctx.IsAborted())
 

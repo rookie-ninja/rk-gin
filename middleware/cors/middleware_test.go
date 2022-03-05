@@ -7,8 +7,8 @@ package rkgincors
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-entry/middleware"
-	"github.com/rookie-ninja/rk-entry/middleware/cors"
+	"github.com/rookie-ninja/rk-entry/v2/middleware"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/cors"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"

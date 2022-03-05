@@ -8,7 +8,7 @@ package rkgintout
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-entry/middleware/timeout"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/timeout"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"

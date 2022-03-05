@@ -8,8 +8,8 @@ package rkginlimit
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-entry/middleware"
-	"github.com/rookie-ninja/rk-entry/middleware/ratelimit"
+	"github.com/rookie-ninja/rk-entry/v2/middleware"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/ratelimit"
 )
 
 // Middleware Add rate limit interceptors.

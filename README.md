@@ -10,82 +10,6 @@ This belongs to [rk-boot](https://github.com/rookie-ninja/rk-boot) family. We su
 
 ![image](docs/img/boot-arch.png)
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
-
-- [Notice of V2](#notice-of-v2)
-- [Architecture](#architecture)
-- [Supported bootstrap](#supported-bootstrap)
-- [Supported instances](#supported-instances)
-- [Supported middlewares](#supported-middlewares)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-  - [1.Create boot.yaml](#1create-bootyaml)
-  - [2.Create main.go](#2create-maingo)
-  - [3.Start server](#3start-server)
-  - [4.Validation](#4validation)
-    - [4.1 Gin server](#41-gin-server)
-    - [4.2 Swagger UI](#42-swagger-ui)
-    - [4.4 Prometheus Metrics](#44-prometheus-metrics)
-    - [4.5 Logging](#45-logging)
-    - [4.6 Meta](#46-meta)
-    - [4.7 Send request](#47-send-request)
-    - [4.8 RPC logs](#48-rpc-logs)
-    - [4.9 RPC prometheus metrics](#49-rpc-prometheus-metrics)
-- [YAML Options](#yaml-options)
-  - [Gin](#gin)
-  - [CommonService](#commonservice)
-  - [Swagger](#swagger)
-  - [Prom Client](#prom-client)
-  - [Static file handler](#static-file-handler)
-  - [Middlewares](#middlewares)
-    - [Logging](#logging)
-    - [Prometheus](#prometheus)
-    - [Auth](#auth)
-    - [Meta](#meta)
-    - [Trace](#trace)
-    - [RateLimit](#ratelimit)
-    - [Timeout](#timeout)
-    - [Gzip](#gzip)
-    - [CORS](#cors)
-    - [JWT](#jwt)
-    - [Secure](#secure)
-    - [CSRF](#csrf)
-  - [Full YAML](#full-yaml)
-  - [Development Status: Stable](#development-status-stable)
-- [Build instruction](#build-instruction)
-- [Test instruction](#test-instruction)
-- [Contributing](#contributing)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-## Notice of V2
-Master branch of this package is under upgrade which will be released to v2.x.x soon.
-
-Major changes listed bellow. This will be updated with every commit.
-
-| Last version | New version | Changes                                                                                                            |
-|--------------|-------------|--------------------------------------------------------------------------------------------------------------------|
-| v1.2.22      | master      | TV is not supported because of LICENSE issue, new TV web UI will be released soon                                  |
-| v1.2.22      | master      | Remote repositry of ConfigEntry and CertEntry removed                                                              |
-| v1.2.22      | master      | Swagger json file and boot.yaml file could be embed into embed.FS and pass to rkentry                              |
-| v1.2.22      | master      | ZapLoggerEntry -> LoggerEntry                                                                                      |
-| v1.2.22      | master      | EventLoggerEntry -> EventEntry                                                                                     |
-| v1.2.22      | master      | LoggerEntry can be used as zap.Logger since all functions are inherited                                            |
-| v1.2.22      | master      | PromEntry can be used as prometheus.Registry since all functions are inherited                                     |
-| v1.2.22      | master      | rk-common dependency was removed                                                                                   |
-| v1.2.22      | master      | Entries are organized by EntryType instead of EntryName, so user can have same entry name with different EntryType |
-| v1.2.22      | master      | gin.middlewares -> gin.middleware in boot.yaml                                                                     |
-| v1.2.22      | master      | gin.middlewares.loggingZap -> gin.middleware.logging in boot.yaml                                                  |
-| v1.2.22      | master      | gin.middlewares.metricsProm -> gin.middleware.prom in boot.yaml                                                    |
-| v1.2.22      | master      | gin.middlewares.tracingTelemetry -> gin.middleware.trace in boot.yaml                                              |
-| v1.2.22      | master      | All middlewares are now support gin.middleware.xxx.ignorePrefix options in boot.yaml                               |
-| v1.2.22      | master      | Middlewares support gin.middleware.ignorePrefix in boot.yaml as global scope                                       |
-| v1.2.22      | master      | LoggerEntry, EventEntry, ConfigEntry, CertEntry now support locale to distinguish in differerent environment       |
-| v1.2.22      | master      | LoggerEntry, EventEntry, CertEntry can be referenced to gin entry in boot.yaml                                     |
-| v1.2.22      | master      | Healthy API was replaced by Ready and Alive which also provides validation func from user                          |
-
 ## Architecture
 ![image](docs/img/gin-arch.png)
 
@@ -109,6 +33,7 @@ All instances could be configured via YAML or Code.
 | Cert              | Fetch TLS/SSL certificates start microservice.                                                                |
 | Prometheus        | Start prometheus client at client side and push metrics to pushgateway as needed.                             |
 | Swagger           | Builtin swagger UI handler.                                                                                   |
+| Docs              | Builtin [RapiDoc](https://github.com/mrin9/RapiDoc) instance which can be used to replace swagger and RK TV.  |
 | CommonService     | List of common APIs.                                                                                          |
 | StaticFileHandler | A Web UI shows files could be downloaded from server, currently support source of local and pkger.            |
 
@@ -134,7 +59,7 @@ All middlewares could be configured via YAML or Code.
 | CSRF       | Server side csrf validation.                                                                                                                          |
 
 ## Installation
-`go get github.com/rookie-ninja/rk-gin`
+`go get github.com/rookie-ninja/rk-gin/v2`
 
 ## Quick Start
 In the bellow example, we will start microservice with bellow functionality and middlewares enabled via YAML.
@@ -157,11 +82,13 @@ gin:
   - name: greeter                     # Required
     port: 8080                        # Required
     enabled: true                     # Required
-    prom:
+    commonService:                    # Optional
       enabled: true                   # Optional, default: false
     sw:                               # Optional
       enabled: true                   # Optional, default: false
-    commonService:                    # Optional
+    docs:                             # Optional
+      enabled: true                   # Optional, default: false
+    prom:
       enabled: true                   # Optional, default: false
     middleware:
       logging:
@@ -187,13 +114,25 @@ import (
   _ "embed"
   "fmt"
   "github.com/gin-gonic/gin"
-  "github.com/rookie-ninja/rk-entry/entry"
-  "github.com/rookie-ninja/rk-gin/boot"
+  "github.com/rookie-ninja/rk-entry/v2/entry"
+  "github.com/rookie-ninja/rk-gin/v2/boot"
   "net/http"
 )
 
 //go:embed boot.yaml
 var boot []byte
+
+////go:embed docs
+//var docsFS embed.FS
+//
+////go:embed docs
+//var staticFS embed.FS
+
+func init() {
+  //rkentry.GlobalAppCtx.AddEmbedFS(rkentry.DocsEntryType, "greeter", &docsFS)
+  //rkentry.GlobalAppCtx.AddEmbedFS(rkentry.SWEntryType, "greeter", &docsFS)
+  //rkentry.GlobalAppCtx.AddEmbedFS(rkentry.StaticFileHandlerEntryType, "greeter", &staticFS)
+}
 
 func main() {
   // Bootstrap preload entries
@@ -205,7 +144,7 @@ func main() {
   // Get GinEntry
   ginEntry := res["greeter"].(*rkgin.GinEntry)
   ginEntry.Router.GET("/v1/greeter", Greeter)
-  
+
   // Bootstrap gin entry
   ginEntry.Bootstrap(context.Background())
 
@@ -251,14 +190,21 @@ $ curl localhost:8080/rk/v1/alive
 ```
 
 #### 4.2 Swagger UI
-Please refer [documentation](https://rkdev.info/docs/bootstrapper/user-guide/gin-golang/basic/swagger-ui/) for details of configuration.
+Please refer **sw** section at [Full YAML](#full-yaml).
 
 By default, we could access swagger UI at [http://localhost:8080/sw](http://localhost:8080/sw)
 
 ![sw](docs/img/simple-sw.png)
 
+#### 4.3 Docs UI
+Please refer **docs** section at [Full YAML](#full-yaml).
+
+By default, we could access docs UI at [http://localhost:8080/docs](http://localhost:8080/docs)
+
+![docs](docs/img/simple-docs.png)
+
 #### 4.4 Prometheus Metrics
-Please refer [documentation](https://rkdev.info/docs/bootstrapper/user-guide/gin-golang/basic/middleware-metrics/) for details of configuration.
+Please refer **middleware.prom** section at [Full YAML](#full-yaml).
 
 By default, we could access prometheus client at [http://localhost:8080/metrics](http://localhost:8080/metrics)
 - http://localhost:8080/metrics
@@ -266,7 +212,7 @@ By default, we could access prometheus client at [http://localhost:8080/metrics]
 ![prom](docs/img/simple-prom.png)
 
 #### 4.5 Logging
-Please refer [documentation](https://rkdev.info/docs/bootstrapper/user-guide/gin-golang/basic/middleware-logging/) for details of configuration.
+Please refer **middleware.logging** section at [Full YAML](#full-yaml).
 
 By default, we enable zap logger and event logger with encoding type of [console]. Encoding type of [json] is also supported.
 
@@ -293,7 +239,7 @@ EOE
 ```
 
 #### 4.6 Meta
-Please refer [documentation](https://rkdev.info/docs/bootstrapper/user-guide/gin-golang/basic/middleware-meta/) for details of configuration.
+Please refer **meta** section at [Full YAML](#full-yaml).
 
 By default, we will send back some metadata to client including gateway with headers.
 
@@ -412,6 +358,16 @@ User can start multiple [gin-gonic/gin](https://github.com/gin-gonic/gin) instan
 | gin.sw.jsonPath | Optional, Where the swagger.json files are stored locally          | string   | ""            |
 | gin.sw.headers  | Optional, Headers would be sent to caller as scheme of [key:value] | []string | []            |
 
+### Docs (RapiDoc)
+| name                 | description                                                                            | type     | default value |
+|----------------------|----------------------------------------------------------------------------------------|----------|---------------|
+| gin.docs.enabled     | Optional, Enable RapiDoc service over gin server                                       | boolean  | false         |
+| gin.docs.path        | Optional, The path access docs service from web                                        | string   | /docs         |
+| gin.docs.jsonPath    | Optional, Where the swagger.json or open API files are stored locally                  | string   | ""            |
+| gin.docs.headers     | Optional, Headers would be sent to caller as scheme of [key:value]                     | []string | []            |
+| gin.docs.style.theme | Optional, light and dark are supported options                                         | string   | []            |
+| gin.docs.debug       | Optional, Enable debugging mode in RapiDoc which can be used as the same as Swagger UI | boolean  | false         |
+
 ### Prom Client
 | name                          | description                                                                        | type    | default value |
 |-------------------------------|------------------------------------------------------------------------------------|---------|---------------|
@@ -437,25 +393,25 @@ User has to set embedFS before Bootstrap() function as bellow:
 - 
 ```go
 //go:embed /*
-var fs embed.FS
+var staticFS embed.FS
 
-ginEtnry.StaticFileEntry.SetEmbedFS(fs)
+rkentry.GlobalAppCtx.AddEmbedFS(rkentry.StaticFileHandlerEntryType, "greeter", &staticFS)
 ```
 
 ### Middlewares
-| name                        | description                                            | type     | default value |
-|-----------------------------|--------------------------------------------------------|----------|---------------|
-| gin.middleware.ignorePrefix | The paths of prefix that will be ignored by middleware | []string | []            |
+| name                  | description                                            | type     | default value |
+|-----------------------|--------------------------------------------------------|----------|---------------|
+| gin.middleware.ignore | The paths of prefix that will be ignored by middleware | []string | []            |
 
 #### Logging
-| name                                     | description                                             | type     | default value |
-|------------------------------------------|---------------------------------------------------------|----------|---------------|
-| gin.middleware.logging.enabled           | Enable log middleware                                   | boolean  | false         |
-| gin.middleware.logging.ignorePrefix      | The paths of prefix that will be ignored by middleware  | []string | []            |
-| gin.middleware.logging.loggerEncoding    | json or console or flatten                              | string   | console       |
-| gin.middleware.logging.loggerOutputPaths | Output paths                                            | []string | stdout        |
-| gin.middleware.logging.eventEncoding     | json or console or flatten                              | string   | console       |
-| gin.middleware.logging.eventOutputPaths  | Output paths                                            | []string | false         |
+| name                                     | description                                            | type     | default value |
+|------------------------------------------|--------------------------------------------------------|----------|---------------|
+| gin.middleware.logging.enabled           | Enable log middleware                                  | boolean  | false         |
+| gin.middleware.logging.ignore            | The paths of prefix that will be ignored by middleware | []string | []            |
+| gin.middleware.logging.loggerEncoding    | json or console or flatten                             | string   | console       |
+| gin.middleware.logging.loggerOutputPaths | Output paths                                           | []string | stdout        |
+| gin.middleware.logging.eventEncoding     | json or console or flatten                             | string   | console       |
+| gin.middleware.logging.eventOutputPaths  | Output paths                                           | []string | false         |
 
 We will log two types of log for every RPC call.
 - Logger
@@ -509,50 +465,50 @@ EOE
 ```
 
 #### Prometheus
-| name                                | description                                            | type     | default value |
-|-------------------------------------|--------------------------------------------------------|----------|---------------|
-| gin.middleware.prom.enabled         | Enable metrics middleware                              | boolean  | false         |
-| gin.middleware.logging.ignorePrefix | The paths of prefix that will be ignored by middleware | []string | []            |
+| name                        | description                                            | type     | default value |
+|-----------------------------|--------------------------------------------------------|----------|---------------|
+| gin.middleware.prom.enabled | Enable metrics middleware                              | boolean  | false         |
+| gin.middleware.prom.ignore  | The paths of prefix that will be ignored by middleware | []string | []            |
 
 #### Auth
 Enable the server side auth. codes.Unauthenticated would be returned to client if not authorized with user defined credential.
 
-| name                             | description                                            | type     | default value |
-|----------------------------------|--------------------------------------------------------|----------|---------------|
-| gin.middleware.auth.enabled      | Enable auth middleware                                 | boolean  | false         |
-| gin.middleware.auth.ignorePrefix | The paths of prefix that will be ignored by middleware | []string | []            |
-| gin.middleware.auth.basic        | Basic auth credentials as scheme of <user:pass>        | []string | []            |
-| gin.middleware.auth.apiKey       | API key auth                                           | []string | []            |
+| name                        | description                                            | type     | default value |
+|-----------------------------|--------------------------------------------------------|----------|---------------|
+| gin.middleware.auth.enabled | Enable auth middleware                                 | boolean  | false         |
+| gin.middleware.auth.ignore  | The paths of prefix that will be ignored by middleware | []string | []            |
+| gin.middleware.auth.basic   | Basic auth credentials as scheme of <user:pass>        | []string | []            |
+| gin.middleware.auth.apiKey  | API key auth                                           | []string | []            |
 
 #### Meta
 Send application metadata as header to client.
 
-| name                             | description                                            | type     | default value |
-|----------------------------------|--------------------------------------------------------|----------|---------------|
-| gin.middleware.meta.enabled      | Enable meta middleware                                 | boolean  | false         |
-| gin.middleware.auth.ignorePrefix | The paths of prefix that will be ignored by middleware | []string | []            |
-| gin.middleware.meta.prefix       | Header key was formed as X-<Prefix>-XXX                | string   | RK            |
+| name                        | description                                            | type     | default value |
+|-----------------------------|--------------------------------------------------------|----------|---------------|
+| gin.middleware.meta.enabled | Enable meta middleware                                 | boolean  | false         |
+| gin.middleware.meta.ignore  | The paths of prefix that will be ignored by middleware | []string | []            |
+| gin.middleware.meta.prefix  | Header key was formed as X-<Prefix>-XXX                | string   | RK            |
 
 #### Trace
 | name                                                    | description                                            | type     | default value                    |
 |---------------------------------------------------------|--------------------------------------------------------|----------|----------------------------------|
-| gin.middleware.Trace.enabled                            | Enable tracing middleware                              | boolean  | false                            |
-| gin.middleware.auth.ignorePrefix                        | The paths of prefix that will be ignored by middleware | []string | []                               |
-| gin.middleware.Trace.exporter.file.enabled              | Enable file exporter                                   | boolean  | false                            |
-| gin.middleware.Trace.exporter.file.outputPath           | Export tracing info to files                           | string   | stdout                           |
-| gin.middleware.Trace.exporter.jaeger.agent.enabled      | Export tracing info to jaeger agent                    | boolean  | false                            |
-| gin.middleware.Trace.exporter.jaeger.agent.host         | As name described                                      | string   | localhost                        |
-| gin.middleware.Trace.exporter.jaeger.agent.port         | As name described                                      | int      | 6831                             |
-| gin.middleware.Trace.exporter.jaeger.collector.enabled  | Export tracing info to jaeger collector                | boolean  | false                            |
-| gin.middleware.Trace.exporter.jaeger.collector.endpoint | As name described                                      | string   | http://localhost:16368/api/trace |
-| gin.middleware.Trace.exporter.jaeger.collector.username | As name described                                      | string   | ""                               |
-| gin.middleware.Trace.exporter.jaeger.collector.password | As name described                                      | string   | ""                               |
+| gin.middleware.trace.enabled                            | Enable tracing middleware                              | boolean  | false                            |
+| gin.middleware.trace.ignore                             | The paths of prefix that will be ignored by middleware | []string | []                               |
+| gin.middleware.trace.exporter.file.enabled              | Enable file exporter                                   | boolean  | false                            |
+| gin.middleware.trace.exporter.file.outputPath           | Export tracing info to files                           | string   | stdout                           |
+| gin.middleware.trace.exporter.jaeger.agent.enabled      | Export tracing info to jaeger agent                    | boolean  | false                            |
+| gin.middleware.trace.exporter.jaeger.agent.host         | As name described                                      | string   | localhost                        |
+| gin.middleware.trace.exporter.jaeger.agent.port         | As name described                                      | int      | 6831                             |
+| gin.middleware.trace.exporter.jaeger.collector.enabled  | Export tracing info to jaeger collector                | boolean  | false                            |
+| gin.middleware.trace.exporter.jaeger.collector.endpoint | As name described                                      | string   | http://localhost:16368/api/trace |
+| gin.middleware.trace.exporter.jaeger.collector.username | As name described                                      | string   | ""                               |
+| gin.middleware.trace.exporter.jaeger.collector.password | As name described                                      | string   | ""                               |
 
 #### RateLimit
 | name                                     | description                                                          | type     | default value |
 |------------------------------------------|----------------------------------------------------------------------|----------|---------------|
 | gin.middleware.rateLimit.enabled         | Enable rate limit middleware                                         | boolean  | false         |
-| gin.middleware.auth.ignorePrefix         | The paths of prefix that will be ignored by middleware               | []string | []            |
+| gin.middleware.rateLimit.ignore          | The paths of prefix that will be ignored by middleware               | []string | []            |
 | gin.middleware.rateLimit.algorithm       | Provide algorithm, tokenBucket and leakyBucket are available options | string   | tokenBucket   |
 | gin.middleware.rateLimit.reqPerSec       | Request per second globally                                          | int      | 0             |
 | gin.middleware.rateLimit.paths.path      | Full path                                                            | string   | ""            |
@@ -562,23 +518,23 @@ Send application metadata as header to client.
 | name                                   | description                                            | type     | default value |
 |----------------------------------------|--------------------------------------------------------|----------|---------------|
 | gin.middleware.timeout.enabled         | Enable timeout middleware                              | boolean  | false         |
-| gin.middleware.auth.ignorePrefix       | The paths of prefix that will be ignored by middleware | []string | []            |
+| gin.middleware.timeout.ignore          | The paths of prefix that will be ignored by middleware | []string | []            |
 | gin.middleware.timeout.timeoutMs       | Global timeout in milliseconds.                        | int      | 5000          |
 | gin.middleware.timeout.paths.path      | Full path                                              | string   | ""            |
 | gin.middleware.timeout.paths.timeoutMs | Timeout in milliseconds by full path                   | int      | 5000          |
 
 #### Gzip
-| name                             | description                                                                                                           | type     | default value      |
-|----------------------------------|-----------------------------------------------------------------------------------------------------------------------|----------|--------------------|
-| gin.middleware.gzip.enabled      | Enable gzip middleware                                                                                                | boolean  | false              |
-| gin.middleware.auth.ignorePrefix | The paths of prefix that will be ignored by middleware                                                                | []string | []                 |
-| gin.middleware.gzip.level        | Provide level of compression, options are noCompression, bestSpeed, bestCompression, defaultCompression, huffmanOnly. | string   | defaultCompression |
+| name                        | description                                                                                                           | type     | default value      |
+|-----------------------------|-----------------------------------------------------------------------------------------------------------------------|----------|--------------------|
+| gin.middleware.gzip.enabled | Enable gzip middleware                                                                                                | boolean  | false              |
+| gin.middleware.gzip.ignore  | The paths of prefix that will be ignored by middleware                                                                | []string | []                 |
+| gin.middleware.gzip.level   | Provide level of compression, options are noCompression, bestSpeed, bestCompression, defaultCompression, huffmanOnly. | string   | defaultCompression |
 
 #### CORS
 | name                                 | description                                                            | type     | default value        |
 |--------------------------------------|------------------------------------------------------------------------|----------|----------------------|
 | gin.middleware.cors.enabled          | Enable cors middleware                                                 | boolean  | false                |
-| gin.middleware.auth.ignorePrefix     | The paths of prefix that will be ignored by middleware                 | []string | []                   |
+| gin.middleware.cors.ignore           | The paths of prefix that will be ignored by middleware                 | []string | []                   |
 | gin.middleware.cors.allowOrigins     | Provide allowed origins with wildcard enabled.                         | []string | *                    |
 | gin.middleware.cors.allowMethods     | Provide allowed methods returns as response header of OPTIONS request. | []string | All http methods     |
 | gin.middleware.cors.allowHeaders     | Provide allowed headers returns as response header of OPTIONS request. | []string | Headers from request |
@@ -594,21 +550,19 @@ In order to make swagger UI and RK tv work under JWT without JWT token, we need 
 ```yaml
 jwt:
   ...
-  ignorePrefix:
-   - "/rk/v1/tv"
+  ignore:
    - "/sw"
-   - "/rk/v1/assets"
 ```
 
-| name                            | description                                                 | type     | default value          |
-|---------------------------------|-------------------------------------------------------------|----------|------------------------|
-| gin.middleware.jwt.enabled      | Enable JWT middleware                                       | boolean  | false                  |
-| gin.middleware.jwt.ignorePrefix | Provide ignoring path prefix.                               | []string | []                     |
-| gin.middleware.jwt.signingKey   | Required, Provide signing key.                              | string   | ""                     |
-| gin.middleware.jwt.signingKeys  | Provide signing keys as scheme of <key>:<value>.            | []string | []                     |
-| gin.middleware.jwt.signingAlgo  | Provide signing algorithm.                                  | string   | HS256                  |
-| gin.middleware.jwt.tokenLookup  | Provide token lookup scheme, please see bellow description. | string   | "header:Authorization" |
-| gin.middleware.jwt.authScheme   | Provide auth scheme.                                        | string   | Bearer                 |
+| name                           | description                                                 | type     | default value          |
+|--------------------------------|-------------------------------------------------------------|----------|------------------------|
+| gin.middleware.jwt.enabled     | Enable JWT middleware                                       | boolean  | false                  |
+| gin.middleware.jwt.ignore      | Provide ignoring path prefix.                               | []string | []                     |
+| gin.middleware.jwt.signingKey  | Required, Provide signing key.                              | string   | ""                     |
+| gin.middleware.jwt.signingKeys | Provide signing keys as scheme of <key>:<value>.            | []string | []                     |
+| gin.middleware.jwt.signingAlgo | Provide signing algorithm.                                  | string   | HS256                  |
+| gin.middleware.jwt.tokenLookup | Provide token lookup scheme, please see bellow description. | string   | "header:Authorization" |
+| gin.middleware.jwt.authScheme  | Provide auth scheme.                                        | string   | Bearer                 |
 
 The supported scheme of **tokenLookup** 
 
@@ -628,7 +582,7 @@ The supported scheme of **tokenLookup**
 | name                                        | description                                       | type     | default value   |
 |---------------------------------------------|---------------------------------------------------|----------|-----------------|
 | gin.middleware.secure.enabled               | Enable secure middleware                          | boolean  | false           |
-| gin.middleware.secure.ignorePrefix          | Ignoring path prefix.                             | []string | []              |
+| gin.middleware.secure.ignore                | Ignoring path prefix.                             | []string | []              |
 | gin.middleware.secure.xssProtection         | X-XSS-Protection header value.                    | string   | "1; mode=block" |
 | gin.middleware.secure.contentTypeNosniff    | X-Content-Type-Options header value.              | string   | nosniff         |
 | gin.middleware.secure.xFrameOptions         | X-Frame-Options header value.                     | string   | SAMEORIGIN      |
@@ -643,7 +597,7 @@ The supported scheme of **tokenLookup**
 | name                               | description                                                                     | type     | default value         |
 |------------------------------------|---------------------------------------------------------------------------------|----------|-----------------------|
 | gin.middleware.csrf.enabled        | Enable csrf middleware                                                          | boolean  | false                 |
-| gin.middleware.csrf.ignorePrefix   | Ignoring path prefix.                                                           | []string | []                    |
+| gin.middleware.csrf.ignore         | Ignoring path prefix.                                                           | []string | []                    |
 | gin.middleware.csrf.tokenLength    | Provide the length of the generated token.                                      | int      | 32                    |
 | gin.middleware.csrf.tokenLookup    | Provide csrf token lookup rules, please see code comments for details.          | string   | "header:X-CSRF-Token" |
 | gin.middleware.csrf.cookieName     | Provide name of the CSRF cookie. This cookie will store CSRF token.             | string   | _csrf                 |
@@ -761,6 +715,14 @@ gin:
 #      path: "sw"                                          # Optional, default: "sw"
 #      jsonPath: ""                                        # Optional
 #      headers: ["sw:rk"]                                  # Optional, default: []
+#    docs:
+#      enabled: true                                       # Optional, default: false
+#      path: "docs"                                        # Optional, default: "docs"
+#      specPath: ""                                        # Optional
+#      headers: ["sw:rk"]                                  # Optional, default: []
+#      style:                                              # Optional
+#        theme: "light"                                    # Optional, default: "light"
+#      debug: false                                        # Optional, default: false
 #    commonService:
 #      enabled: true                                       # Optional, default: false
 #      pathPrefix: ""                                      # Optional, default: "/rk/v1/"
@@ -780,31 +742,31 @@ gin:
 #        intervalMs: 10000                                 # Optional, default: 1000
 #        certEntry: my-cert                                # Optional, default: "", reference of cert entry declared above
 #    middleware:
-#      ignorePrefix: [""]                                  # Optional, default: []
+#      ignore: [""]                                        # Optional, default: []
 #      logging:
 #        enabled: true                                     # Optional, default: false
-#        ignorePrefix: [""]                                # Optional, default: []
+#        ignore: [""]                                      # Optional, default: []
 #        loggerEncoding: "console"                         # Optional, default: "console"
 #        loggerOutputPaths: ["logs/app.log"]               # Optional, default: ["stdout"]
 #        eventEncoding: "console"                          # Optional, default: "console"
 #        eventOutputPaths: ["logs/event.log"]              # Optional, default: ["stdout"]
 #      prom:
 #        enabled: true                                     # Optional, default: false
-#        ignorePrefix: [""]                                # Optional, default: []
+#        ignore: [""]                                      # Optional, default: []
 #      auth:
 #        enabled: true                                     # Optional, default: false
-#        ignorePrefix: [""]                                # Optional, default: []
+#        ignore: [""]                                      # Optional, default: []
 #        basic:
 #          - "user:pass"                                   # Optional, default: []
 #        apiKey:
 #          - "keys"                                        # Optional, default: []
 #      meta:
 #        enabled: true                                     # Optional, default: false
-#        ignorePrefix: [""]                                # Optional, default: []
+#        ignore: [""]                                      # Optional, default: []
 #        prefix: "rk"                                      # Optional, default: "rk"
 #      trace:
 #        enabled: true                                     # Optional, default: false
-#        ignorePrefix: [""]                                # Optional, default: []
+#        ignore: [""]                                      # Optional, default: []
 #        exporter:                                         # Optional, default will create a stdout exporter
 #          file:
 #            enabled: true                                 # Optional, default: false
@@ -821,7 +783,7 @@ gin:
 #              password: ""                                # Optional, default: ""
 #      rateLimit:
 #        enabled: false                                    # Optional, default: false
-#        ignorePrefix: [""]                                # Optional, default: []
+#        ignore: [""]                                      # Optional, default: []
 #        algorithm: "leakyBucket"                          # Optional, default: "tokenBucket"
 #        reqPerSec: 100                                    # Optional, default: 1000000
 #        paths:
@@ -829,7 +791,7 @@ gin:
 #            reqPerSec: 0                                  # Optional, default: 1000000
 #      timeout:
 #        enabled: false                                    # Optional, default: false
-#        ignorePrefix: [""]                                # Optional, default: []
+#        ignore: [""]                                      # Optional, default: []
 #        timeoutMs: 5000                                   # Optional, default: 5000
 #        paths:
 #          - path: "/rk/v1/healthy"                        # Optional, default: ""
@@ -837,7 +799,7 @@ gin:
 #      jwt:
 #        enabled: true                                     # Optional, default: false
 #        signingKey: "my-secret"                           # Required
-#        ignorePrefix: [""]                                # Optional, default: []
+#        ignore: [""]                                      # Optional, default: []
 #        signingKeys:                                      # Optional
 #          - "key:value"
 #        signingAlgo: ""                                   # Optional, default: "HS256"
@@ -845,7 +807,7 @@ gin:
 #        authScheme: "Bearer"                              # Optional, default: "Bearer"
 #      secure:
 #        enabled: true                                     # Optional, default: false
-#        ignorePrefix: [""]                                # Optional, default: []
+#        ignore: [""]                                      # Optional, default: []
 #        xssProtection: ""                                 # Optional, default: "1; mode=block"
 #        contentTypeNosniff: ""                            # Optional, default: nosniff
 #        xFrameOptions: ""                                 # Optional, default: SAMEORIGIN
@@ -855,10 +817,9 @@ gin:
 #        contentSecurityPolicy: ""                         # Optional, default: ""
 #        cspReportOnly: false                              # Optional, default: false
 #        referrerPolicy: ""                                # Optional, default: ""
-#        ignorePrefix: []                                  # Optional, default: []
 #      csrf:
 #        enabled: true                                     # Optional, default: false
-#        ignorePrefix: [""]                                # Optional, default: []
+#        ignore: [""]                                      # Optional, default: []
 #        tokenLength: 32                                   # Optional, default: 32
 #        tokenLookup: "header:X-CSRF-Token"                # Optional, default: "header:X-CSRF-Token"
 #        cookieName: "_csrf"                               # Optional, default: _csrf
@@ -867,14 +828,13 @@ gin:
 #        cookieMaxAge: 86400                               # Optional, default: 86400
 #        cookieHttpOnly: false                             # Optional, default: false
 #        cookieSameSite: "default"                         # Optional, default: "default", options: lax, strict, none, default
-#        ignorePrefix: []                                  # Optional, default: []
 #      gzip:
-#        ignorePrefix: [""]                                # Optional, default: []
-#        enabled: true
+#        enabled: true                                     # Optional, default: false
+#        ignore: [""]                                      # Optional, default: []
 #        level: bestSpeed                                  # Optional, options: [noCompression, bestSpeed， bestCompression, defaultCompression, huffmanOnly]
 #      cors:
 #        enabled: true                                     # Optional, default: false
-#        ignorePrefix: [""]                                # Optional, default: []
+#        ignore: [""]                                      # Optional, default: []
 #        allowOrigins:                                     # Optional, default: []
 #          - "http://localhost:*"                          # Optional, default: *
 #        allowCredentials: false                           # Optional, default: false
@@ -882,10 +842,38 @@ gin:
 #        allowMethods: []                                  # Optional, default: []
 #        exposeHeaders: []                                 # Optional, default: []
 #        maxAge: 0                                         # Optional, default: 0
-#        ignorePrefix: []                                  # Optional, default: []
 ```
 
-### Development Status: Stable
+## Notice of V2
+Master branch of this package is under upgrade which will be released to v2.x.x soon.
+
+Major changes listed bellow. This will be updated with every commit.
+
+| Last version | New version | Changes                                                                                                            |
+|--------------|-------------|--------------------------------------------------------------------------------------------------------------------|
+| v1.2.22      | v2          | TV is not supported because of LICENSE issue, new TV web UI will be released soon                                  |
+| v1.2.22      | v2          | Remote repositry of ConfigEntry and CertEntry removed                                                              |
+| v1.2.22      | v2          | Swagger json file and boot.yaml file could be embed into embed.FS and pass to rkentry                              |
+| v1.2.22      | v2          | ZapLoggerEntry -> LoggerEntry                                                                                      |
+| v1.2.22      | v2          | EventLoggerEntry -> EventEntry                                                                                     |
+| v1.2.22      | v2          | LoggerEntry can be used as zap.Logger since all functions are inherited                                            |
+| v1.2.22      | v2          | PromEntry can be used as prometheus.Registry since all functions are inherited                                     |
+| v1.2.22      | v2          | rk-common dependency was removed                                                                                   |
+| v1.2.22      | v2          | Entries are organized by EntryType instead of EntryName, so user can have same entry name with different EntryType |
+| v1.2.22      | v2          | gin.middlewares -> gin.middleware in boot.yaml                                                                     |
+| v1.2.22      | v2          | gin.middlewares.loggingZap -> gin.middleware.logging in boot.yaml                                                  |
+| v1.2.22      | v2          | gin.middlewares.metricsProm -> gin.middleware.prom in boot.yaml                                                    |
+| v1.2.22      | v2          | gin.middlewares.tracingTelemetry -> gin.middleware.trace in boot.yaml                                              |
+| v1.2.22      | v2          | All middlewares are now support gin.middleware.xxx.ignorePrefix options in boot.yaml                               |
+| v1.2.22      | v2          | Middlewares support gin.middleware.ignorePrefix in boot.yaml as global scope                                       |
+| v1.2.22      | v2          | LoggerEntry, EventEntry, ConfigEntry, CertEntry now support locale to distinguish in differerent environment       |
+| v1.2.22      | v2          | LoggerEntry, EventEntry, CertEntry can be referenced to gin entry in boot.yaml                                     |
+| v1.2.22      | v2          | Healthy API was replaced by Ready and Alive which also provides validation func from user                          |
+| v1.2.22      | v2          | DocsEntry was added into rk-entry                                                                                  |
+| v1.2.22      | v2          | rk-entry support utility functions of embed.FS                                                                     |
+| v1.2.22      | v2          | rk-entry bumped up to v2                                                                                           |
+
+## Development Status: Stable
 
 ## Build instruction
 Simply run make all to validate your changes. Or run codes in example/ folder.

@@ -7,8 +7,8 @@ package rkginmeta
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-entry/entry"
-	"github.com/rookie-ninja/rk-entry/middleware/meta"
+	"github.com/rookie-ninja/rk-entry/v2/entry"
+	"github.com/rookie-ninja/rk-entry/v2/middleware/meta"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"

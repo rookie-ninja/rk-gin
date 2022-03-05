@@ -9,8 +9,8 @@ import (
 	_ "embed"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-entry/entry"
-	"github.com/rookie-ninja/rk-gin/boot"
+	"github.com/rookie-ninja/rk-entry/v2/entry"
+	"github.com/rookie-ninja/rk-gin/v2/boot"
 	"io"
 	"net/http"
 	"strings"
@@ -25,18 +25,19 @@ func main() {
 
 	// Bootstrap gin entry from boot config
 	res := rkgin.RegisterGinEntryYAML(boot)
+	ginEntry := res["greeter"]
 
 	// Bootstrap gin entry
-	res["greeter"].Bootstrap(context.Background())
+	ginEntry.Bootstrap(context.Background())
 
 	// Register post method
-	res["greeter"].(*rkgin.GinEntry).Router.POST("/rk/v1/post", post)
+	ginEntry.(*rkgin.GinEntry).Router.POST("/rk/v1/post", post)
 
 	// Wait for shutdown signal
 	rkentry.GlobalAppCtx.WaitForShutdownSig()
 
 	// Interrupt gin entry
-	res["greeter"].Interrupt(context.Background())
+	ginEntry.Interrupt(context.Background())
 }
 
 // PostResponse Response of Greeter.
