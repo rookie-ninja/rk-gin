@@ -693,8 +693,8 @@ The supported scheme of **tokenLookup**
 #    description: "Description of entry"                   # Optional, default: ""
 #    locale: "*::*::*::*"                                  # Optional, default: *::*::*::*
 #    caPath: "certs/ca.pem"                                # Optional, default: ""
-#    CertPemPath: "certs/server-cert.pem"                  # Optional, default: ""
-#    KeyPemPath: "certs/server-key.pem"                    # Optional, default: ""
+#    certPemPath: "certs/server-cert.pem"                  # Optional, default: ""
+#    keyPemPath: "certs/server-key.pem"                    # Optional, default: ""
 #config:
 #  - name: my-config                                       # Required
 #    description: "Description of entry"                   # Optional, default: ""
