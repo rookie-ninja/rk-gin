@@ -6,7 +6,7 @@
 
 Middleware & bootstrapper designed for [gin-gonic/gin](https://github.com/gin-gonic/gin) web framework. [Documentation](https://rkdev.info/docs/bootstrapper/user-guide/gin-golang/).
 
-This belongs to [rk-boot](https://github.com/rookie-ninja/rk-boot) family. We suggest use this lib from [rk-boot](https://github.com/rookie-ninja/rk-boot).
+This belongs to [rk-boot](https://github.com/rookie-ninja/rk-boot) family. 
 
 ![image](docs/img/boot-arch.png)
 
@@ -123,18 +123,6 @@ import (
 //go:embed boot.yaml
 var boot []byte
 
-////go:embed docs
-//var docsFS embed.FS
-//
-////go:embed docs
-//var staticFS embed.FS
-
-func init() {
-  //rkentry.GlobalAppCtx.AddEmbedFS(rkentry.DocsEntryType, "greeter", &docsFS)
-  //rkentry.GlobalAppCtx.AddEmbedFS(rkentry.SWEntryType, "greeter", &docsFS)
-  //rkentry.GlobalAppCtx.AddEmbedFS(rkentry.StaticFileHandlerEntryType, "greeter", &staticFS)
-}
-
 func main() {
   // Bootstrap preload entries
   rkentry.BootstrapPreloadEntryYAML(boot)
@@ -245,7 +233,7 @@ Please refer **meta** section at [Full YAML](#full-yaml).
 By default, we will send back some metadata to client including gateway with headers.
 
 ```shell script
-$ curl -vs localhost:8080/rk/v1/healthy
+$ curl -vs localhost:8080/rk/v1/ready
 *   Trying ::1...
 * TCP_NODELAY set
 * Connected to localhost (::1) port 8080 (#0)
@@ -264,7 +252,7 @@ $ curl -vs localhost:8080/rk/v1/healthy
 < Content-Length: 16
 < 
 * Connection #0 to host localhost left intact
-{"healthy":true}
+{"ready":true}
 ```
 
 #### 4.7 Send request
