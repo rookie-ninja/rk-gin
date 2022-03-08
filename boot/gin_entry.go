@@ -297,8 +297,8 @@ func RegisterGinEntry(opts ...GinEntryOption) *GinEntry {
 	entry := &GinEntry{
 		entryType:        GinEntryType,
 		entryDescription: "Internal RK entry which helps to bootstrap with Gin framework.",
-		LoggerEntry:      rkentry.LoggerEntryStdout,
-		EventEntry:       rkentry.EventEntryStdout,
+		LoggerEntry:      rkentry.NewLoggerEntryStdout(),
+		EventEntry:       rkentry.NewEventEntryStdout(),
 		Port:             80,
 	}
 
@@ -368,6 +368,7 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 		entry.SwEntry.Bootstrap(ctx)
 	}
 
+	// Is docs enabled?
 	if entry.IsDocsEnabled() {
 		entry.Router.GET(path.Join(entry.DocsEntry.Path, "*any"), gin.WrapF(entry.DocsEntry.ConfigFileHandler()))
 		entry.DocsEntry.Bootstrap(ctx)
@@ -443,6 +444,10 @@ func (entry *GinEntry) Interrupt(ctx context.Context) {
 	if entry.IsCommonServiceEnabled() {
 		// Interrupt common service entry
 		entry.CommonServiceEntry.Interrupt(ctx)
+	}
+
+	if entry.IsDocsEnabled() {
+		entry.DocsEntry.Interrupt(ctx)
 	}
 
 	if entry.Router != nil && entry.Server != nil {

@@ -6,6 +6,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	_ "embed"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -14,21 +15,31 @@ import (
 	"net/http"
 )
 
+// How to use embed.FS for:
+//
+// - boot.yaml
+// - rkentry.DocsEntryType
+// - rkentry.SWEntryType
+// - rkentry.StaticFileHandlerEntryType
+// - rkentry.CertEntry
+//
+// If we use embed.FS, then we only need one single binary file while packing.
+// We suggest use embed.FS to pack swagger local file since rk-entry would use os.Getwd() to look for files
+// if relative path was provided.
+//
+//go:embed docs
+var docsFS embed.FS
+
+func init() {
+	rkentry.GlobalAppCtx.AddEmbedFS(rkentry.SWEntryType, "greeter", &docsFS)
+}
+
 //go:embed boot.yaml
 var boot []byte
 
-////go:embed docs
-//var docsFS embed.FS
-//
-////go:embed docs
-//var staticFS embed.FS
-
-func init() {
-	//rkentry.GlobalAppCtx.AddEmbedFS(rkentry.DocsEntryType, "greeter", &docsFS)
-	//rkentry.GlobalAppCtx.AddEmbedFS(rkentry.SWEntryType, "greeter", &docsFS)
-	//rkentry.GlobalAppCtx.AddEmbedFS(rkentry.StaticFileHandlerEntryType, "greeter", &staticFS)
-}
-
+// @title RK Swagger for Gin
+// @version 1.0
+// @description This is a greeter service with rk-boot.
 func main() {
 	// Bootstrap preload entries
 	rkentry.BootstrapPreloadEntryYAML(boot)
@@ -50,6 +61,14 @@ func main() {
 	ginEntry.Interrupt(context.Background())
 }
 
+// Greeter handler
+// @Summary Greeter service
+// @Id 1
+// @version 1.0
+// @produce application/json
+// @Param name query string true "Input name"
+// @Success 200 {object} GreeterResponse
+// @Router /v1/greeter [get]
 func Greeter(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, &GreeterResponse{
 		Message: fmt.Sprintf("Hello %s!", ctx.Query("name")),
