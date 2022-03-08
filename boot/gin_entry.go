@@ -277,8 +277,6 @@ func RegisterGinEntryYAML(raw []byte) map[string]rkentry.Entry {
 			WithName(name),
 			WithDescription(element.Description),
 			WithPort(element.Port),
-			WithLoggerEntry(loggerEntry),
-			WithEventEntry(eventEntry),
 			WithSwEntry(swEntry),
 			WithDocsEntry(docsEntry),
 			WithPromEntry(promEntry),
