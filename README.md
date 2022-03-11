@@ -574,15 +574,21 @@ jwt:
    - "/sw"
 ```
 
-| name                           | description                                                 | type     | default value          |
-|--------------------------------|-------------------------------------------------------------|----------|------------------------|
-| gin.middleware.jwt.enabled     | Enable JWT middleware                                       | boolean  | false                  |
-| gin.middleware.jwt.ignore      | Provide ignoring path prefix.                               | []string | []                     |
-| gin.middleware.jwt.signingKey  | Required, Provide signing key.                              | string   | ""                     |
-| gin.middleware.jwt.signingKeys | Provide signing keys as scheme of <key>:<value>.            | []string | []                     |
-| gin.middleware.jwt.signingAlgo | Provide signing algorithm.                                  | string   | HS256                  |
-| gin.middleware.jwt.tokenLookup | Provide token lookup scheme, please see bellow description. | string   | "header:Authorization" |
-| gin.middleware.jwt.authScheme  | Provide auth scheme.                                        | string   | Bearer                 |
+| name                                         | description                                                                      | type     | default value          |
+|----------------------------------------------|----------------------------------------------------------------------------------|----------|------------------------|
+| gin.middleware.jwt.enabled                   | Optional, Enable JWT middleware                                                  | boolean  | false                  |
+| gin.middleware.jwt.ignore                    | Optional, Provide ignoring path prefix.                                          | []string | []                     |
+| gin.middleware.jwt.signerEntry               | Optional, Provide signerEntry name.                                              | string   | ""                     |
+| gin.middleware.jwt.symmetric.algorithm       | Required if symmetric specified. One of HS256, HS384, HS512                      | string   | ""                     |
+| gin.middleware.jwt.symmetric.token           | Optional, raw token for signing and verification                                 | string   | ""                     |
+| gin.middleware.jwt.symmetric.tokenPath       | Optional, path of token file                                                     | string   | ""                     |
+| gin.middleware.jwt.asymmetric.algorithm      | Required if symmetric specified. One of RS256, RS384, RS512, ES256, ES384, ES512 | string   | ""                     |
+| gin.middleware.jwt.asymmetric.privateKey     | Optional, raw private key file for signing                                       | string   | ""                     |
+| gin.middleware.jwt.asymmetric.privateKeyPath | Optional, private key file path for signing                                      | string   | ""                     |
+| gin.middleware.jwt.asymmetric.publicKey      | Optional, raw public key file for verification                                   | string   | ""                     |
+| gin.middleware.jwt.asymmetric.publicKeyPath  | Optional, public key file path for verification                                  | string   | ""                     |
+| gin.middleware.jwt.tokenLookup               | Provide token lookup scheme, please see bellow description.                      | string   | "header:Authorization" |
+| gin.middleware.jwt.authScheme                | Provide auth scheme.                                                             | string   | Bearer                 |
 
 The supported scheme of **tokenLookup** 
 
@@ -591,9 +597,6 @@ The supported scheme of **tokenLookup**
 // Possible values:
 // - "header:<name>"
 // - "query:<name>"
-// - "param:<name>"
-// - "cookie:<name>"
-// - "form:<name>"
 // Multiply sources example:
 // - "header: Authorization,cookie: myowncookie"
 ```
@@ -818,11 +821,18 @@ gin:
 #            timeoutMs: 1000                               # Optional, default: 5000
 #      jwt:
 #        enabled: true                                     # Optional, default: false
-#        signingKey: "my-secret"                           # Required
-#        ignore: [""]                                      # Optional, default: []
-#        signingKeys:                                      # Optional
-#          - "key:value"
-#        signingAlgo: ""                                   # Optional, default: "HS256"
+#        ignore: [ "" ]                                    # Optional, default: []
+#        signerEntry: ""                                   # Optional, default: ""
+#        symmetric:                                        # Optional
+#          algorithm: ""                                   # Required, default: ""
+#          token: ""                                       # Optional, default: ""
+#          tokenPath: ""                                   # Optional, default: ""
+#        asymmetric:                                       # Optional
+#          algorithm: ""                                   # Required, default: ""
+#          privateKey: ""                                  # Optional, default: ""
+#          privateKeyPath: ""                              # Optional, default: ""
+#          publicKey: ""                                   # Optional, default: ""
+#          publicKeyPath: ""                               # Optional, default: ""
 #        tokenLookup: "header:<name>"                      # Optional, default: "header:Authorization"
 #        authScheme: "Bearer"                              # Optional, default: "Bearer"
 #      secure:
