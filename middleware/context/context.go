@@ -9,7 +9,9 @@ package rkginctx
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
+	rkcursor "github.com/rookie-ninja/rk-entry/v2/cursor"
 	"github.com/rookie-ninja/rk-entry/v2/middleware"
+	rkgin "github.com/rookie-ninja/rk-gin/v2/boot"
 	"github.com/rookie-ninja/rk-logger"
 	"github.com/rookie-ninja/rk-query"
 	otelcodes "go.opentelemetry.io/otel/codes"
@@ -48,6 +50,14 @@ func SetHeaderToClient(ctx *gin.Context, key, value string) {
 	}
 	header := ctx.Writer.Header()
 	header.Set(key, value)
+}
+
+// GetCursor create rkcursor.Cursor instance
+func GetCursor(ctx *gin.Context) *rkcursor.Cursor {
+	return rkcursor.NewCursor(
+		rkcursor.WithLogger(GetLogger(ctx)),
+		rkcursor.WithEvent(GetEvent(ctx)),
+		rkcursor.WithEntryNameAndType(GetEntryName(ctx), rkgin.GinEntryType))
 }
 
 // GetEvent extract takes the call-scoped EventData from middleware.
