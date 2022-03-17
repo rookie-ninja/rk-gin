@@ -15,7 +15,6 @@ import (
 	rkentry "github.com/rookie-ninja/rk-entry/v2/entry"
 	"github.com/rookie-ninja/rk-gin/v2/boot"
 	"net/http"
-	"os"
 )
 
 // How to use embed.FS for:
@@ -44,7 +43,6 @@ var boot []byte
 // @version 1.0
 // @description This is a greeter service with rk-boot.
 func main() {
-	os.Setenv("DOMAIN", "prod")
 	// Bootstrap preload entries
 	rkentry.BootstrapPreloadEntryYAML(boot)
 
