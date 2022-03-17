@@ -8,11 +8,14 @@ import (
 	"context"
 	"embed"
 	_ "embed"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-entry/v2/entry"
+	rkcursor "github.com/rookie-ninja/rk-entry/v2/cursor"
+	rkentry "github.com/rookie-ninja/rk-entry/v2/entry"
 	"github.com/rookie-ninja/rk-gin/v2/boot"
 	"net/http"
+	"os"
 )
 
 // How to use embed.FS for:
@@ -41,6 +44,7 @@ var boot []byte
 // @version 1.0
 // @description This is a greeter service with rk-boot.
 func main() {
+	os.Setenv("DOMAIN", "prod")
 	// Bootstrap preload entries
 	rkentry.BootstrapPreloadEntryYAML(boot)
 
@@ -70,6 +74,11 @@ func main() {
 // @Success 200 {object} GreeterResponse
 // @Router /v1/greeter [get]
 func Greeter(ctx *gin.Context) {
+	pointer := rkcursor.Click()
+	defer pointer.Release()
+
+	pointer.ObserveError(errors.New("hi hi hi"))
+
 	ctx.JSON(http.StatusOK, &GreeterResponse{
 		Message: fmt.Sprintf("Hello %s!", ctx.Query("name")),
 	})

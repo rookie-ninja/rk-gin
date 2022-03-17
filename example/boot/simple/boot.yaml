@@ -11,6 +11,8 @@ gin:
       enabled: true
     prom:
       enabled: true                   # Optional, default: false
+    pprof:
+      enabled: true
     middleware:
       logging:
         enabled: true                 # Optional, default: false

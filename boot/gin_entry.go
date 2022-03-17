@@ -11,23 +11,24 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/rookie-ninja/rk-entry/v2/entry"
-	"github.com/rookie-ninja/rk-entry/v2/middleware"
-	"github.com/rookie-ninja/rk-entry/v2/middleware/auth"
-	"github.com/rookie-ninja/rk-entry/v2/middleware/cors"
-	"github.com/rookie-ninja/rk-entry/v2/middleware/csrf"
-	"github.com/rookie-ninja/rk-entry/v2/middleware/jwt"
-	"github.com/rookie-ninja/rk-entry/v2/middleware/log"
-	"github.com/rookie-ninja/rk-entry/v2/middleware/meta"
-	"github.com/rookie-ninja/rk-entry/v2/middleware/panic"
-	"github.com/rookie-ninja/rk-entry/v2/middleware/prom"
-	"github.com/rookie-ninja/rk-entry/v2/middleware/ratelimit"
-	"github.com/rookie-ninja/rk-entry/v2/middleware/secure"
-	"github.com/rookie-ninja/rk-entry/v2/middleware/timeout"
-	"github.com/rookie-ninja/rk-entry/v2/middleware/tracing"
+	rkentry "github.com/rookie-ninja/rk-entry/v2/entry"
+	rkmid "github.com/rookie-ninja/rk-entry/v2/middleware"
+	rkmidauth "github.com/rookie-ninja/rk-entry/v2/middleware/auth"
+	rkmidcors "github.com/rookie-ninja/rk-entry/v2/middleware/cors"
+	rkmidcsrf "github.com/rookie-ninja/rk-entry/v2/middleware/csrf"
+	rkmidjwt "github.com/rookie-ninja/rk-entry/v2/middleware/jwt"
+	rkmidlog "github.com/rookie-ninja/rk-entry/v2/middleware/log"
+	rkmidmeta "github.com/rookie-ninja/rk-entry/v2/middleware/meta"
+	rkmidpanic "github.com/rookie-ninja/rk-entry/v2/middleware/panic"
+	rkmidprom "github.com/rookie-ninja/rk-entry/v2/middleware/prom"
+	rkmidlimit "github.com/rookie-ninja/rk-entry/v2/middleware/ratelimit"
+	rkmidsec "github.com/rookie-ninja/rk-entry/v2/middleware/secure"
+	rkmidtimeout "github.com/rookie-ninja/rk-entry/v2/middleware/timeout"
+	rkmidtrace "github.com/rookie-ninja/rk-entry/v2/middleware/tracing"
 	"github.com/rookie-ninja/rk-gin/v2/middleware/auth"
 	"github.com/rookie-ninja/rk-gin/v2/middleware/cors"
 	"github.com/rookie-ninja/rk-gin/v2/middleware/csrf"
@@ -76,6 +77,7 @@ type BootGin struct {
 		LoggerEntry   string                        `yaml:"loggerEntry" json:"loggerEntry"`
 		EventEntry    string                        `yaml:"eventEntry" json:"eventEntry"`
 		Static        rkentry.BootStaticFileHandler `yaml:"static" json:"static"`
+		PProf         rkentry.BootPProf             `yaml:"pprof" json:"pprof"`
 		Middleware    struct {
 			Ignore    []string                `yaml:"ignore" json:"ignore"`
 			Logging   rkmidlog.BootConfig     `yaml:"logging" json:"logging"`
@@ -114,6 +116,7 @@ type GinEntry struct {
 	PromEntry          *rkentry.PromEntry              `json:"-" yaml:"-"`
 	StaticFileEntry    *rkentry.StaticFileHandlerEntry `json:"-" yaml:"-"`
 	CertEntry          *rkentry.CertEntry              `json:"-" yaml:"-"`
+	PProfEntry         *rkentry.PProfEntry             `json:"-" yaml:"-"`
 	bootstrapLogOnce   sync.Once                       `json:"-" yaml:"-"`
 }
 
@@ -181,6 +184,9 @@ func RegisterGinEntryYAML(raw []byte) map[string]rkentry.Entry {
 
 		// Register static file handler
 		staticEntry := rkentry.RegisterStaticFileHandlerEntry(&element.Static, rkentry.WithNameStaticFileHandlerEntry(element.Name))
+
+		// Register pprof entry
+		pprofEntry := rkentry.RegisterPProfEntry(&element.PProf, rkentry.WithNamePProfEntry(element.Name))
 
 		inters := make([]gin.HandlerFunc, 0)
 
@@ -282,6 +288,7 @@ func RegisterGinEntryYAML(raw []byte) map[string]rkentry.Entry {
 			WithPromEntry(promEntry),
 			WithCommonServiceEntry(commonServiceEntry),
 			WithCertEntry(certEntry),
+			WithPProfEntry(pprofEntry),
 			WithStaticFileHandlerEntry(staticEntry))
 
 		entry.AddMiddleware(inters...)
@@ -387,6 +394,11 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 		entry.PromEntry.Bootstrap(ctx)
 	}
 
+	// Is pprof enabled?
+	if entry.IsPProfEnabled() {
+		pprof.Register(entry.Router, entry.PProfEntry.Path)
+	}
+
 	// Start gin server
 	go entry.startServer(event, logger)
 
@@ -418,6 +430,9 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 
 			entry.LoggerEntry.Info(fmt.Sprintf("CommonSreviceEntry: %s", strings.Join(handlers, ", ")))
 		}
+		if entry.IsPProfEnabled() {
+			entry.LoggerEntry.Info(fmt.Sprintf("PProfEntry: %s://localhost:%d%s", scheme, entry.Port, entry.PProfEntry.Path))
+		}
 		entry.EventEntry.Finish(event)
 	})
 }
@@ -448,6 +463,10 @@ func (entry *GinEntry) Interrupt(ctx context.Context) {
 
 	if entry.IsDocsEnabled() {
 		entry.DocsEntry.Interrupt(ctx)
+	}
+
+	if entry.IsPProfEnabled() {
+		entry.PProfEntry.Interrupt(ctx)
 	}
 
 	if entry.Router != nil && entry.Server != nil {
@@ -492,6 +511,7 @@ func (entry *GinEntry) MarshalJSON() ([]byte, error) {
 		"commonServiceEntry":     entry.CommonServiceEntry,
 		"promEntry":              entry.PromEntry,
 		"staticFileHandlerEntry": entry.StaticFileEntry,
+		"pprofEntry":             entry.PProfEntry,
 	}
 
 	if entry.IsTlsEnabled() {
@@ -548,6 +568,11 @@ func (entry *GinEntry) IsPromEnabled() bool {
 // IsCommonServiceEnabled Is common service entry enabled?
 func (entry *GinEntry) IsCommonServiceEnabled() bool {
 	return entry.CommonServiceEntry != nil
+}
+
+// IsPProfEnabled Is pprof entry enabled?
+func (entry *GinEntry) IsPProfEnabled() bool {
+	return entry.PProfEntry != nil
 }
 
 // IsTlsEnabled Is TLS enabled?
@@ -613,6 +638,13 @@ func (entry *GinEntry) logBasicInfo(operation string, ctx context.Context) (rkqu
 		event.AddPayloads(
 			zap.Bool("staticFileHandlerEnabled", true),
 			zap.String("staticFileHandlerPath", entry.StaticFileEntry.Path))
+	}
+
+	// add PProfEntry info
+	if entry.IsPProfEnabled() {
+		event.AddPayloads(
+			zap.Bool("pprofEnabled", true),
+			zap.String("pprofPath", entry.PProfEntry.Path))
 	}
 
 	// add tls info
@@ -708,6 +740,12 @@ func WithSwEntry(sw *rkentry.SWEntry) GinEntryOption {
 func WithDocsEntry(docs *rkentry.DocsEntry) GinEntryOption {
 	return func(entry *GinEntry) {
 		entry.DocsEntry = docs
+	}
+}
+
+func WithPProfEntry(p *rkentry.PProfEntry) GinEntryOption {
+	return func(entry *GinEntry) {
+		entry.PProfEntry = p
 	}
 }
 
