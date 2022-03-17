@@ -35,7 +35,8 @@ All instances could be configured via YAML or Code.
 | Swagger           | Builtin swagger UI handler.                                                                                   |
 | Docs              | Builtin [RapiDoc](https://github.com/mrin9/RapiDoc) instance which can be used to replace swagger and RK TV.  |
 | CommonService     | List of common APIs.                                                                                          |
-| StaticFileHandler | A Web UI shows files could be downloaded from server, currently support source of local and pkger.            |
+| StaticFileHandler | A Web UI shows files could be downloaded from server, currently support source of local and embed.FS.         |
+| PProf             | PProf web UI.                                                                                                 |
 
 ## Supported middlewares
 All middlewares could be configured via YAML or Code.
@@ -644,7 +645,7 @@ The supported scheme of **tokenLookup**
 #logger:
 #  - name: my-logger                                       # Required
 #    description: "Description of entry"                   # Optional
-#    locale: "*::*::*::*"                                  # Optional, default: "*::*::*::*"
+#    domain: "*"                                           # Optional, default: "*"
 #    zap:                                                  # Optional
 #      level: info                                         # Optional, default: info
 #      development: true                                   # Optional, default: true
@@ -689,7 +690,7 @@ The supported scheme of **tokenLookup**
 #event:
 #  - name: my-event                                        # Required
 #    description: "Description of entry"                   # Optional
-#    locale: "*::*::*::*"                                  # Optional, default: "*::*::*::*"
+#    domain: "*"                                           # Optional, default: "*"
 #    encoding: console                                     # Optional, default: console
 #    outputPaths: ["stdout"]                               # Optional, default: [stdout]
 #    lumberjack:                                           # Optional, default: nil
@@ -713,15 +714,15 @@ The supported scheme of **tokenLookup**
 #cert:
 #  - name: my-cert                                         # Required
 #    description: "Description of entry"                   # Optional, default: ""
-#    locale: "*::*::*::*"                                  # Optional, default: *::*::*::*
+#    domain: "*"                                           # Optional, default: "*"
 #    caPath: "certs/ca.pem"                                # Optional, default: ""
 #    certPemPath: "certs/server-cert.pem"                  # Optional, default: ""
 #    keyPemPath: "certs/server-key.pem"                    # Optional, default: ""
 #config:
 #  - name: my-config                                       # Required
 #    description: "Description of entry"                   # Optional, default: ""
-#    locale: "*::*::*::*"                                  # Optional, default: *::*::*::*
-##    path: "config/config.yaml"                            # Optional
+#    domain: "*"                                           # Optional, default: "*"
+#    path: "config/config.yaml"                            # Optional
 #    envPrefix: ""                                         # Optional, default: ""
 #    content:                                              # Optional, defualt: empty map
 #      key: value
@@ -754,6 +755,9 @@ gin:
 #      path: "/static"                                     # Optional, default: /static
 #      sourceType: local                                   # Optional, options: local, embed.FS can be used either, need to specify in code
 #      sourcePath: "."                                     # Optional, full path of source directory
+#    pprof:
+#      enabled: true                                       # Optional, default: false
+#      path: "/pprof"                                      # Optional, default: /pprof
 #    prom:
 #      enabled: true                                       # Optional, default: false
 #      path: ""                                            # Optional, default: "/metrics"
