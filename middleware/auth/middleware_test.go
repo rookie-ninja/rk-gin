@@ -7,7 +7,7 @@ package rkginauth
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-entry/v2/error"
+	rkmid "github.com/rookie-ninja/rk-entry/v2/middleware"
 	"github.com/rookie-ninja/rk-entry/v2/middleware/auth"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -30,7 +30,7 @@ func TestInterceptor(t *testing.T) {
 	inter := Middleware(rkmidauth.WithMockOptionSet(mock))
 	ctx := newCtx()
 	// assign any of error response
-	beforeCtx.Output.ErrResp = rkerror.NewUnauthorized("")
+	beforeCtx.Output.ErrResp = rkmid.GetErrorBuilder().New(http.StatusUnauthorized, "")
 	beforeCtx.Output.HeadersToReturn["key"] = "value"
 	inter(ctx)
 	assert.Equal(t, http.StatusUnauthorized, ctx.Writer.Status())

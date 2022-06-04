@@ -14,6 +14,7 @@ gin:
     pprof:
       enabled: true
     middleware:
+      errorModel: amazon
       logging:
         enabled: true                 # Optional, default: false
       prom:

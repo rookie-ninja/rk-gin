@@ -27,7 +27,7 @@ func Middleware(opts ...rkmidjwt.Option) gin.HandlerFunc {
 
 		// case 1: error response
 		if beforeCtx.Output.ErrResp != nil {
-			ctx.AbortWithStatusJSON(beforeCtx.Output.ErrResp.Err.Code,
+			ctx.AbortWithStatusJSON(beforeCtx.Output.ErrResp.Code(),
 				beforeCtx.Output.ErrResp)
 			return
 		}

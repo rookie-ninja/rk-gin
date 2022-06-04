@@ -7,7 +7,7 @@ package rkginjwt
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-entry/v2/error"
+	rkmid "github.com/rookie-ninja/rk-entry/v2/middleware"
 	"github.com/rookie-ninja/rk-entry/v2/middleware/jwt"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -29,7 +29,7 @@ func TestInterceptor(t *testing.T) {
 	inter := Middleware(rkmidjwt.WithMockOptionSet(mock))
 
 	// case 1: error response
-	beforeCtx.Output.ErrResp = rkerror.NewUnauthorized("")
+	beforeCtx.Output.ErrResp = rkmid.GetErrorBuilder().New(http.StatusUnauthorized, "")
 	ctx := newCtx()
 	inter(ctx)
 	assert.Equal(t, http.StatusUnauthorized, ctx.Writer.Status())

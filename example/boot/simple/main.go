@@ -8,6 +8,7 @@ import (
 	"context"
 	"embed"
 	_ "embed"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	rkentry "github.com/rookie-ninja/rk-entry/v2/entry"
@@ -42,7 +43,8 @@ var boot []byte
 // @description This is a greeter service with rk-boot.
 func main() {
 	// Bootstrap preload entries
-	rkentry.BootstrapPreloadEntryYAML(boot)
+	rkentry.BootstrapBuiltInEntryFromYAML(boot)
+	rkentry.BootstrapPluginEntryFromYAML(boot)
 
 	// Bootstrap gin entry from boot config
 	res := rkgin.RegisterGinEntryYAML(boot)
@@ -70,6 +72,8 @@ func main() {
 // @Success 200 {object} GreeterResponse
 // @Router /v1/greeter [get]
 func Greeter(ctx *gin.Context) {
+	panic(errors.New("manually"))
+
 	ctx.JSON(http.StatusOK, &GreeterResponse{
 		Message: fmt.Sprintf("Hello %s!", ctx.Query("name")),
 	})
