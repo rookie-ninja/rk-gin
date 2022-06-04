@@ -4,7 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/rookie-ninja/rk-gin)](https://goreportcard.com/report/github.com/rookie-ninja/rk-gin)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Middleware & bootstrapper designed for [gin-gonic/gin](https://github.com/gin-gonic/gin) web framework. [Documentation](https://rkdev.info/docs/bootstrapper/user-guide/gin-golang/).
+Middleware & bootstrapper designed for [gin-gonic/gin](https://github.com/gin-gonic/gin) web framework. [Documentation](https://docs.rkdev.info/docs/rk-boot/getting-started/gin/).
 
 This belongs to [rk-boot](https://github.com/rookie-ninja/rk-boot) family. 
 
