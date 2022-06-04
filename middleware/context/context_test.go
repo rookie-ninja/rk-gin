@@ -137,9 +137,6 @@ func TestGetEntryName(t *testing.T) {
 }
 
 func TestGetTraceSpan(t *testing.T) {
-	// With nil context
-	assert.NotNil(t, GetTraceSpan(nil))
-
 	// With no span in context
 	ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
 	assert.NotNil(t, GetTraceSpan(ctx))

@@ -6,7 +6,6 @@ package rkgincsrf
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rookie-ninja/rk-entry/v2/error"
 	"github.com/rookie-ninja/rk-entry/v2/middleware"
 	"github.com/rookie-ninja/rk-entry/v2/middleware/csrf"
 	"github.com/stretchr/testify/assert"
@@ -33,7 +32,7 @@ func TestInterceptor(t *testing.T) {
 	ctx := newCtx()
 
 	// assign any of error response
-	beforeCtx.Output.ErrResp = rkerror.NewForbidden("")
+	beforeCtx.Output.ErrResp = rkmid.GetErrorBuilder().New(http.StatusForbidden, "")
 	inter(ctx)
 	assert.Equal(t, http.StatusForbidden, ctx.Writer.Status())
 

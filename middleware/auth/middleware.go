@@ -31,7 +31,7 @@ func Middleware(opts ...rkmidauth.Option) gin.HandlerFunc {
 			for k, v := range beforeCtx.Output.HeadersToReturn {
 				ctx.Writer.Header().Set(k, v)
 			}
-			ctx.AbortWithStatusJSON(beforeCtx.Output.ErrResp.Err.Code, beforeCtx.Output.ErrResp)
+			ctx.AbortWithStatusJSON(beforeCtx.Output.ErrResp.Code(), beforeCtx.Output.ErrResp)
 			return
 		}
 

@@ -16,6 +16,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	rkentry "github.com/rookie-ninja/rk-entry/v2/entry"
+	rkerror "github.com/rookie-ninja/rk-entry/v2/error"
 	rkmid "github.com/rookie-ninja/rk-entry/v2/middleware"
 	rkmidauth "github.com/rookie-ninja/rk-entry/v2/middleware/auth"
 	rkmidcors "github.com/rookie-ninja/rk-entry/v2/middleware/cors"
@@ -59,7 +60,7 @@ const (
 // This must be declared in order to register registration function into rk context
 // otherwise, rk-boot won't able to bootstrap gin entry automatically from boot config file
 func init() {
-	rkentry.RegisterEntryRegFunc(RegisterGinEntryYAML)
+	rkentry.RegisterWebFrameRegFunc(RegisterGinEntryYAML)
 }
 
 // BootGin boot config which is for gin entry.
@@ -79,19 +80,20 @@ type BootGin struct {
 		Static        rkentry.BootStaticFileHandler `yaml:"static" json:"static"`
 		PProf         rkentry.BootPProf             `yaml:"pprof" json:"pprof"`
 		Middleware    struct {
-			Ignore    []string                `yaml:"ignore" json:"ignore"`
-			Logging   rkmidlog.BootConfig     `yaml:"logging" json:"logging"`
-			Prom      rkmidprom.BootConfig    `yaml:"prom" json:"prom"`
-			Auth      rkmidauth.BootConfig    `yaml:"auth" json:"auth"`
-			Cors      rkmidcors.BootConfig    `yaml:"cors" json:"cors"`
-			Meta      rkmidmeta.BootConfig    `yaml:"meta" json:"meta"`
-			Jwt       rkmidjwt.BootConfig     `yaml:"jwt" json:"jwt"`
-			Secure    rkmidsec.BootConfig     `yaml:"secure" json:"secure"`
-			RateLimit rkmidlimit.BootConfig   `yaml:"rateLimit" json:"rateLimit"`
-			Csrf      rkmidcsrf.BootConfig    `yaml:"csrf" yaml:"csrf"`
-			Timeout   rkmidtimeout.BootConfig `yaml:"timeout" json:"timeout"`
-			Trace     rkmidtrace.BootConfig   `yaml:"trace" json:"trace"`
-			Gzip      struct {
+			Ignore     []string                `yaml:"ignore" json:"ignore"`
+			ErrorModel string                  `yaml:"errorModel" json:"errorModel"`
+			Logging    rkmidlog.BootConfig     `yaml:"logging" json:"logging"`
+			Prom       rkmidprom.BootConfig    `yaml:"prom" json:"prom"`
+			Auth       rkmidauth.BootConfig    `yaml:"auth" json:"auth"`
+			Cors       rkmidcors.BootConfig    `yaml:"cors" json:"cors"`
+			Meta       rkmidmeta.BootConfig    `yaml:"meta" json:"meta"`
+			Jwt        rkmidjwt.BootConfig     `yaml:"jwt" json:"jwt"`
+			Secure     rkmidsec.BootConfig     `yaml:"secure" json:"secure"`
+			RateLimit  rkmidlimit.BootConfig   `yaml:"rateLimit" json:"rateLimit"`
+			Csrf       rkmidcsrf.BootConfig    `yaml:"csrf" yaml:"csrf"`
+			Timeout    rkmidtimeout.BootConfig `yaml:"timeout" json:"timeout"`
+			Trace      rkmidtrace.BootConfig   `yaml:"trace" json:"trace"`
+			Gzip       struct {
 				Enabled bool     `yaml:"enabled" json:"enabled"`
 				Ignore  []string `yaml:"ignore" json:"ignore"`
 				Level   string   `yaml:"level" json:"level"`
@@ -192,6 +194,14 @@ func RegisterGinEntryYAML(raw []byte) map[string]rkentry.Entry {
 
 		// add global path ignorance
 		rkmid.AddPathToIgnoreGlobal(element.Middleware.Ignore...)
+
+		// set error builder based on error builder
+		switch strings.ToLower(element.Middleware.ErrorModel) {
+		case "", "google":
+			rkmid.SetErrorBuilder(rkerror.NewErrorBuilderGoogle())
+		case "amazon":
+			rkmid.SetErrorBuilder(rkerror.NewErrorBuilderAMZN())
+		}
 
 		// logging middlewares
 		if element.Middleware.Logging.Enabled {

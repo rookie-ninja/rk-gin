@@ -27,7 +27,7 @@ func Middleware(opts ...rkmidcsrf.Option) gin.HandlerFunc {
 		set.Before(beforeCtx)
 
 		if beforeCtx.Output.ErrResp != nil {
-			ctx.JSON(beforeCtx.Output.ErrResp.Err.Code, beforeCtx.Output.ErrResp)
+			ctx.JSON(beforeCtx.Output.ErrResp.Code(), beforeCtx.Output.ErrResp)
 			return
 		}
 

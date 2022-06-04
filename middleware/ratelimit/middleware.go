@@ -23,7 +23,7 @@ func Middleware(opts ...rkmidlimit.Option) gin.HandlerFunc {
 		set.Before(beforeCtx)
 
 		if beforeCtx.Output.ErrResp != nil {
-			ctx.AbortWithStatusJSON(beforeCtx.Output.ErrResp.Err.Code, beforeCtx.Output.ErrResp)
+			ctx.AbortWithStatusJSON(beforeCtx.Output.ErrResp.Code(), beforeCtx.Output.ErrResp)
 			return
 		}
 

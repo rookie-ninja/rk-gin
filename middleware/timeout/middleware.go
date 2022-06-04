@@ -67,7 +67,7 @@ func timeoutHandler(ctx *timeoutCtx) func() {
 		ctx.ginCtx.Writer = ctx.oldW
 
 		// write timed out response
-		ctx.ginCtx.JSON(ctx.before.Output.TimeoutErrResp.Err.Code, ctx.before.Output.TimeoutErrResp)
+		ctx.ginCtx.JSON(ctx.before.Output.TimeoutErrResp.Code(), ctx.before.Output.TimeoutErrResp)
 
 		// switch back to new writer since user code may still want to write to it.
 		// Panic may occur if we ignore this step.

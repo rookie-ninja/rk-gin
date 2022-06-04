@@ -20,7 +20,8 @@ var boot []byte
 
 func main() {
 	// Bootstrap preload entries
-	rkentry.BootstrapPreloadEntryYAML(boot)
+	rkentry.BootstrapBuiltInEntryFromYAML(boot)
+	rkentry.BootstrapPluginEntryFromYAML(boot)
 
 	// Bootstrap gin entry from boot config
 	res := rkgin.RegisterGinEntryYAML(boot)
