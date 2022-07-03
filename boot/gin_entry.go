@@ -65,41 +65,43 @@ func init() {
 
 // BootGin boot config which is for gin entry.
 type BootGin struct {
-	Gin []struct {
-		Enabled       bool                          `yaml:"enabled" json:"enabled"`
-		Name          string                        `yaml:"name" json:"name"`
-		Port          uint64                        `yaml:"port" json:"port"`
-		Description   string                        `yaml:"description" json:"description"`
-		SW            rkentry.BootSW                `yaml:"sw" json:"sw"`
-		Docs          rkentry.BootDocs              `yaml:"docs" json:"docs"`
-		CommonService rkentry.BootCommonService     `yaml:"commonService" json:"commonService"`
-		Prom          rkentry.BootProm              `yaml:"prom" json:"prom"`
-		CertEntry     string                        `yaml:"certEntry" json:"certEntry"`
-		LoggerEntry   string                        `yaml:"loggerEntry" json:"loggerEntry"`
-		EventEntry    string                        `yaml:"eventEntry" json:"eventEntry"`
-		Static        rkentry.BootStaticFileHandler `yaml:"static" json:"static"`
-		PProf         rkentry.BootPProf             `yaml:"pprof" json:"pprof"`
-		Middleware    struct {
-			Ignore     []string                `yaml:"ignore" json:"ignore"`
-			ErrorModel string                  `yaml:"errorModel" json:"errorModel"`
-			Logging    rkmidlog.BootConfig     `yaml:"logging" json:"logging"`
-			Prom       rkmidprom.BootConfig    `yaml:"prom" json:"prom"`
-			Auth       rkmidauth.BootConfig    `yaml:"auth" json:"auth"`
-			Cors       rkmidcors.BootConfig    `yaml:"cors" json:"cors"`
-			Meta       rkmidmeta.BootConfig    `yaml:"meta" json:"meta"`
-			Jwt        rkmidjwt.BootConfig     `yaml:"jwt" json:"jwt"`
-			Secure     rkmidsec.BootConfig     `yaml:"secure" json:"secure"`
-			RateLimit  rkmidlimit.BootConfig   `yaml:"rateLimit" json:"rateLimit"`
-			Csrf       rkmidcsrf.BootConfig    `yaml:"csrf" yaml:"csrf"`
-			Timeout    rkmidtimeout.BootConfig `yaml:"timeout" json:"timeout"`
-			Trace      rkmidtrace.BootConfig   `yaml:"trace" json:"trace"`
-			Gzip       struct {
-				Enabled bool     `yaml:"enabled" json:"enabled"`
-				Ignore  []string `yaml:"ignore" json:"ignore"`
-				Level   string   `yaml:"level" json:"level"`
-			} `yaml:"gzip" json:"gzip"`
-		} `yaml:"middleware" json:"middleware"`
-	} `yaml:"gin" json:"gin"`
+	Gin []*BootGinElement `yaml:"gin" json:"gin"`
+}
+
+type BootGinElement struct {
+	Enabled       bool                          `yaml:"enabled" json:"enabled"`
+	Name          string                        `yaml:"name" json:"name"`
+	Port          uint64                        `yaml:"port" json:"port"`
+	Description   string                        `yaml:"description" json:"description"`
+	SW            rkentry.BootSW                `yaml:"sw" json:"sw"`
+	Docs          rkentry.BootDocs              `yaml:"docs" json:"docs"`
+	CommonService rkentry.BootCommonService     `yaml:"commonService" json:"commonService"`
+	Prom          rkentry.BootProm              `yaml:"prom" json:"prom"`
+	CertEntry     string                        `yaml:"certEntry" json:"certEntry"`
+	LoggerEntry   string                        `yaml:"loggerEntry" json:"loggerEntry"`
+	EventEntry    string                        `yaml:"eventEntry" json:"eventEntry"`
+	Static        rkentry.BootStaticFileHandler `yaml:"static" json:"static"`
+	PProf         rkentry.BootPProf             `yaml:"pprof" json:"pprof"`
+	Middleware    struct {
+		Ignore     []string                `yaml:"ignore" json:"ignore"`
+		ErrorModel string                  `yaml:"errorModel" json:"errorModel"`
+		Logging    rkmidlog.BootConfig     `yaml:"logging" json:"logging"`
+		Prom       rkmidprom.BootConfig    `yaml:"prom" json:"prom"`
+		Auth       rkmidauth.BootConfig    `yaml:"auth" json:"auth"`
+		Cors       rkmidcors.BootConfig    `yaml:"cors" json:"cors"`
+		Meta       rkmidmeta.BootConfig    `yaml:"meta" json:"meta"`
+		Jwt        rkmidjwt.BootConfig     `yaml:"jwt" json:"jwt"`
+		Secure     rkmidsec.BootConfig     `yaml:"secure" json:"secure"`
+		RateLimit  rkmidlimit.BootConfig   `yaml:"rateLimit" json:"rateLimit"`
+		Csrf       rkmidcsrf.BootConfig    `yaml:"csrf" yaml:"csrf"`
+		Timeout    rkmidtimeout.BootConfig `yaml:"timeout" json:"timeout"`
+		Trace      rkmidtrace.BootConfig   `yaml:"trace" json:"trace"`
+		Gzip       struct {
+			Enabled bool     `yaml:"enabled" json:"enabled"`
+			Ignore  []string `yaml:"ignore" json:"ignore"`
+			Level   string   `yaml:"level" json:"level"`
+		} `yaml:"gzip" json:"gzip"`
+	} `yaml:"middleware" json:"middleware"`
 }
 
 // GinEntry implements rkentry.Entry interface.
