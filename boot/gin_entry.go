@@ -50,6 +50,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 const (
@@ -482,7 +483,10 @@ func (entry *GinEntry) Interrupt(ctx context.Context) {
 	}
 
 	if entry.Router != nil && entry.Server != nil {
-		if err := entry.Server.Shutdown(context.Background()); err != nil {
+		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+
+		if err := entry.Server.Shutdown(ctx); err != nil {
 			event.AddErr(err)
 			logger.Warn("Error occurs while stopping gin-server.", event.ListPayloads()...)
 		}
