@@ -31,7 +31,7 @@ import (
 	rkmidtimeout "github.com/rookie-ninja/rk-entry/v2/middleware/timeout"
 	rkmidtrace "github.com/rookie-ninja/rk-entry/v2/middleware/tracing"
 	"github.com/rookie-ninja/rk-gin/v2/middleware/auth"
-	"github.com/rookie-ninja/rk-gin/v2/middleware/cors"
+	rkgincors "github.com/rookie-ninja/rk-gin/v2/middleware/cors"
 	"github.com/rookie-ninja/rk-gin/v2/middleware/csrf"
 	"github.com/rookie-ninja/rk-gin/v2/middleware/gzip"
 	"github.com/rookie-ninja/rk-gin/v2/middleware/jwt"
@@ -231,6 +231,12 @@ func RegisterGinEntryYAML(raw []byte) map[string]rkentry.Entry {
 				rkmidtrace.ToOptions(&element.Middleware.Trace, element.Name, GinEntryType)...))
 		}
 
+		// cors middleware
+		if element.Middleware.Cors.Enabled {
+			inters = append(inters, rkgincors.Middleware(
+				rkmidcors.ToOptions(&element.Middleware.Cors, element.Name, GinEntryType)...))
+		}
+
 		// jwt middleware
 		if element.Middleware.Jwt.Enabled {
 			inters = append(inters, rkginjwt.Middleware(
@@ -247,12 +253,6 @@ func RegisterGinEntryYAML(raw []byte) map[string]rkentry.Entry {
 		if element.Middleware.Csrf.Enabled {
 			inters = append(inters, rkgincsrf.Middleware(
 				rkmidcsrf.ToOptions(&element.Middleware.Csrf, element.Name, GinEntryType)...))
-		}
-
-		// cors middleware
-		if element.Middleware.Cors.Enabled {
-			inters = append(inters, rkgincors.Middleware(
-				rkmidcors.ToOptions(&element.Middleware.Cors, element.Name, GinEntryType)...))
 		}
 
 		// gzip middleware
