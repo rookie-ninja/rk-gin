@@ -34,6 +34,10 @@ func TestGetIncomingHeaders(t *testing.T) {
 	assert.Equal(t, header, GetIncomingHeaders(ctx))
 }
 
+func TestGormCtx(t *testing.T) {
+	assert.NotNil(t, GormCtx(&gin.Context{}))
+}
+
 func TestAddHeaderToClient(t *testing.T) {
 	defer assertNotPanic(t)
 
