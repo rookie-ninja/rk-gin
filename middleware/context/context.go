@@ -34,7 +34,7 @@ func GetIncomingHeaders(ctx *gin.Context) http.Header {
 // AddHeaderToClient headers that would be sent to client.
 // Values would be merged.
 func AddHeaderToClient(ctx *gin.Context, key, value string) {
-	if ctx == nil || ctx.Writer == nil {
+	if ctx == nil || ctx.Writer == nil || ctx.Writer.Header() == nil {
 		return
 	}
 
@@ -45,7 +45,7 @@ func AddHeaderToClient(ctx *gin.Context, key, value string) {
 // SetHeaderToClient headers that would be sent to client.
 // Values would be overridden.
 func SetHeaderToClient(ctx *gin.Context, key, value string) {
-	if ctx == nil || ctx.Writer == nil {
+	if ctx == nil || ctx.Writer == nil || ctx.Writer.Header() == nil {
 		return
 	}
 	header := ctx.Writer.Header()
@@ -107,7 +107,7 @@ func GormCtx(ctx *gin.Context) context.Context {
 // If user enabled meta interceptor, then a random request Id would e assigned and set to context as value.
 // If user called AddHeaderToClient() with key of RequestIdKey, then a new request id would be updated.
 func GetRequestId(ctx *gin.Context) string {
-	if ctx == nil || ctx.Writer == nil {
+	if ctx == nil || ctx.Writer == nil || ctx.Writer.Header() == nil {
 		return ""
 	}
 
@@ -116,7 +116,7 @@ func GetRequestId(ctx *gin.Context) string {
 
 // GetTraceId extract trace id from context.
 func GetTraceId(ctx *gin.Context) string {
-	if ctx == nil || ctx.Writer == nil {
+	if ctx == nil || ctx.Writer == nil || ctx.Writer.Header() == nil {
 		return ""
 	}
 

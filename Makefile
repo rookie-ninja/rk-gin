@@ -1,5 +1,5 @@
 .PHONY: all
-all: gomod test lint fmt
+all: gomod test fmt
 
 .PHONY: lint
 lint:

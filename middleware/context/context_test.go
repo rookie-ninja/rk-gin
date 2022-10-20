@@ -112,6 +112,12 @@ func TestGetRequestId(t *testing.T) {
 	// Happy case
 	ctx.Writer.Header().Set(rkmid.HeaderRequestId, "ut-request-id")
 	assert.Equal(t, "ut-request-id", GetRequestId(ctx))
+
+	// with nil header
+	writer := httptest.NewRecorder()
+	writer.HeaderMap = nil
+	ctx, _ = gin.CreateTestContext(writer)
+	assert.Empty(t, GetRequestId(ctx))
 }
 
 func TestGetTraceId(t *testing.T) {
@@ -125,6 +131,12 @@ func TestGetTraceId(t *testing.T) {
 	// Happy case
 	ctx.Writer.Header().Set(rkmid.HeaderTraceId, "ut-trace-id")
 	assert.Equal(t, "ut-trace-id", GetTraceId(ctx))
+
+	// with nil header
+	writer := httptest.NewRecorder()
+	writer.HeaderMap = nil
+	ctx, _ = gin.CreateTestContext(writer)
+	assert.Empty(t, GetRequestId(ctx))
 }
 
 func TestGetEntryName(t *testing.T) {
