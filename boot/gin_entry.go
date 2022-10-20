@@ -31,7 +31,7 @@ import (
 	rkmidtimeout "github.com/rookie-ninja/rk-entry/v2/middleware/timeout"
 	rkmidtrace "github.com/rookie-ninja/rk-entry/v2/middleware/tracing"
 	"github.com/rookie-ninja/rk-gin/v2/middleware/auth"
-	rkgincors "github.com/rookie-ninja/rk-gin/v2/middleware/cors"
+	"github.com/rookie-ninja/rk-gin/v2/middleware/cors"
 	"github.com/rookie-ninja/rk-gin/v2/middleware/csrf"
 	"github.com/rookie-ninja/rk-gin/v2/middleware/gzip"
 	"github.com/rookie-ninja/rk-gin/v2/middleware/jwt"
