@@ -107,20 +107,18 @@ func GormCtx(ctx *gin.Context) context.Context {
 // If user enabled meta interceptor, then a random request Id would e assigned and set to context as value.
 // If user called AddHeaderToClient() with key of RequestIdKey, then a new request id would be updated.
 func GetRequestId(ctx *gin.Context) string {
-	if ctx == nil || ctx.Writer == nil || ctx.Writer.Header() == nil {
+	if ctx == nil {
 		return ""
 	}
-
-	return ctx.Writer.Header().Get(rkmid.HeaderRequestId)
+	return ctx.GetString(rkmid.HeaderRequestId)
 }
 
 // GetTraceId extract trace id from context.
 func GetTraceId(ctx *gin.Context) string {
-	if ctx == nil || ctx.Writer == nil || ctx.Writer.Header() == nil {
+	if ctx == nil {
 		return ""
 	}
-
-	return ctx.Writer.Header().Get(rkmid.HeaderTraceId)
+	return ctx.GetString(rkmid.HeaderTraceId)
 }
 
 // GetEntryName extract entry name from context.

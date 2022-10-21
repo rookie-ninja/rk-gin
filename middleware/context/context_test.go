@@ -110,7 +110,7 @@ func TestGetRequestId(t *testing.T) {
 	assert.Empty(t, GetRequestId(ctx))
 
 	// Happy case
-	ctx.Writer.Header().Set(rkmid.HeaderRequestId, "ut-request-id")
+	ctx.Set(rkmid.HeaderRequestId, "ut-request-id")
 	assert.Equal(t, "ut-request-id", GetRequestId(ctx))
 
 	// with nil header
@@ -129,7 +129,7 @@ func TestGetTraceId(t *testing.T) {
 	assert.Empty(t, GetTraceId(ctx))
 
 	// Happy case
-	ctx.Writer.Header().Set(rkmid.HeaderTraceId, "ut-trace-id")
+	ctx.Set(rkmid.HeaderTraceId, "ut-trace-id")
 	assert.Equal(t, "ut-trace-id", GetTraceId(ctx))
 
 	// with nil header

@@ -33,6 +33,7 @@ func Middleware(opts ...rkmidtrace.Option) gin.HandlerFunc {
 		if beforeCtx.Output.Span != nil {
 			traceId := beforeCtx.Output.Span.SpanContext().TraceID().String()
 			rkginctx.GetEvent(ctx).SetTraceId(traceId)
+			ctx.Set(rkmid.HeaderTraceId, traceId)
 			ctx.Header(rkmid.HeaderTraceId, traceId)
 			ctx.Set(rkmid.SpanKey.String(), beforeCtx.Output.Span)
 		}

@@ -21,3 +21,5 @@ gin:
         enabled: true                 # Optional, default: false
       meta:
         enabled: true                 # Optional, default: false
+      trace:
+        enabled: true
