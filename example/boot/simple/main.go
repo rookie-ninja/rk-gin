@@ -8,7 +8,6 @@ import (
 	"context"
 	"embed"
 	_ "embed"
-	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	rkentry "github.com/rookie-ninja/rk-entry/v2/entry"
@@ -72,8 +71,6 @@ func main() {
 // @Success 200 {object} GreeterResponse
 // @Router /v1/greeter [get]
 func Greeter(ctx *gin.Context) {
-	panic(errors.New("manually"))
-
 	ctx.JSON(http.StatusOK, &GreeterResponse{
 		Message: fmt.Sprintf("Hello %s!", ctx.Query("name")),
 	})
