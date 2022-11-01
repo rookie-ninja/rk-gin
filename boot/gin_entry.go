@@ -46,7 +46,7 @@ import (
 	"github.com/rookie-ninja/rk-query"
 	"go.uber.org/zap"
 	"net/http"
-	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -384,19 +384,19 @@ func (entry *GinEntry) Bootstrap(ctx context.Context) {
 
 	// Is swagger enabled?
 	if entry.IsSwEnabled() {
-		entry.Router.GET(path.Join(entry.SwEntry.Path, "*any"), gin.WrapF(entry.SwEntry.ConfigFileHandler()))
+		entry.Router.GET(filepath.Join(entry.SwEntry.Path, "*any"), gin.WrapF(entry.SwEntry.ConfigFileHandler()))
 		entry.SwEntry.Bootstrap(ctx)
 	}
 
 	// Is docs enabled?
 	if entry.IsDocsEnabled() {
-		entry.Router.GET(path.Join(entry.DocsEntry.Path, "*any"), gin.WrapF(entry.DocsEntry.ConfigFileHandler()))
+		entry.Router.GET(filepath.Join(entry.DocsEntry.Path, "*any"), gin.WrapF(entry.DocsEntry.ConfigFileHandler()))
 		entry.DocsEntry.Bootstrap(ctx)
 	}
 
 	// Is static file handler enabled?
 	if entry.IsStaticFileHandlerEnabled() {
-		entry.Router.GET(path.Join(entry.StaticFileEntry.Path, "*any"), gin.WrapF(entry.StaticFileEntry.GetFileHandler()))
+		entry.Router.GET(filepath.Join(entry.StaticFileEntry.Path, "*any"), gin.WrapF(entry.StaticFileEntry.GetFileHandler()))
 		entry.StaticFileEntry.Bootstrap(ctx)
 	}
 
