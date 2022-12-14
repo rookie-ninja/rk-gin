@@ -1,13 +1,13 @@
 module github.com/rookie-ninja/rk-gin/v2
 
-go 1.17
+go 1.18
 
 require (
 	github.com/gin-contrib/pprof v1.3.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/prometheus/client_golang v1.13.0
-	github.com/rookie-ninja/rk-entry/v2 v2.2.12
+	github.com/rookie-ninja/rk-entry/v2 v2.2.13
 	github.com/rookie-ninja/rk-logger v1.2.12
 	github.com/rookie-ninja/rk-query v1.2.14
 	github.com/rs/xid v1.3.0
