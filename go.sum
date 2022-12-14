@@ -510,8 +510,8 @@ github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFR
 github.com/rogpeppe/go-internal v1.6.1/go.mod h1:xXDCJY+GAPziupqXw64V24skbSoqbTEfhy4qGm1nDQc=
 github.com/rogpeppe/go-internal v1.8.0 h1:FCbCCtXNOY3UtUuHUYaghJg4y7Fd14rXifAYUAtL9R8=
 github.com/rogpeppe/go-internal v1.8.0/go.mod h1:WmiCO8CzOY8rg0OYDC4/i/2WRWAB6poM+XZ2dLUbcbE=
-github.com/rookie-ninja/rk-entry/v2 v2.2.11 h1:6ieXa1z56wnyDLz/AL/cs7UsjY18lR6QaGYB3ENUzkE=
-github.com/rookie-ninja/rk-entry/v2 v2.2.11/go.mod h1:STB6mh9kIAKJxvgBBOhnaHUmYVcK0s9SOCWg3eKmSWY=
+github.com/rookie-ninja/rk-entry/v2 v2.2.12 h1:V07PuVr/ZNsBYHCj7fb6fvwM+k+HjFCDRSGwgyhXFu8=
+github.com/rookie-ninja/rk-entry/v2 v2.2.12/go.mod h1:STB6mh9kIAKJxvgBBOhnaHUmYVcK0s9SOCWg3eKmSWY=
 github.com/rookie-ninja/rk-logger v1.2.11/go.mod h1:0ZiGn1KsHKOmCv+FHMH7k40DWYSJcj5yIR3EYcjlnLs=
 github.com/rookie-ninja/rk-logger v1.2.12 h1:eQHP7hDW/zFeDCoGUV3Mu8Ot72+7c+Cy0Tuxauir5a8=
 github.com/rookie-ninja/rk-logger v1.2.12/go.mod h1:0ZiGn1KsHKOmCv+FHMH7k40DWYSJcj5yIR3EYcjlnLs=
