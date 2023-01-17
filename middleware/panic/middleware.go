@@ -23,7 +23,9 @@ func Middleware(opts ...rkmidpanic.Option) gin.HandlerFunc {
 		ctx.Set(rkmid.EntryNameKey.String(), set.GetEntryName())
 
 		handlerFunc := func(resp rkerror.ErrorInterface) {
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, resp)
+			if ctx.Writer.Size() < 1 {
+				ctx.AbortWithStatusJSON(http.StatusInternalServerError, resp)
+			}
 		}
 		beforeCtx := set.BeforeCtx(rkginctx.GetEvent(ctx), rkginctx.GetLogger(ctx), handlerFunc)
 		set.Before(beforeCtx)
