@@ -7,7 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/prometheus/client_golang v1.13.0
-	github.com/rookie-ninja/rk-entry/v2 v2.2.16
+	github.com/rookie-ninja/rk-entry/v2 v2.2.17
 	github.com/rookie-ninja/rk-logger v1.2.13
 	github.com/rookie-ninja/rk-query v1.2.14
 	github.com/rs/xid v1.3.0
