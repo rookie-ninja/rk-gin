@@ -1,0 +1,28 @@
+---
+gin:
+  - name: greeter                     # Required
+    port: 8080                        # Required
+    enabled: true                     # Required
+    commonService:
+      enabled: true                   # Optional, default: false
+    sw:
+      enabled: true                   # Optional, default: false
+    docs:
+      enabled: true
+    prom:
+      enabled: true                   # Optional, default: false
+    pprof:
+      enabled: true
+    middleware:
+      errorModel: amazon
+      logging:
+        enabled: true                 # Optional, default: false
+      prom:
+        enabled: true                 # Optional, default: false
+      meta:
+        enabled: true                 # Optional, default: false
+      trace:
+        enabled: true
+config:
+  - name: my-config
+    path: "example/boot/config/config.json"
