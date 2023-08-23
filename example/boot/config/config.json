@@ -1,0 +1,31 @@
+{
+  "app": {
+    "name": "my-app",
+    "version": "0.0.0",
+    "description": "this is description",
+    "keywords": [
+      "rk",
+      "golang"
+    ],
+    "homeUrl": "https://example.com",
+    "iconUrl": "https://example.com",
+    "docsUrl": [
+      "https://example.com"
+    ],
+    "maintainers": [
+      "rk-dev"
+    ]
+  },
+  "config": [
+    {
+      "name": "my-config",
+      "path": "config/default.yaml"
+    }
+  ],
+  "myEntry": {
+    "enabled": true,
+    "name": "my-entry",
+    "description": "This is my entry demo.",
+    "key": "value"
+  }
+}
